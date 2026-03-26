@@ -1,0 +1,373 @@
+/* assets/css/layout.css */
+/* App shell: topbar, sidebar, content area, responsive */
+
+/* ════════════════════════════════════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════════════════════════════════════ */
+
+.app-shell {
+  display   : flex;
+  min-height: 100vh;
+  background: var(--deep);
+  position  : relative;
+}
+
+/* ── Topbar ──────────────────────────────────────────────────────────── */
+.topbar {
+  position  : fixed;
+  top       : 0;
+  left      : 0;
+  right     : 0;
+  height    : var(--topbar-height);
+  background: rgba(7,13,20,.95);
+  border-bottom: 1px solid var(--border-dim);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index   : 100;
+  display   : flex;
+  align-items: center;
+  padding   : 0 var(--space-5);
+  gap       : var(--space-5);
+}
+
+.topbar__logo {
+  display    : flex;
+  align-items: center;
+  gap        : var(--space-2);
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.topbar__logo-mark {
+  width        : 28px;
+  height       : 28px;
+  background   : var(--cyan);
+  border-radius: var(--r-sm);
+  display      : flex;
+  align-items  : center;
+  justify-content: center;
+  font-family  : var(--font-mono);
+  font-size    : .65rem;
+  font-weight  : 700;
+  color        : var(--void);
+  flex-shrink  : 0;
+  box-shadow   : 0 0 12px rgba(0,212,255,.4);
+  letter-spacing: 0;
+}
+
+.topbar__logo-text {
+  font-family   : var(--font-display);
+  font-size     : .82rem;
+  font-weight   : 700;
+  color         : var(--text-primary);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.topbar__logo-sub {
+  font-family: var(--font-mono);
+  font-size  : .6rem;
+  color      : var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.topbar__divider {
+  width     : 1px;
+  height    : 20px;
+  background: var(--border-dim);
+  flex-shrink: 0;
+}
+
+.topbar__center { flex: 1; }
+
+/* Stage progress bar in topbar */
+.topbar__stage-progress {
+  display    : flex;
+  align-items: center;
+  gap        : var(--space-3);
+}
+
+.topbar__stage-label {
+  font-family   : var(--font-mono);
+  font-size     : .62rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color         : var(--text-muted);
+  white-space   : nowrap;
+  flex-shrink   : 0;
+}
+
+.topbar__stage-track {
+  flex         : 1;
+  height       : 2px;
+  background   : var(--border-dim);
+  border-radius: var(--r-full);
+  overflow     : hidden;
+  min-width    : 80px;
+}
+
+.topbar__stage-fill {
+  height        : 100%;
+  background    : linear-gradient(90deg, var(--cyan), var(--blue));
+  border-radius : var(--r-full);
+  transition    : width var(--transition-slow);
+  box-shadow    : 0 0 6px rgba(0,212,255,.6);
+}
+
+.topbar__right {
+  display    : flex;
+  align-items: center;
+  gap        : var(--space-3);
+  flex-shrink: 0;
+}
+
+.topbar__confidence {
+  font-family   : var(--font-mono);
+  font-size     : .65rem;
+  color         : var(--text-muted);
+  letter-spacing: 1px;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
+.sidebar {
+  position  : fixed;
+  top       : var(--topbar-height);
+  left      : 0;
+  bottom    : 0;
+  width     : var(--sidebar-width);
+  background: rgba(7,13,20,.98);
+  border-right: 1px solid var(--border-dim);
+  overflow-y: auto;
+  z-index   : 50;
+  display   : flex;
+  flex-direction: column;
+  padding   : var(--space-4) 0 var(--space-8);
+}
+
+/* Stage map in sidebar */
+.stage-map {
+  display       : flex;
+  flex-direction: column;
+  padding       : 0 var(--space-3);
+  gap           : var(--space-1);
+}
+
+.stage-map__section-label {
+  font-family   : var(--font-mono);
+  font-size     : .55rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color         : var(--text-ghost);
+  padding       : var(--space-4) var(--space-2) var(--space-2);
+}
+
+.stage-map__item {
+  display        : flex;
+  align-items    : center;
+  gap            : var(--space-3);
+  padding        : var(--space-2) var(--space-3);
+  border-radius  : var(--r-md);
+  cursor         : pointer;
+  transition     : all var(--transition-fast);
+  text-decoration: none;
+  position       : relative;
+  user-select    : none;
+}
+
+.stage-map__item:hover {
+  background: var(--surface-1);
+}
+
+.stage-map__item--active {
+  background: var(--surface-2);
+}
+
+.stage-map__item--active::before {
+  content      : '';
+  position     : absolute;
+  left         : 0;
+  top          : 25%;
+  bottom       : 25%;
+  width        : 2px;
+  background   : var(--cyan);
+  border-radius: 0 var(--r-full) var(--r-full) 0;
+  box-shadow   : 0 0 6px rgba(0,212,255,.6);
+}
+
+.stage-map__item--locked {
+  opacity: .3;
+  cursor : not-allowed;
+  pointer-events: none;
+}
+
+.stage-map__item--done {opacity :0.8;}
+
+/* Stage number dot */
+.stage-map__dot {
+  width        : 24px;
+  height       : 24px;
+  border-radius: 50%;
+  border       : 1.5px solid var(--border-default);
+  display      : flex;
+  align-items  : center;
+  justify-content: center;
+  font-family  : var(--font-mono);
+  font-size    : .6rem;
+  font-weight  : 700;
+  color        : var(--text-muted);
+  flex-shrink  : 0;
+  transition   : all var(--transition-fast);
+  background   : var(--surface-0);
+}
+
+.stage-map__item--active .stage-map__dot {
+  border-color: var(--cyan);
+  color       : var(--cyan);
+  background  : var(--cyan-glow);
+  box-shadow  : 0 0 8px rgba(0,212,255,.3);
+}
+
+.stage-map__item--done .stage-map__dot {
+  border-color: var(--pass-border);
+  color       : var(--pass);
+  background  : var(--pass-dim);
+}
+
+/* Stage label */
+.stage-map__label {
+  display       : flex;
+  flex-direction: column;
+  gap           : 1px;
+  flex          : 1;
+  min-width     : 0;
+}
+
+.stage-map__name {
+  font-size  : .74rem;
+  color      : var(--text-secondary);
+  transition : color var(--transition-fast);
+  white-space: nowrap;
+  overflow   : hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-map__item--active .stage-map__name { color: var(--text-primary); font-weight: 500; }
+.stage-map__item--done   .stage-map__name { color: var(--text-secondary); }
+
+.stage-map__sub {
+  font-family: var(--font-mono);
+  font-size  : .58rem;
+  color      : var(--text-ghost);
+  letter-spacing: .5px;
+}
+
+/* Connector line between stages */
+.stage-map__connector {
+  width     : 1.5px;
+  height    : 8px;
+  background: var(--border-dim);
+  margin    : 0 0 0 calc(var(--space-3) + 12px - .75px);
+  flex-shrink: 0;
+}
+
+.stage-map__connector--done { background: var(--pass-border); }
+
+/* Sidebar footer */
+.sidebar__footer {
+  margin-top  : auto;
+  padding     : var(--space-4) var(--space-5);
+  border-top  : 1px solid var(--border-dim);
+}
+
+.sidebar__score {
+  font-family: var(--font-mono);
+  font-size  : .65rem;
+  color      : var(--text-muted);
+}
+
+/* ── Main content area ───────────────────────────────────────────────── */
+.main-content {
+  margin-left: var(--sidebar-width);
+  margin-top : var(--topbar-height);
+  flex       : 1;
+  min-width  : 0;
+  display    : flex;
+  flex-direction: column;
+}
+
+.stage-content {
+  flex      : 1;
+  padding   : var(--stage-pad);
+  max-width : calc(var(--content-max) + var(--stage-pad) * 2);
+  width     : 100%;
+  animation : slide-in-up var(--transition-slow) ease;
+}
+
+/* ── Bottom nav (next/prev) ──────────────────────────────────────────── */
+.stage-nav {
+  position     : sticky;
+  bottom       : 0;
+  background   : rgba(7,13,20,.95);
+  border-top   : 1px solid var(--border-dim);
+  backdrop-filter: blur(12px);
+  padding      : var(--space-3) var(--stage-pad);
+  display      : flex;
+  align-items  : center;
+  justify-content: space-between;
+  gap          : var(--space-4);
+  z-index      : 40;
+}
+
+.stage-nav__info {
+  font-family: var(--font-mono);
+  font-size  : .65rem;
+  color      : var(--text-muted);
+  letter-spacing: .5px;
+}
+
+.stage-nav__btns {
+  display: flex;
+  gap    : var(--space-3);
+}
+
+/* ── Stage intro block ───────────────────────────────────────────────── */
+.stage-intro {
+  background    : var(--surface-0);
+  border        : 1px solid var(--border-dim);
+  border-left   : 3px solid var(--cyan);
+  border-radius : 0 var(--r-md) var(--r-md) 0;
+  padding       : var(--space-3) var(--space-5);
+  margin-bottom : var(--space-6);
+}
+
+.stage-intro__rule {
+  font-family  : var(--font-mono);
+  font-size    : .78rem;
+  font-weight  : 700;
+  color        : var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.stage-intro__sub {
+  font-size  : .72rem;
+  color      : var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --sidebar-width: 0px; }
+
+  .sidebar {
+    transform  : translateX(-100%);
+    transition : transform var(--transition-slow);
+    z-index    : 200;
+    width      : 260px;
+  }
+
+  .sidebar--open { transform: translateX(0); }
+
+  .main-content { margin-left: 0; }
+
+  .stage-content { padding: var(--space-4); }
+}

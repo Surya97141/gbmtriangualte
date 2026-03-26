@@ -1,0 +1,784 @@
+<!-- stages/stage6-5/stage6-5.html -->
+<!-- Reference template for Stage 6.5 — Confidence Scoring -->
+<!-- stage6-5.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 6.5 — Confidence Score</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 760px;
+      margin      : 0 auto;
+    }
+
+    .stage6-5 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 24px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SCORE HERO
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s65-hero {
+      border-radius : var(--radius-lg);
+      border        : 1.5px solid;
+      padding       : 24px 20px 20px;
+      display       : flex;
+      flex-direction: column;
+      align-items   : center;
+      gap           : 16px;
+    }
+
+    .s65-hero--green  { background: var(--green-bg);  border-color: rgba(6,214,160,.35);  }
+    .s65-hero--yellow { background: var(--yellow-bg); border-color: rgba(255,209,102,.5); }
+    .s65-hero--red    { background: var(--red-bg);    border-color: rgba(230,57,70,.4);   }
+
+    /* ── Score ring ──────────────────────────────────────────────────────── */
+    .s65-ring {
+      display        : flex;
+      flex-direction : column;
+      align-items    : center;
+      gap            : 2px;
+    }
+
+    .s65-ring__score {
+      font-family : var(--font-mono);
+      font-size   : 4rem;
+      font-weight : 700;
+      line-height : 1;
+      color       : var(--ink);
+    }
+
+    .s65-ring__max {
+      font-family: var(--font-mono);
+      font-size  : .76rem;
+      color      : var(--muted);
+    }
+
+    /* ── Band info ───────────────────────────────────────────────────────── */
+    .s65-band-info {
+      display       : flex;
+      flex-direction: column;
+      align-items   : center;
+      gap           : 5px;
+      text-align    : center;
+    }
+
+    .s65-band-info__icon {
+      font-family: var(--font-mono);
+      font-size  : 1.6rem;
+      font-weight: 700;
+    }
+
+    .s65-hero--green  .s65-band-info__icon { color: var(--green); }
+    .s65-hero--yellow .s65-band-info__icon { color: #7a5a00; }
+    .s65-hero--red    .s65-band-info__icon { color: var(--red); }
+
+    .s65-band-info__label {
+      font-size  : 1rem;
+      font-weight: 700;
+      color      : var(--ink);
+    }
+
+    .s65-band-info__message {
+      font-size  : .82rem;
+      color      : var(--ink);
+      font-weight: 500;
+    }
+
+    .s65-band-info__detail {
+      font-size  : .74rem;
+      color      : var(--muted);
+      line-height: 1.5;
+      max-width  : 480px;
+    }
+
+    /* ── Threshold strip ─────────────────────────────────────────────────── */
+    .s65-thresholds {
+      display  : flex;
+      gap      : 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .s65-threshold {
+      display       : flex;
+      flex-direction: column;
+      align-items   : center;
+      gap           : 2px;
+      padding       : 5px 12px;
+      border-radius : var(--radius-sm);
+      border        : 1.5px solid var(--border);
+      background    : var(--surface);
+      opacity       : .5;
+      transition    : opacity .2s;
+    }
+
+    .s65-threshold--active { opacity: 1; }
+
+    .s65-threshold--green.s65-threshold--active {
+      border-color: rgba(6,214,160,.5);
+      background  : var(--green-bg);
+    }
+
+    .s65-threshold--yellow.s65-threshold--active {
+      border-color: rgba(255,209,102,.5);
+      background  : var(--yellow-bg);
+    }
+
+    .s65-threshold--red.s65-threshold--active {
+      border-color: rgba(230,57,70,.4);
+      background  : var(--red-bg);
+    }
+
+    .s65-threshold__range {
+      font-family: var(--font-mono);
+      font-size  : .65rem;
+      color      : var(--muted);
+    }
+
+    .s65-threshold__label {
+      font-size  : .7rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       BREAKDOWN SECTION
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s65-breakdown-section {
+      display       : flex;
+      flex-direction: column;
+      gap           : 10px;
+    }
+
+    .s65-section-title {
+      display    : flex;
+      align-items: baseline;
+      gap        : 10px;
+      font-size  : .9rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s65-section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    /* ── Stage group ─────────────────────────────────────────────────────── */
+    .s65-stage-group {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      overflow      : hidden;
+    }
+
+    .s65-stage-group__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 9px 14px;
+      background     : var(--bg);
+      border-bottom  : 1px solid rgba(212,204,184,.4);
+    }
+
+    .s65-stage-group__name {
+      font-family   : var(--font-mono);
+      font-size     : .65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .s65-stage-group__subtotal {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      font-weight: 700;
+    }
+
+    .subtotal--pos { color: #028a5b; }
+    .subtotal--neg { color: var(--red); }
+
+    /* ── Breakdown rows ──────────────────────────────────────────────────── */
+    .s65-stage-group__rows {
+      display       : flex;
+      flex-direction: column;
+    }
+
+    .s65-breakdown-row {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 6px 14px;
+      border-bottom  : 1px solid rgba(212,204,184,.2);
+      transition     : background .1s;
+    }
+
+    .s65-breakdown-row:last-of-type { border-bottom: none; }
+
+    .s65-breakdown-row--earned  { background: transparent; }
+    .s65-breakdown-row--deducted{ background: rgba(230,57,70,.03); }
+
+    .s65-breakdown-row__label {
+      font-size  : .74rem;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .s65-breakdown-row__points {
+      font-family: var(--font-mono);
+      font-size  : .7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-left: 12px;
+    }
+
+    .points-pos { color: #028a5b; }
+    .points-neg { color: var(--red); }
+
+    /* ── Total row ───────────────────────────────────────────────────────── */
+    .s65-breakdown-total {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 10px 14px;
+      background     : var(--surface);
+      border         : 1.5px solid var(--border);
+      border-radius  : var(--radius-md);
+    }
+
+    .s65-total-label {
+      font-family   : var(--font-mono);
+      font-size     : .65rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .s65-total-value {
+      font-family: var(--font-mono);
+      font-size  : 1.2rem;
+      font-weight: 700;
+    }
+
+    .s65-total-value--green  { color: #028a5b; }
+    .s65-total-value--yellow { color: #7a5a00; }
+    .s65-total-value--red    { color: var(--red); }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       GATE SECTION
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s65-gate-section {
+      border-radius : var(--radius-lg);
+      border        : 1.5px solid;
+      padding       : 18px 20px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 14px;
+    }
+
+    .s65-gate-section--green  { background: var(--green-bg);  border-color: rgba(6,214,160,.35);  }
+    .s65-gate-section--yellow { background: var(--yellow-bg); border-color: rgba(255,209,102,.5); }
+    .s65-gate-section--red    { background: var(--red-bg);    border-color: rgba(230,57,70,.4);   }
+
+    /* ── Gate header ─────────────────────────────────────────────────────── */
+    .s65-gate__header {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .s65-gate__verdict {
+      font-size  : .92rem;
+      font-weight: 700;
+      color      : var(--ink);
+    }
+
+    .s65-gate__detail {
+      font-size  : .76rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Suggestions ─────────────────────────────────────────────────────── */
+    .s65-gate__suggestions {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+    }
+
+    .s65-suggestions-label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .s65-suggestion-item {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      padding    : 9px 12px;
+      background : var(--surface);
+      border     : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .s65-suggestion-item__icon {
+      font-family: var(--font-mono);
+      font-size  : .8rem;
+      color      : var(--muted);
+      flex-shrink: 0;
+      margin-top : 1px;
+    }
+
+    .s65-suggestion-item__content {
+      flex          : 1;
+      display       : flex;
+      flex-direction: column;
+      gap           : 2px;
+    }
+
+    .s65-suggestion-item__text {
+      font-size  : .78rem;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .s65-suggestion-item__stage {
+      font-size  : .68rem;
+      color      : var(--muted);
+    }
+
+    .s65-suggestion-item__pts {
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      font-weight  : 700;
+      color        : #028a5b;
+      background   : var(--green-bg);
+      border       : 1px solid rgba(6,214,160,.25);
+      padding      : 1px 7px;
+      border-radius: 4px;
+      align-self   : flex-start;
+      margin-top   : 2px;
+    }
+
+    /* ── Backtrack warning ───────────────────────────────────────────────── */
+    .s65-gate__backtrack {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 7px;
+      font-size  : .76rem;
+      color      : var(--red);
+      line-height: 1.5;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+
+    /* ── Gate buttons ────────────────────────────────────────────────────── */
+    .s65-gate-btn {
+      padding      : 11px 20px;
+      border-radius: var(--radius-md);
+      font-family  : var(--font-sans);
+      font-size    : .84rem;
+      font-weight  : 500;
+      cursor       : pointer;
+      transition   : opacity .15s, transform .1s;
+      border       : none;
+      align-self   : flex-start;
+    }
+
+    .s65-gate-btn:hover { opacity: .9; transform: translateY(-1px); }
+
+    .s65-gate-btn--primary {
+      background: var(--green);
+      color     : #fff;
+    }
+
+    .s65-gate-btn--secondary {
+      background  : var(--surface);
+      color       : var(--ink);
+      border      : 1.5px solid var(--border);
+    }
+
+    .s65-gate-btn--warning {
+      background: var(--surface);
+      color     : var(--red);
+      border    : 1.5px solid rgba(230,57,70,.4);
+    }
+
+    .s65-gate-btn--disabled {
+      opacity       : .45;
+      cursor        : not-allowed;
+      pointer-events: none;
+    }
+
+    .s65-override-btn {
+      padding     : 7px 14px;
+      border      : 1.5px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background  : transparent;
+      font-family : var(--font-sans);
+      font-size   : .72rem;
+      color       : var(--muted);
+      cursor      : pointer;
+      align-self  : flex-start;
+      transition  : border-color .15s, color .15s;
+    }
+
+    .s65-override-btn:hover {
+      border-color: var(--yellow);
+      color       : #7a5a00;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage6-5">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Confidence score — how complete is your structural analysis?
+    </div>
+    <div class="stage-intro__sub">
+      Computed from all previous stages. Must reach 75 to proceed.
+    </div>
+  </div>
+
+  <!-- SCORE HERO — HIGH ---------------------------------------------------- -->
+  <div class="s65-hero s65-hero--green" id="s65-hero">
+
+    <div class="s65-ring">
+      <div class="s65-ring__score">82</div>
+      <div class="s65-ring__max">/ 100</div>
+    </div>
+
+    <div class="s65-band-info">
+      <div class="s65-band-info__icon">✓</div>
+      <div class="s65-band-info__label">High Confidence</div>
+      <div class="s65-band-info__message">
+        Structural analysis is solid. Approach is verified. Proceed to coding.
+      </div>
+      <div class="s65-band-info__detail">
+        You have verified key properties, tested edge cases, and the
+        complexity fits. Start with the simplest correct implementation.
+      </div>
+    </div>
+
+    <div class="s65-thresholds">
+
+      <div class="s65-threshold s65-threshold--red">
+        <span class="s65-threshold__range">0–44</span>
+        <span class="s65-threshold__label">Low Confidence</span>
+      </div>
+
+      <div class="s65-threshold s65-threshold--yellow">
+        <span class="s65-threshold__range">45–74</span>
+        <span class="s65-threshold__label">Medium Confidence</span>
+      </div>
+
+      <div class="s65-threshold s65-threshold--green s65-threshold--active">
+        <span class="s65-threshold__range">75–100</span>
+        <span class="s65-threshold__label">High Confidence</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- BREAKDOWN SECTION ---------------------------------------------------- -->
+  <div class="s65-breakdown-section">
+
+    <div class="s65-section-title">
+      <span>Score breakdown by stage</span>
+      <span class="s65-section-sub">What contributed to your score</span>
+    </div>
+
+    <!-- Stage 0 group -->
+    <div class="s65-stage-group">
+      <div class="s65-stage-group__header">
+        <span class="s65-stage-group__name">Stage 0 — Complexity</span>
+        <span class="s65-stage-group__subtotal subtotal--pos">+12</span>
+      </div>
+      <div class="s65-stage-group__rows">
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Complexity budget computed</span>
+          <span class="s65-breakdown-row__points points-pos">+5</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Infeasible classes eliminated</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Memory feasibility checked</span>
+          <span class="s65-breakdown-row__points points-pos">+3</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 3 group -->
+    <div class="s65-stage-group">
+      <div class="s65-stage-group__header">
+        <span class="s65-stage-group__name">Stage 3 — Structure</span>
+        <span class="s65-stage-group__subtotal subtotal--pos">+24</span>
+      </div>
+      <div class="s65-stage-group__rows">
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Order sensitivity answered</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Subproblem overlap answered</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Feasibility boundary answered</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Local optimality answered</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">State space answered</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">DP sub-type identified</span>
+          <span class="s65-breakdown-row__points points-pos">+2</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Search space answered</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--deducted">
+          <span class="s65-breakdown-row__label">Property answered as unsure</span>
+          <span class="s65-breakdown-row__points points-neg">-6</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 5 group -->
+    <div class="s65-stage-group">
+      <div class="s65-stage-group__header">
+        <span class="s65-stage-group__name">Stage 5 — Verify</span>
+        <span class="s65-stage-group__subtotal subtotal--pos">+11</span>
+      </div>
+      <div class="s65-stage-group__rows">
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Monotonicity verified</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">DP state verified</span>
+          <span class="s65-breakdown-row__points points-pos">+4</span>
+        </div>
+        <div class="s65-breakdown-row s65-breakdown-row--earned">
+          <span class="s65-breakdown-row__label">Keyword cross-check done</span>
+          <span class="s65-breakdown-row__points points-pos">+3</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Penalties group -->
+    <div class="s65-stage-group">
+      <div class="s65-stage-group__header">
+        <span class="s65-stage-group__name">Penalties</span>
+        <span class="s65-stage-group__subtotal subtotal--neg">-5</span>
+      </div>
+      <div class="s65-stage-group__rows">
+        <div class="s65-breakdown-row s65-breakdown-row--deducted">
+          <span class="s65-breakdown-row__label">Edge cases skipped</span>
+          <span class="s65-breakdown-row__points points-neg">-5</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total -->
+    <div class="s65-breakdown-total">
+      <span class="s65-total-label">Total score</span>
+      <span class="s65-total-value s65-total-value--green">82</span>
+    </div>
+
+  </div>
+
+  <!-- GATE SECTION — HIGH (proceed) --------------------------------------- -->
+  <div class="s65-gate-section s65-gate-section--green" id="s65-gate">
+
+    <div class="s65-gate__header">
+      <div class="s65-gate__verdict">High Confidence</div>
+      <div class="s65-gate__detail">
+        You have verified key properties, tested edge cases, and the complexity
+        fits. Start with the simplest correct implementation.
+      </div>
+    </div>
+
+    <button class="s65-gate-btn s65-gate-btn--primary" id="s65-gate-btn">
+      Proceed to Output →
+    </button>
+
+  </div>
+
+  <!--
+  ═══════════════════════════════════════════════════════════════════════════
+  MEDIUM CONFIDENCE EXAMPLE (score 45–74)
+  ═══════════════════════════════════════════════════════════════════════════
+
+  <div class="s65-hero s65-hero--yellow">
+    <div class="s65-ring">
+      <div class="s65-ring__score">61</div>
+      <div class="s65-ring__max">/ 100</div>
+    </div>
+    <div class="s65-band-info">
+      <div class="s65-band-info__icon">~</div>
+      <div class="s65-band-info__label">Medium Confidence</div>
+      <div class="s65-band-info__message">
+        One or more properties need verification before coding.
+      </div>
+    </div>
+    <div class="s65-thresholds">
+      <div class="s65-threshold s65-threshold--red">
+        <span class="s65-threshold__range">0–44</span>
+        <span class="s65-threshold__label">Low</span>
+      </div>
+      <div class="s65-threshold s65-threshold--yellow s65-threshold--active">
+        <span class="s65-threshold__range">45–74</span>
+        <span class="s65-threshold__label">Medium</span>
+      </div>
+      <div class="s65-threshold s65-threshold--green">
+        <span class="s65-threshold__range">75–100</span>
+        <span class="s65-threshold__label">High</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="s65-gate-section s65-gate-section--yellow">
+    <div class="s65-gate__header">
+      <div class="s65-gate__verdict">Medium Confidence</div>
+      <div class="s65-gate__detail">
+        You are close but there is at least one unverified assumption.
+        Complete the suggested verifications before writing code.
+      </div>
+    </div>
+    <div class="s65-gate__suggestions">
+      <div class="s65-suggestions-label">Complete these to boost your score:</div>
+      <div class="s65-suggestion-item">
+        <span class="s65-suggestion-item__icon">→</span>
+        <div class="s65-suggestion-item__content">
+          <div class="s65-suggestion-item__text">
+            Review universal edge cases (n=1, n=max, all-negative)
+          </div>
+          <div class="s65-suggestion-item__stage">Go to: Stage 6</div>
+          <span class="s65-suggestion-item__pts">+4 pts</span>
+        </div>
+      </div>
+      <div class="s65-suggestion-item">
+        <span class="s65-suggestion-item__icon">→</span>
+        <div class="s65-suggestion-item__content">
+          <div class="s65-suggestion-item__text">
+            Verify DP state completeness and non-redundancy
+          </div>
+          <div class="s65-suggestion-item__stage">Go to: Stage 5</div>
+          <span class="s65-suggestion-item__pts">+4 pts</span>
+        </div>
+      </div>
+    </div>
+    <button class="s65-gate-btn s65-gate-btn--secondary">
+      Verify DP state first
+    </button>
+    <button class="s65-override-btn">
+      Proceed anyway (accept risk)
+    </button>
+  </div>
+
+  ═══════════════════════════════════════════════════════════════════════════
+  LOW CONFIDENCE EXAMPLE (score 0–44)
+  ═══════════════════════════════════════════════════════════════════════════
+
+  <div class="s65-gate-section s65-gate-section--red">
+    <div class="s65-gate__header">
+      <div class="s65-gate__verdict">Low Confidence</div>
+      <div class="s65-gate__detail">
+        Too many assumptions remain unverified. Risk of WA or TLE is high.
+        Return to the suggested stage and re-analyze before coding.
+      </div>
+    </div>
+    <div class="s65-gate__backtrack">
+      <span class="watchout-icon">⚠</span>
+      Weakest area: Stage 3 — Structure.
+      Return and complete it before proceeding.
+    </div>
+    <button class="s65-gate-btn s65-gate-btn--warning s65-gate-btn--disabled">
+      Go back to Stage 3
+    </button>
+  </div>
+  -->
+
+</div><!-- /stage6-5 -->
+
+</body>
+</html>

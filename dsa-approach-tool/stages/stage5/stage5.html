@@ -1,0 +1,1254 @@
+<!-- stages/stage5/stage5.html -->
+<!-- Reference template for Stage 5 — Verification Challenges -->
+<!-- stage5.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 5 — Verification Challenges</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 820px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage5 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 24px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       TAB BAR
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage5__tab-bar {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+    }
+
+    .s5-tab {
+      display      : flex;
+      align-items  : center;
+      gap          : 6px;
+      padding      : 7px 14px;
+      background   : var(--surface);
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor       : pointer;
+      font-size    : .76rem;
+      transition   : border-color .15s, background .15s;
+      user-select  : none;
+    }
+
+    .s5-tab:hover        { border-color: var(--yellow); }
+
+    .s5-tab--active {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+      font-weight : 500;
+    }
+
+    .s5-tab--done {
+      border-color: rgba(6,214,160,.4);
+      background  : var(--green-bg);
+    }
+
+    .s5-tab--done.s5-tab--active {
+      border-color: var(--green);
+    }
+
+    .s5-tab__icon  { font-size: .9rem; }
+    .s5-tab__label { color: var(--ink); }
+
+    .s5-tab__check {
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      font-weight  : 700;
+      background   : var(--green);
+      color        : #fff;
+      width        : 16px;
+      height       : 16px;
+      border-radius: 50%;
+      display      : flex;
+      align-items  : center;
+      justify-content: center;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       PANELS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage5__panels { min-height: 0; }
+
+    .s5-panel        { display: none; }
+    .s5-panel--active{ display: block; }
+    .hidden          { display: none !important; }
+
+    /* ── Panel inner ─────────────────────────────────────────────────────── */
+    .s5-verifier-panel {
+      display       : flex;
+      flex-direction: column;
+      gap           : 16px;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 18px 20px;
+    }
+
+    /* ── Panel title ─────────────────────────────────────────────────────── */
+    .s5-panel-title {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      padding-bottom: 10px;
+      border-bottom : 1px solid rgba(212,204,184,.4);
+    }
+
+    .s5-panel-title__text {
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s5-panel-title__sub {
+      font-size  : .74rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SHARED VERIFIER COMPONENTS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    /* ── Steps ───────────────────────────────────────────────────────────── */
+    .s5-steps {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .s5-step {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      padding       : 10px 12px;
+      background    : var(--bg);
+      border-radius : var(--radius-sm);
+      border-left   : 3px solid var(--border);
+    }
+
+    .s5-step__num {
+      font-family   : var(--font-mono);
+      font-size     : .58rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .s5-step__label {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s5-step__desc {
+      font-size  : .74rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    .s5-step__example {
+      font-size    : .71rem;
+      color        : var(--ink);
+      background   : var(--blue-bg);
+      border       : 1px solid rgba(33,150,243,.15);
+      border-radius: var(--radius-sm);
+      padding      : 5px 8px;
+      line-height  : 1.5;
+      margin-top   : 2px;
+    }
+
+    .example-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    /* ── Verdict section ─────────────────────────────────────────────────── */
+    .s5-verdict-section {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+      padding       : 12px 14px;
+      background    : var(--bg);
+      border-radius : var(--radius-md);
+      border        : 1px solid var(--border);
+    }
+
+    .s5-verdict-label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s5-verdict-btns {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 8px;
+    }
+
+    /* ── Verdict buttons ─────────────────────────────────────────────────── */
+    .verdict-btn {
+      padding      : 7px 16px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--surface);
+      font-family  : var(--font-sans);
+      font-size    : .76rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .verdict-btn:hover { border-color: var(--yellow); }
+
+    .verdict-btn--green.verdict-btn--selected {
+      border-color: var(--green);
+      background  : var(--green-bg);
+      color       : #024d37;
+    }
+
+    .verdict-btn--red.verdict-btn--selected {
+      border-color: rgba(230,57,70,.5);
+      background  : var(--red-bg);
+      color       : var(--red);
+    }
+
+    .verdict-btn--yellow.verdict-btn--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+      color       : #7a5a00;
+    }
+
+    .verdict-btn--blue.verdict-btn--selected {
+      border-color: rgba(33,150,243,.5);
+      background  : var(--blue-bg);
+      color       : var(--blue);
+    }
+
+    /* ── Result cards ────────────────────────────────────────────────────── */
+    .s5-result-card {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 10px;
+      padding    : 12px 14px;
+      border-radius: var(--radius-md);
+      border     : 1.5px solid;
+    }
+
+    .s5-result-card--pass {
+      background  : var(--green-bg);
+      border-color: rgba(6,214,160,.4);
+    }
+
+    .s5-result-card--fail {
+      background  : var(--red-bg);
+      border-color: rgba(230,57,70,.4);
+    }
+
+    .s5-result-card--warn {
+      background  : var(--yellow-bg);
+      border-color: rgba(255,209,102,.4);
+    }
+
+    .s5-result-card__icon {
+      font-family: var(--font-mono);
+      font-size  : 1.2rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .s5-result-card--pass .s5-result-card__icon { color: var(--green); }
+    .s5-result-card--fail .s5-result-card__icon { color: var(--red);   }
+    .s5-result-card--warn .s5-result-card__icon { color: #7a5a00;      }
+
+    .s5-result-card__message {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .s5-result-card__recs {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      margin-top    : 6px;
+      width         : 100%;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .72rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+    .watchout-text { line-height: 1.5; }
+
+    /* ── Collapsible ─────────────────────────────────────────────────────── */
+    .collapsible {
+      border       : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow     : hidden;
+    }
+
+    .collapsible__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 7px 12px;
+      background     : var(--bg);
+      cursor         : pointer;
+      font-family    : var(--font-mono);
+      font-size      : .6rem;
+      letter-spacing : 1.5px;
+      text-transform : uppercase;
+      color          : var(--muted);
+    }
+
+    .collapsible__header:hover { background: rgba(212,204,184,.3); }
+    .collapsible__body         { padding: 10px 12px; }
+
+    /* ── Code template ───────────────────────────────────────────────────── */
+    .s5-code-template {
+      font-family: var(--font-mono);
+      font-size  : .62rem;
+      line-height: 1.7;
+      background : #1a1a2e;
+      color      : #e2e8f0;
+      padding    : 12px 14px;
+      overflow-x : auto;
+      white-space: pre;
+      margin     : 0;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Text input ──────────────────────────────────────────────────────── */
+    .s5-text-input-field {
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+    }
+
+    .s5-text-input-field__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .s5-text-input-field__input {
+      background    : var(--bg);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-sm);
+      padding       : 8px 12px;
+      font-family   : var(--font-sans);
+      font-size     : .8rem;
+      color         : var(--ink);
+      resize        : vertical;
+      outline       : none;
+      transition    : border-color .15s;
+      min-height    : 52px;
+    }
+
+    .s5-text-input-field__input:focus {
+      border-color: var(--yellow);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       GREEDY PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s5-traps-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .s5-trap-item {
+      padding      : 9px 12px;
+      background   : var(--bg);
+      border       : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display      : flex;
+      flex-direction: column;
+      gap          : 4px;
+    }
+
+    .s5-trap-item__label {
+      font-size  : .78rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s5-trap-item__trap {
+      font-size  : .72rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .s5-trap-item__test {
+      font-size  : .71rem;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .test-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 3px;
+    }
+
+    .s5-trap-item__verdict {
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      color        : var(--red);
+      background   : var(--red-bg);
+      padding      : 2px 7px;
+      border-radius: 4px;
+      align-self   : flex-start;
+      margin-top   : 2px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       MONOTONICITY PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s5-direction-select {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+    }
+
+    .s5-direction-select__label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s5-direction-select__btns {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 7px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       DP STATE PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s5-dp-checklist {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .s5-dp-check-item {
+      background    : var(--bg);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 11px 13px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+      transition    : border-color .15s;
+    }
+
+    .s5-dp-check-item--answered { border-color: rgba(33,150,243,.25); }
+
+    .s5-dp-check-item__header {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+    }
+
+    .s5-dp-check-item__label {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s5-dp-check-item__question {
+      font-size  : .74rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .s5-dp-check-item__example {
+      font-size    : .7rem;
+      color        : var(--ink);
+      background   : var(--blue-bg);
+      border       : 1px solid rgba(33,150,243,.15);
+      border-radius: var(--radius-sm);
+      padding      : 5px 8px;
+      line-height  : 1.5;
+    }
+
+    .s5-check-example-content {
+      display: inline;
+      color  : var(--muted);
+    }
+
+    .s5-dp-check-item__btns {
+      display: flex;
+      gap    : 7px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       GRAPH PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s5-graph-check {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+      padding       : 12px 14px;
+      background    : var(--bg);
+      border-radius : var(--radius-md);
+      border        : 1px solid var(--border);
+    }
+
+    .s5-graph-check__question {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s5-graph-check__why {
+      font-size  : .72rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .s5-graph-check__options {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 7px;
+    }
+
+    .s5-graph-option {
+      flex          : 1;
+      min-width     : 140px;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 9px 12px;
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s;
+    }
+
+    .s5-graph-option:hover           { border-color: var(--yellow); }
+
+    .s5-graph-option--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .s5-graph-option__label {
+      font-size  : .78rem;
+      font-weight: 500;
+      color      : var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .s5-graph-option__implication {
+      font-size  : .68rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .s5-graph-recommendation {
+      display    : flex;
+      align-items: center;
+      gap        : 8px;
+      padding    : 10px 14px;
+      background : var(--green-bg);
+      border     : 1.5px solid rgba(6,214,160,.35);
+      border-radius: var(--radius-md);
+      font-size  : .78rem;
+    }
+
+    .rec-label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .s5-graph-rec-value {
+      font-size  : .8rem;
+      color      : #028a5b;
+    }
+
+    .detail-mono {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      background : rgba(212,204,184,.3);
+      padding    : 2px 6px;
+      border-radius: 3px;
+      color      : var(--ink);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       KEYWORD PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s5-keyword-matches {
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .s5-keyword-empty {
+      font-size  : .76rem;
+      color      : var(--muted);
+      font-style : italic;
+      padding    : 8px 0;
+    }
+
+    .s5-keyword-match {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+      padding       : 7px 10px;
+      background    : var(--blue-bg);
+      border        : 1px solid rgba(33,150,243,.18);
+      border-radius : var(--radius-sm);
+    }
+
+    .s5-keyword-match__kws {
+      font-family: var(--font-mono);
+      font-size  : .68rem;
+      color      : var(--blue);
+      font-weight: 700;
+    }
+
+    .s5-keyword-match__note {
+      font-size  : .72rem;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .s5-keyword-mismatch {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 7px;
+      padding    : 8px 10px;
+      background : var(--yellow-bg);
+      border     : 1.5px solid rgba(255,209,102,.4);
+      border-radius: var(--radius-sm);
+      font-size  : .74rem;
+      color      : #7a5a00;
+      line-height: 1.5;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SUMMARY
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage5__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .stage5__section-title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 10px;
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 80px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .verdict-pass { color: #028a5b; }
+    .verdict-fail { color: var(--red); }
+    .verdict-warn { color: #7a5a00; }
+
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage5">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Verify before coding — structural analysis is not enough.
+    </div>
+    <div class="stage-intro__sub">
+      3 verifiers active based on your candidate directions.
+    </div>
+  </div>
+
+  <!-- TAB BAR -------------------------------------------------------------- -->
+  <div class="stage5__tab-bar" id="stage5-tab-bar">
+
+    <div class="s5-tab s5-tab--active s5-tab--done" data-verifier-id="greedy">
+      <span class="s5-tab__icon">⚡</span>
+      <span class="s5-tab__label">Greedy counter-example test</span>
+      <span class="s5-tab__check">✓</span>
+    </div>
+
+    <div class="s5-tab" data-verifier-id="monotonicity">
+      <span class="s5-tab__icon">↗</span>
+      <span class="s5-tab__label">Monotonicity verification</span>
+    </div>
+
+    <div class="s5-tab" data-verifier-id="dp_state">
+      <span class="s5-tab__icon">⬡</span>
+      <span class="s5-tab__label">DP state verification</span>
+    </div>
+
+    <div class="s5-tab" data-verifier-id="keyword">
+      <span class="s5-tab__icon">🔍</span>
+      <span class="s5-tab__label">Keyword cross-check</span>
+    </div>
+
+  </div>
+
+  <!-- PANELS --------------------------------------------------------------- -->
+  <div class="stage5__panels" id="stage5-panels">
+
+    <!-- GREEDY PANEL (active) -->
+    <div class="s5-panel s5-panel--active" id="panel-greedy">
+      <div class="s5-verifier-panel">
+
+        <div class="s5-panel-title">
+          <span class="s5-panel-title__text">Greedy Counter-Example Test</span>
+          <span class="s5-panel-title__sub">
+            State the rule clearly. Try to break it with a small adversarial input.
+          </span>
+        </div>
+
+        <!-- Rule input -->
+        <div class="s5-text-input-field">
+          <label class="s5-text-input-field__label" for="greedy-rule-input">
+            State your greedy rule in one sentence:
+          </label>
+          <textarea
+            id          = "greedy-rule-input"
+            class       = "s5-text-input-field__input"
+            placeholder = "At each step, I always pick ___"
+            rows        = "2"
+          >Always pick the interval with the earliest end time</textarea>
+        </div>
+
+        <!-- Steps -->
+        <div class="s5-steps">
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 2</div>
+            <div class="s5-step__label">Construct adversarial input</div>
+            <div class="s5-step__desc">
+              Build a small input (3-5 elements) designed to break the greedy rule.
+            </div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              For coin change [1,3,4], try amount=6.
+              Greedy picks 4+1+1=3 coins. Optimal is 3+3=2 coins.
+            </div>
+          </div>
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 3</div>
+            <div class="s5-step__label">Apply greedy rule</div>
+            <div class="s5-step__desc">
+              Walk through greedy step by step on your adversarial input.
+            </div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              Greedy result: picks [A,B] → total = 7
+            </div>
+          </div>
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 4</div>
+            <div class="s5-step__label">Apply brute force</div>
+            <div class="s5-step__desc">
+              Enumerate all possibilities for the small input. Find true optimal.
+            </div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              Brute force: picks [C,D] → total = 5 (better!)
+            </div>
+          </div>
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 5</div>
+            <div class="s5-step__label">Compare results</div>
+            <div class="s5-step__desc">
+              If greedy ≠ optimal → counter-example found → use DP.
+            </div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              7 ≠ 5 → Counter-example found → Greedy FAILS
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Verdict -->
+        <div class="s5-verdict-section">
+          <div class="s5-verdict-label">After testing — what did you find?</div>
+          <div class="s5-verdict-btns">
+            <button class="verdict-btn verdict-btn--red">
+              ✗ Counter-example FOUND — greedy fails
+            </button>
+            <button class="verdict-btn verdict-btn--green verdict-btn--selected">
+              ✓ No counter-example found — greedy holds
+            </button>
+          </div>
+        </div>
+
+        <!-- Result card -->
+        <div class="s5-result-card s5-result-card--pass">
+          <div class="s5-result-card__icon">✓</div>
+          <div class="s5-result-card__message">
+            Greedy likely correct — proceed but verify formally if possible
+          </div>
+        </div>
+
+        <!-- Common traps collapsible -->
+        <div class="collapsible">
+          <div class="collapsible__header">
+            <span>Common greedy traps</span>
+            <span>▼</span>
+          </div>
+          <div class="collapsible__body" style="display:none">
+            <div class="s5-traps-list">
+
+              <div class="s5-trap-item">
+                <div class="s5-trap-item__label">Coin change with arbitrary denominations</div>
+                <div class="s5-trap-item__trap">
+                  Greedy works for canonical coins but fails for arbitrary ones
+                </div>
+                <div class="s5-trap-item__test">
+                  <span class="test-label">Test:</span>
+                  coins=[1,3,4], amount=6. Greedy: 4+1+1=3. Optimal: 3+3=2.
+                </div>
+                <div class="s5-trap-item__verdict">Greedy FAILS — use DP</div>
+              </div>
+
+              <div class="s5-trap-item">
+                <div class="s5-trap-item__label">0/1 Knapsack</div>
+                <div class="s5-trap-item__trap">
+                  Greedy by value/weight ratio works for fractional but not 0/1
+                </div>
+                <div class="s5-trap-item__test">
+                  <span class="test-label">Test:</span>
+                  W=10, items=[(6,10),(5,6),(5,6)]. Greedy misses two (5,6).
+                </div>
+                <div class="s5-trap-item__verdict">Greedy FAILS for 0/1 — use DP</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MONOTONICITY PANEL (hidden) -->
+    <div class="s5-panel hidden" id="panel-monotonicity">
+      <div class="s5-verifier-panel">
+
+        <div class="s5-panel-title">
+          <span class="s5-panel-title__text">Monotonicity Verification</span>
+          <span class="s5-panel-title__sub">
+            Confirm isFeasible(X) is monotone before writing Binary Search.
+          </span>
+        </div>
+
+        <div class="s5-steps">
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 1</div>
+            <div class="s5-step__label">Define the answer space</div>
+            <div class="s5-step__desc">What are the min and max possible answer values?</div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              Koko bananas: speed ∈ [1, max(piles)]
+            </div>
+          </div>
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 2</div>
+            <div class="s5-step__label">Write isFeasible(X) clearly</div>
+            <div class="s5-step__desc">Given answer X — can we achieve X or better?</div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              isFeasible(speed) = can eat all piles in H hours?
+            </div>
+          </div>
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 3</div>
+            <div class="s5-step__label">Verify monotonicity — increasing</div>
+            <div class="s5-step__desc">
+              Pick X where feasible=true. Verify X+1 also feasible.
+            </div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              Speed=4 works → Speed=5 also works ✓
+            </div>
+          </div>
+
+          <div class="s5-step">
+            <div class="s5-step__num">Step 4</div>
+            <div class="s5-step__label">Verify monotonicity — decreasing</div>
+            <div class="s5-step__desc">
+              Pick X where feasible=false. Verify X-1 also false.
+            </div>
+            <div class="s5-step__example">
+              <span class="example-label">e.g.</span>
+              Speed=1 fails → Speed=0 also fails ✓
+            </div>
+          </div>
+
+        </div>
+
+        <div class="s5-direction-select">
+          <div class="s5-direction-select__label">Are you minimizing or maximizing?</div>
+          <div class="s5-direction-select__btns">
+            <button class="verdict-btn verdict-btn--blue verdict-btn--selected">
+              Minimize X such that feasible
+            </button>
+            <button class="verdict-btn verdict-btn--blue">
+              Maximize X such that feasible
+            </button>
+          </div>
+        </div>
+
+        <div class="s5-verdict-section">
+          <div class="s5-verdict-label">Is isFeasible(X) monotone?</div>
+          <div class="s5-verdict-btns">
+            <button class="verdict-btn verdict-btn--green verdict-btn--selected">
+              ✓ Yes — monotone, Binary Search is valid
+            </button>
+            <button class="verdict-btn verdict-btn--red">
+              ✗ No — NOT monotone, Binary Search will fail
+            </button>
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <div class="collapsible__header">
+            <span>Binary Search template</span>
+            <span>▼</span>
+          </div>
+          <div class="collapsible__body">
+            <pre class="s5-code-template">int lo = MIN_VAL, hi = MAX_VAL;
+while (lo < hi) {
+  int mid = lo + (hi - lo) / 2;
+  if (isFeasible(mid)) hi = mid;
+  else                 lo = mid + 1;
+}
+return lo;</pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DP STATE PANEL (hidden) -->
+    <div class="s5-panel hidden" id="panel-dp_state">
+      <div class="s5-verifier-panel">
+
+        <div class="s5-panel-title">
+          <span class="s5-panel-title__text">DP State Verification</span>
+          <span class="s5-panel-title__sub">
+            Confirm state is complete and non-redundant.
+          </span>
+        </div>
+
+        <div class="s5-dp-checklist">
+
+          <!-- Passed check -->
+          <div class="s5-dp-check-item s5-dp-check-item--answered">
+            <div class="s5-dp-check-item__header">
+              <div class="s5-dp-check-item__label">Completeness check</div>
+              <div class="s5-dp-check-item__question">
+                Given ONLY the state variables — can you determine the optimal next step
+                without looking back?
+              </div>
+            </div>
+            <div class="s5-dp-check-item__example">
+              <span class="example-label">Example:</span>
+              <span class="s5-check-example-content">
+                Stock with cooldown: dp[i] alone is incomplete → dp[i][mode] needed
+              </span>
+            </div>
+            <div class="s5-dp-check-item__btns">
+              <button class="verdict-btn verdict-btn--green verdict-btn--selected">✓ Pass</button>
+              <button class="verdict-btn verdict-btn--red">✗ Issue found</button>
+            </div>
+          </div>
+
+          <!-- Failed check -->
+          <div class="s5-dp-check-item s5-dp-check-item--answered">
+            <div class="s5-dp-check-item__header">
+              <div class="s5-dp-check-item__label">Non-redundancy check</div>
+              <div class="s5-dp-check-item__question">
+                Is any state dimension derivable from other dimensions?
+              </div>
+            </div>
+            <div class="s5-dp-check-item__example">
+              <span class="example-label">Example:</span>
+              <span class="s5-check-example-content">
+                dp[i][j][sum] where sum = prefix[j]-prefix[i] → sum is redundant
+              </span>
+            </div>
+            <div class="s5-dp-check-item__btns">
+              <button class="verdict-btn verdict-btn--green">✓ Pass</button>
+              <button class="verdict-btn verdict-btn--red verdict-btn--selected">✗ Issue found</button>
+            </div>
+          </div>
+
+          <!-- Unanswered -->
+          <div class="s5-dp-check-item">
+            <div class="s5-dp-check-item__header">
+              <div class="s5-dp-check-item__label">Base case check</div>
+              <div class="s5-dp-check-item__question">
+                Are all base cases correctly initialized before the DP loop?
+              </div>
+            </div>
+            <div class="s5-dp-check-item__example">
+              <span class="example-label">Example:</span>
+              <span class="s5-check-example-content">
+                LCS: dp[i][0] = 0 for all i (empty s2 prefix → LCS = 0)
+              </span>
+            </div>
+            <div class="s5-dp-check-item__btns">
+              <button class="verdict-btn verdict-btn--green">✓ Pass</button>
+              <button class="verdict-btn verdict-btn--red">✗ Issue found</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Result card with recommendations -->
+        <div class="s5-result-card s5-result-card--warn">
+          <div class="s5-result-card__icon">~</div>
+          <div class="s5-result-card__message">
+            1 check failed — review before coding
+          </div>
+          <div class="s5-result-card__recs">
+            <div class="watchout-row">
+              <span class="watchout-icon">→</span>
+              <span class="watchout-text">
+                Remove the redundant dimension — saves memory and time
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- KEYWORD PANEL (hidden) -->
+    <div class="s5-panel hidden" id="panel-keyword">
+      <div class="s5-verifier-panel">
+
+        <div class="s5-panel-title">
+          <span class="s5-panel-title__text">Keyword Cross-Check</span>
+          <span class="s5-panel-title__sub">
+            Warning only — takes 30 seconds. Catches late misidentifications.
+          </span>
+        </div>
+
+        <div class="s5-text-input-field">
+          <label class="s5-text-input-field__label" for="keyword-text-input">
+            Paste key phrases from the problem statement:
+          </label>
+          <textarea
+            id          = "keyword-text-input"
+            class       = "s5-text-input-field__input"
+            placeholder = "e.g. minimum path, connected components, subarray sum..."
+            rows        = "2"
+          >minimum steps, connected nodes, shortest path</textarea>
+        </div>
+
+        <div class="s5-keyword-matches" id="keyword-matches-region">
+
+          <div class="s5-keyword-match">
+            <div class="s5-keyword-match__kws">minimum, shortest path</div>
+            <div class="s5-keyword-match__note">
+              Path problem → BFS (unweighted) or Dijkstra (weighted)
+            </div>
+          </div>
+
+          <div class="s5-keyword-match">
+            <div class="s5-keyword-match__kws">connected</div>
+            <div class="s5-keyword-match__note">
+              Connectivity → BFS/DFS or Union Find
+            </div>
+          </div>
+
+          <div class="s5-keyword-mismatch">
+            <span class="watchout-icon">⚠</span>
+            Problem says "shortest path" but direction is DP —
+            verify this is not a graph problem
+          </div>
+
+        </div>
+
+        <div class="s5-verdict-section">
+          <div class="s5-verdict-label">Are you satisfied language matches your approach?</div>
+          <div class="s5-verdict-btns">
+            <button class="verdict-btn verdict-btn--green">
+              ✓ Yes — language and approach align
+            </button>
+            <button class="verdict-btn verdict-btn--yellow verdict-btn--selected">
+              ⚠ Possible mismatch — need to reconsider
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage5__summary" id="stage5-summary">
+
+    <div class="stage5__section-title">Verification summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Verified:</span>
+      <span class="summary-row__value">2 / 4 verifiers completed</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Greedy:</span>
+      <span class="summary-row__value verdict-pass">
+        ✓ No counter-example — greedy holds
+      </span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Keywords:</span>
+      <span class="summary-row__value verdict-warn">
+        ⚠ Possible mismatch detected
+      </span>
+    </div>
+
+  </div>
+
+</div><!-- /stage5 -->
+
+</body>
+</html>

@@ -1,0 +1,916 @@
+<!-- stages/stage6/stage6.html -->
+<!-- Reference template for Stage 6 — Edge Case Generator -->
+<!-- stage6.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 6 — Edge Case Generator</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 820px;
+      margin      : 0 auto;
+    }
+
+    .stage6 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 24px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Progress bar ────────────────────────────────────────────────────── */
+    .stage6__progress-bar {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .stage6__progress-bar__header {
+      display        : flex;
+      justify-content: space-between;
+      align-items    : center;
+    }
+
+    .stage6__progress-label {
+      font-size  : .78rem;
+      color      : var(--ink);
+      font-weight: 500;
+    }
+
+    .stage6__progress-pct {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      color      : var(--muted);
+    }
+
+    .stage6__progress-track {
+      height       : 6px;
+      background   : var(--bg);
+      border-radius: 3px;
+      overflow     : hidden;
+    }
+
+    .stage6__progress-fill {
+      height        : 100%;
+      background    : var(--green);
+      border-radius : 3px;
+      transition    : width .3s ease;
+    }
+
+    /* ── Tab bar ─────────────────────────────────────────────────────────── */
+    .stage6__tab-bar {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+    }
+
+    .s6-tab {
+      display      : flex;
+      align-items  : center;
+      gap          : 6px;
+      padding      : 6px 14px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      cursor       : pointer;
+      background   : var(--surface);
+      font-size    : .76rem;
+      transition   : border-color .15s, background .15s;
+      user-select  : none;
+    }
+
+    .s6-tab:hover { border-color: var(--yellow); }
+
+    .s6-tab--active {
+      font-weight : 500;
+      background  : var(--yellow-bg);
+      border-color: var(--yellow);
+    }
+
+    .s6-tab__label { color: var(--ink); }
+
+    .s6-tab__count {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      background   : var(--bg);
+      color        : var(--muted);
+      padding      : 1px 6px;
+      border-radius: 10px;
+      border       : 1px solid var(--border);
+    }
+
+    /* Tab color accents */
+    .s6-tab--red.s6-tab--active    { border-color: rgba(230,57,70,.5);   background: var(--red-bg);  }
+    .s6-tab--yellow.s6-tab--active { border-color: var(--yellow);        background: var(--yellow-bg); }
+    .s6-tab--blue.s6-tab--active   { border-color: rgba(33,150,243,.5);  background: var(--blue-bg); }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       CASE CARDS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage6__case-panel {
+      display       : flex;
+      flex-direction: column;
+      gap           : 10px;
+    }
+
+    .s6-case-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 14px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 10px;
+      transition    : border-color .2s, background .2s;
+    }
+
+    /* Priority left border accent */
+    .s6-case-card--critical { border-left: 4px solid var(--red); }
+    .s6-case-card--high     { border-left: 4px solid var(--yellow); }
+    .s6-case-card--medium   { border-left: 4px solid var(--blue); }
+
+    .s6-case-card--done {
+      background  : var(--green-bg);
+      border-color: rgba(6,214,160,.3);
+    }
+
+    .s6-case-card--done.s6-case-card--critical { border-left-color: var(--green); }
+    .s6-case-card--done.s6-case-card--high     { border-left-color: var(--green); }
+
+    /* ── Card header ─────────────────────────────────────────────────────── */
+    .s6-case-card__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      gap            : 8px;
+    }
+
+    .s6-case-card__header-left {
+      display    : flex;
+      align-items: center;
+      gap        : 8px;
+    }
+
+    .s6-priority-dot {
+      width        : 8px;
+      height       : 8px;
+      border-radius: 50%;
+      flex-shrink  : 0;
+    }
+
+    .s6-priority-dot--critical { background: var(--red); }
+    .s6-priority-dot--high     { background: var(--yellow); }
+    .s6-priority-dot--medium   { background: var(--blue); }
+
+    .s6-case-card__label {
+      font-size  : .86rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s6-case-card__done-badge {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      font-weight  : 700;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      border       : 1px solid rgba(6,214,160,.3);
+      padding      : 2px 8px;
+      border-radius: 4px;
+      white-space  : nowrap;
+    }
+
+    /* ── Card body sections ──────────────────────────────────────────────── */
+    .s6-case-card__why {
+      font-size  : .76rem;
+      color      : var(--muted);
+      line-height: 1.6;
+    }
+
+    .s6-case-card__check {
+      font-size  : .76rem;
+      color      : var(--ink);
+      line-height: 1.5;
+      padding    : 7px 10px;
+      background : var(--blue-bg);
+      border     : 1px solid rgba(33,150,243,.15);
+      border-radius: var(--radius-sm);
+    }
+
+    .s6-check-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      color         : var(--blue);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    .s6-case-card__failure {
+      font-size  : .74rem;
+      color      : var(--ink);
+      line-height: 1.5;
+      padding    : 6px 10px;
+      background : var(--red-bg);
+      border     : 1px solid rgba(230,57,70,.15);
+      border-radius: var(--radius-sm);
+    }
+
+    .s6-failure-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      color         : var(--red);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    /* ── Collapsible fix ─────────────────────────────────────────────────── */
+    .collapsible {
+      border       : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow     : hidden;
+    }
+
+    .collapsible__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 6px 10px;
+      background     : var(--bg);
+      cursor         : pointer;
+      font-family    : var(--font-mono);
+      font-size      : .6rem;
+      letter-spacing : 1.5px;
+      text-transform : uppercase;
+      color          : var(--muted);
+    }
+
+    .collapsible__header:hover { background: rgba(212,204,184,.3); }
+    .collapsible__body         { padding: 8px 10px; }
+
+    .s6-fix-content {
+      font-size  : .74rem;
+      color      : var(--ink);
+      line-height: 1.6;
+    }
+
+    /* ── Test input / expected ───────────────────────────────────────────── */
+    .s6-case-card__test {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .s6-test-row {
+      font-size  : .73rem;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .s6-test-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    .detail-mono {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : rgba(212,204,184,.3);
+      padding      : 1px 5px;
+      border-radius: 3px;
+      color        : var(--ink);
+    }
+
+    /* ── Examples ────────────────────────────────────────────────────────── */
+    .s6-case-examples {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+    }
+
+    .s6-case-example {
+      font-size  : .7rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .s6-ex-problem { color: var(--ink);   }
+    .s6-ex-expected{ color: #028a5b; font-weight: 500; }
+
+    /* ── Acknowledge button ──────────────────────────────────────────────── */
+    .s6-ack-btn {
+      align-self   : flex-start;
+      padding      : 6px 14px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--bg);
+      font-family  : var(--font-sans);
+      font-size    : .74rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s, color .15s;
+      color        : var(--ink);
+    }
+
+    .s6-ack-btn:hover {
+      border-color: var(--green);
+      background  : var(--green-bg);
+      color       : #028a5b;
+    }
+
+    .s6-ack-btn--done {
+      border-color: var(--green);
+      background  : var(--green-bg);
+      color       : #028a5b;
+      font-weight : 500;
+    }
+
+    /* ── Empty state ─────────────────────────────────────────────────────── */
+    .s6-empty {
+      font-size  : .78rem;
+      color      : var(--muted);
+      font-style : italic;
+      padding    : 12px 0;
+      text-align : center;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       CUSTOM CASES
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage6__custom-section {
+      display       : flex;
+      flex-direction: column;
+      gap           : 10px;
+    }
+
+    .stage6__section-title {
+      display    : flex;
+      align-items: baseline;
+      gap        : 10px;
+      font-size  : .88rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .stage6__section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .stage6__custom-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .s6-custom-case-row {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      gap            : 10px;
+      padding        : 8px 12px;
+      background     : var(--surface);
+      border         : 1px solid var(--border);
+      border-radius  : var(--radius-sm);
+    }
+
+    .s6-custom-case-row__text {
+      font-size  : .76rem;
+      color      : var(--ink);
+      flex       : 1;
+      line-height: 1.4;
+    }
+
+    .s6-custom-remove-btn {
+      background   : transparent;
+      border       : none;
+      color        : var(--muted);
+      font-size    : 1rem;
+      cursor       : pointer;
+      padding      : 0 4px;
+      flex-shrink  : 0;
+      transition   : color .15s;
+    }
+
+    .s6-custom-remove-btn:hover { color: var(--red); }
+
+    .s6-add-custom-form {
+      display    : flex;
+      gap        : 8px;
+      align-items: flex-start;
+    }
+
+    .s6-custom-input {
+      flex          : 1;
+      background    : var(--bg);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-sm);
+      padding       : 8px 12px;
+      font-family   : var(--font-sans);
+      font-size     : .78rem;
+      color         : var(--ink);
+      resize        : vertical;
+      outline       : none;
+      transition    : border-color .15s;
+      min-height    : 44px;
+    }
+
+    .s6-custom-input:focus { border-color: var(--yellow); }
+
+    .s6-add-custom-btn {
+      padding      : 8px 14px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--surface);
+      font-family  : var(--font-sans);
+      font-size    : .74rem;
+      cursor       : pointer;
+      white-space  : nowrap;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .s6-add-custom-btn:hover {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SUMMARY
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage6__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 72px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .verdict-pass { color: #028a5b; }
+    .verdict-warn { color: #7a5a00; }
+
+    .summary-warning {
+      display      : flex;
+      align-items  : flex-start;
+      gap          : 7px;
+      font-size    : .74rem;
+      color        : #7a5a00;
+      margin-top   : 10px;
+      padding      : 8px 10px;
+      background   : var(--yellow-bg);
+      border       : 1px solid rgba(255,209,102,.3);
+      border-radius: var(--radius-sm);
+      line-height  : 1.5;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage6">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Test edge cases before coding — not after getting WA.
+    </div>
+    <div class="stage-intro__sub">
+      14 edge cases generated for your input type. 4 critical.
+    </div>
+  </div>
+
+  <!-- PROGRESS BAR --------------------------------------------------------- -->
+  <div class="stage6__progress-bar">
+    <div class="stage6__progress-bar__header">
+      <span class="stage6__progress-label">6 / 14 cases reviewed</span>
+      <span class="stage6__progress-pct">43%</span>
+    </div>
+    <div class="stage6__progress-track">
+      <div class="stage6__progress-fill" style="width: 43%"></div>
+    </div>
+  </div>
+
+  <!-- TAB BAR -------------------------------------------------------------- -->
+  <div class="stage6__tab-bar" id="stage6-tab-bar">
+
+    <div class="s6-tab s6-tab--red s6-tab--active" data-tab-id="critical">
+      <span class="s6-tab__label">Critical</span>
+      <span class="s6-tab__count">4</span>
+    </div>
+
+    <div class="s6-tab s6-tab--yellow" data-tab-id="high">
+      <span class="s6-tab__label">High</span>
+      <span class="s6-tab__count">7</span>
+    </div>
+
+    <div class="s6-tab s6-tab--blue" data-tab-id="medium">
+      <span class="s6-tab__label">Medium</span>
+      <span class="s6-tab__count">3</span>
+    </div>
+
+    <div class="s6-tab" data-tab-id="all">
+      <span class="s6-tab__label">All cases</span>
+      <span class="s6-tab__count">14</span>
+    </div>
+
+  </div>
+
+  <!-- CASE PANEL ----------------------------------------------------------- -->
+  <div class="stage6__case-panel" id="stage6-case-panel">
+
+    <!-- Critical case — reviewed -->
+    <div class="s6-case-card s6-case-card--critical s6-case-card--done"
+         id="case-card-uc_n1">
+
+      <div class="s6-case-card__header">
+        <div class="s6-case-card__header-left">
+          <span class="s6-priority-dot s6-priority-dot--critical"></span>
+          <div class="s6-case-card__label">n = 1 (single element)</div>
+        </div>
+        <span class="s6-case-card__done-badge">✓ Reviewed</span>
+      </div>
+
+      <div class="s6-case-card__why">
+        Most algorithms assume at least 2 elements. Single element breaks loop
+        logic, comparisons, pair-finding, and most base cases.
+      </div>
+
+      <div class="s6-case-card__check">
+        <span class="s6-check-label">Check:</span>
+        Does your solution return the correct answer when the input has
+        exactly one element?
+      </div>
+
+      <div class="s6-case-card__failure">
+        <span class="s6-failure-label">Common failure:</span>
+        Loop runs 0 times → returns uninitialized variable.
+        Off-by-one in loop bounds.
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Fix</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <div class="s6-fix-content">
+            Initialize result with a[0] (first element) or INT_MIN.
+            Handle n=1 as explicit base case before main loop.
+          </div>
+        </div>
+      </div>
+
+      <div class="s6-case-card__test">
+        <div class="s6-test-row">
+          <span class="s6-test-label">Test:</span>
+          <span class="detail-mono">Input: [5]</span>
+        </div>
+        <div class="s6-test-row">
+          <span class="s6-test-label">Expected:</span>
+          Max subarray sum = 5 (not 0)
+        </div>
+      </div>
+
+      <button class="s6-ack-btn s6-ack-btn--done">✓ Reviewed</button>
+
+    </div>
+
+    <!-- Critical case — unreviewed -->
+    <div class="s6-case-card s6-case-card--critical"
+         id="case-card-ac_all_negative">
+
+      <div class="s6-case-card__header">
+        <div class="s6-case-card__header-left">
+          <span class="s6-priority-dot s6-priority-dot--critical"></span>
+          <div class="s6-case-card__label">All elements negative</div>
+        </div>
+      </div>
+
+      <div class="s6-case-card__why">
+        Initializing result with 0 instead of INT_MIN silently gives wrong
+        answer. Maximum subarray should be the least-negative element.
+      </div>
+
+      <div class="s6-case-card__check">
+        <span class="s6-check-label">Check:</span>
+        Does your solution work when every element is negative?
+      </div>
+
+      <div class="s6-case-card__failure">
+        <span class="s6-failure-label">Common failure:</span>
+        int maxSum = 0 → returns 0 instead of -1 (max of [-5,-3,-1]).
+        Must initialize with a[0] or INT_MIN.
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Fix</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <div class="s6-fix-content">
+            Initialize result with a[0] (first element) or INT_MIN,
+            never 0 when all values may be negative.
+          </div>
+        </div>
+      </div>
+
+      <div class="s6-case-card__test">
+        <div class="s6-test-row">
+          <span class="s6-test-label">Test:</span>
+          <span class="detail-mono">[-5, -3, -1, -4]</span>
+        </div>
+        <div class="s6-test-row">
+          <span class="s6-test-label">Expected:</span>
+          Max subarray = -1 (not 0)
+        </div>
+      </div>
+
+      <button class="s6-ack-btn">Mark as reviewed</button>
+
+    </div>
+
+    <!-- Critical case — overflow -->
+    <div class="s6-case-card s6-case-card--critical"
+         id="case-card-ac_overflow_product">
+
+      <div class="s6-case-card__header">
+        <div class="s6-case-card__header-left">
+          <span class="s6-priority-dot s6-priority-dot--critical"></span>
+          <div class="s6-case-card__label">
+            Values that overflow on multiplication
+          </div>
+        </div>
+      </div>
+
+      <div class="s6-case-card__why">
+        Two values each up to 10^5 multiplied = 10^10 which exceeds int max
+        (2.1×10^9). Silent overflow gives wrong negative answer.
+      </div>
+
+      <div class="s6-case-card__check">
+        <span class="s6-check-label">Check:</span>
+        Can any two elements multiplied together exceed INT_MAX?
+      </div>
+
+      <div class="s6-case-card__failure">
+        <span class="s6-failure-label">Common failure:</span>
+        int a=100000, b=100000; int c = a*b; → c = -727379968 (overflow).
+        No compiler warning by default.
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Fix</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <div class="s6-fix-content">
+            Cast before multiply: long long c = (long long)a * b.
+            Enable -fsanitize=undefined to catch overflow in testing.
+          </div>
+        </div>
+      </div>
+
+      <div class="s6-case-card__test">
+        <div class="s6-test-row">
+          <span class="s6-test-label">Test:</span>
+          <span class="detail-mono">a=100000, b=100000</span>
+        </div>
+        <div class="s6-test-row">
+          <span class="s6-test-label">Expected:</span>
+          Product = 10^10 stored in long long
+        </div>
+      </div>
+
+      <div class="s6-case-examples">
+        <div class="s6-case-example">
+          <span class="detail-mono">[50000, 50000]</span>
+          <span class="s6-ex-problem"> — product subarray</span>
+          <span class="s6-ex-expected"> → use long long</span>
+        </div>
+      </div>
+
+      <button class="s6-ack-btn">Mark as reviewed</button>
+
+    </div>
+
+    <!-- High priority case -->
+    <div class="s6-case-card s6-case-card--high"
+         id="case-card-sc_empty">
+
+      <div class="s6-case-card__header">
+        <div class="s6-case-card__header-left">
+          <span class="s6-priority-dot s6-priority-dot--high"></span>
+          <div class="s6-case-card__label">Empty string ""</div>
+        </div>
+      </div>
+
+      <div class="s6-case-card__why">
+        Accessing s[0] on empty string is undefined behavior in C++.
+        s.length()-1 underflows to SIZE_MAX for unsigned types.
+      </div>
+
+      <div class="s6-case-card__check">
+        <span class="s6-check-label">Check:</span>
+        Does your solution handle empty string input without crashing?
+      </div>
+
+      <div class="s6-case-card__failure">
+        <span class="s6-failure-label">Common failure:</span>
+        s[0] access crash. s.length()-1 = SIZE_MAX when length=0 (unsigned underflow).
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Fix</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <div class="s6-fix-content">
+            Always check if (s.empty()) return [base_case] before processing.
+          </div>
+        </div>
+      </div>
+
+      <div class="s6-case-card__test">
+        <div class="s6-test-row">
+          <span class="s6-test-label">Test:</span>
+          <span class="detail-mono">s = ""</span>
+        </div>
+        <div class="s6-test-row">
+          <span class="s6-test-label">Expected:</span>
+          Problem-dependent base case, no crash
+        </div>
+      </div>
+
+      <button class="s6-ack-btn">Mark as reviewed</button>
+
+    </div>
+
+  </div>
+
+  <!-- CUSTOM CASES --------------------------------------------------------- -->
+  <div class="stage6__custom-section" id="custom-section">
+
+    <div class="stage6__section-title">
+      <span>Custom edge cases</span>
+      <span class="stage6__section-sub">Add problem-specific cases</span>
+    </div>
+
+    <div class="stage6__custom-list" id="custom-list">
+
+      <div class="s6-custom-case-row">
+        <div class="s6-custom-case-row__text">
+          When k = n (number of groups equals number of elements) — each element in its own group
+        </div>
+        <button class="s6-custom-remove-btn">×</button>
+      </div>
+
+    </div>
+
+    <div class="s6-add-custom-form">
+      <textarea
+        id          = "custom-case-input"
+        class       = "s6-custom-input"
+        placeholder = "Describe a specific edge case for this problem..."
+        rows        = "2"
+      ></textarea>
+      <button class="s6-add-custom-btn">+ Add edge case</button>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage6__summary" id="stage6-summary">
+
+    <div class="stage6__section-title">Edge case summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Reviewed:</span>
+      <span class="summary-row__value">6 / 14 cases</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Critical:</span>
+      <span class="summary-row__value verdict-warn">
+        1 / 4 critical cases reviewed
+      </span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Custom:</span>
+      <span class="summary-row__value">1 custom case added</span>
+    </div>
+
+    <div class="summary-warning">
+      <span class="watchout-icon">⚠</span>
+      3 critical case(s) not yet reviewed — these are the most likely to cause WA
+    </div>
+
+  </div>
+
+</div><!-- /stage6 -->
+
+</body>
+</html>

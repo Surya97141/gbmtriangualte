@@ -1,0 +1,823 @@
+<!-- stages/stage1/stage1.html -->
+<!-- Reference template for Stage 1 — Input Anatomy -->
+<!-- stage1.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 1 — Input Anatomy</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 780px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage1 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 28px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Section ─────────────────────────────────────────────────────────── */
+    .stage1__section {
+      display        : flex;
+      flex-direction : column;
+      gap            : 12px;
+    }
+
+    .stage1__section-title {
+      display        : flex;
+      align-items    : baseline;
+      gap            : 10px;
+      font-size      : .92rem;
+      font-weight    : 500;
+      color          : var(--ink);
+    }
+
+    .stage1__section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .stage1__subsection-title {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 4px;
+    }
+
+    /* ── Multi-select chips ───────────────────────────────────────────────── */
+    .multi-select {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 8px;
+    }
+
+    .chip {
+      display       : flex;
+      align-items   : center;
+      gap           : 6px;
+      padding       : 7px 12px;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-sm);
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s, transform .1s;
+      user-select   : none;
+    }
+
+    .chip:hover {
+      border-color: var(--yellow);
+      transform   : translateY(-1px);
+    }
+
+    .chip--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .chip-icon {
+      font-family : var(--font-mono);
+      font-size   : .72rem;
+      color       : var(--muted);
+      flex-shrink : 0;
+    }
+
+    .chip-label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .chip-sublabel {
+      font-size  : .65rem;
+      color      : var(--muted);
+      margin-left: 2px;
+    }
+
+    /* ── Single select options ────────────────────────────────────────────── */
+    .single-select__question {
+      font-size    : .88rem;
+      color        : var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .single-select__options {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 8px;
+    }
+
+    .single-select__option {
+      flex          : 1;
+      min-width     : 160px;
+      padding       : 10px 14px;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s;
+    }
+
+    .single-select__option:hover {
+      border-color: var(--yellow);
+    }
+
+    .single-select__option.option--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .option__label {
+      display    : block;
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .option__sublabel {
+      display  : block;
+      font-size: .68rem;
+      color    : var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Example cards ───────────────────────────────────────────────────── */
+    .examples-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap                  : 10px;
+    }
+
+    .example-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .example-card__header {
+      display    : flex;
+      align-items: center;
+      gap        : 8px;
+    }
+
+    .example-card__icon {
+      font-family : var(--font-mono);
+      font-size   : .8rem;
+      color       : var(--muted);
+      flex-shrink : 0;
+    }
+
+    .example-card__label {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .example-card__examples {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+    }
+
+    .example-card__ex {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      color        : var(--muted);
+      background   : var(--bg);
+      padding      : 3px 7px;
+      border-radius: 4px;
+    }
+
+    .example-card__watchout {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .7rem;
+      color      : #7a5a00;
+      background : var(--yellow-bg);
+      border     : 1px solid rgba(255,209,102,.3);
+      border-radius: var(--radius-sm);
+      padding    : 5px 8px;
+    }
+
+    /* ── Signal implications ──────────────────────────────────────────────── */
+    .signal-impl-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .signal-impl-item {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      padding    : 8px 12px;
+      background : var(--blue-bg);
+      border     : 1.5px solid rgba(33,150,243,.2);
+      border-radius: var(--radius-sm);
+      flex-wrap  : wrap;
+    }
+
+    .signal-impl-item__label {
+      font-size  : .75rem;
+      font-weight: 500;
+      color      : var(--ink);
+      flex-shrink: 0;
+    }
+
+    .signal-impl-item__arrow {
+      font-family: var(--font-mono);
+      font-size  : .75rem;
+      color      : var(--muted);
+      flex-shrink: 0;
+    }
+
+    .signal-impl-item__impl {
+      font-size  : .75rem;
+      color      : var(--ink);
+      flex       : 1;
+    }
+
+    .signal-impl-item__warn {
+      width      : 100%;
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .7rem;
+      color      : #7a5a00;
+      margin-top : 4px;
+    }
+
+    /* ── Query implication card ───────────────────────────────────────────── */
+    .query-impl-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .query-impl-card--updates_and_queries {
+      border-color: rgba(230,57,70,.3);
+      background  : var(--red-bg);
+    }
+
+    .query-impl-card--online {
+      border-color: rgba(255,209,102,.4);
+      background  : var(--yellow-bg);
+    }
+
+    .query-impl-card--offline {
+      border-color: rgba(6,214,160,.3);
+      background  : var(--green-bg);
+    }
+
+    .query-impl-card__impl {
+      font-size  : .8rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .query-impl-card__elim {
+      display   : flex;
+      align-items: center;
+      gap       : 6px;
+      flex-wrap : wrap;
+    }
+
+    .elim-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--red);
+    }
+
+    .elim-badge {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : rgba(230,57,70,.12);
+      color        : var(--red);
+      padding      : 2px 8px;
+      border-radius: 4px;
+      text-decoration: line-through;
+    }
+
+    .query-impl-card__opens {
+      display   : flex;
+      align-items: center;
+      gap       : 6px;
+      flex-wrap : wrap;
+    }
+
+    .opens-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : #028a5b;
+    }
+
+    .opens-badge {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      padding      : 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Hybrid cards ────────────────────────────────────────────────────── */
+    .hybrid-card {
+      background    : var(--pur-bg);
+      border        : 1.5px solid rgba(192,84,252,.25);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .hybrid-card__label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .hybrid-card__impl {
+      font-size  : .76rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    .hybrid-card__tmpl {
+      display   : flex;
+      align-items: center;
+      gap       : 6px;
+      font-size : .72rem;
+    }
+
+    .tmpl-label {
+      font-family: var(--font-mono);
+      font-size  : .62rem;
+      color      : var(--muted);
+    }
+
+    .tmpl-text {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : var(--pur-bg);
+      color        : var(--pur);
+      padding      : 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Implicit hint card ───────────────────────────────────────────────── */
+    .implicit-hint-card {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 10px;
+      padding    : 10px 14px;
+      background : var(--blue-bg);
+      border     : 1.5px solid rgba(33,150,243,.25);
+      border-radius: var(--radius-md);
+    }
+
+    .implicit-hint-card__icon { font-size: .9rem; flex-shrink: 0; }
+
+    .implicit-hint-card__text {
+      font-size  : .78rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    /* ── Summary ─────────────────────────────────────────────────────────── */
+    .stage1__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .summary-row {
+      display    : flex;
+      align-items: baseline;
+      gap        : 10px;
+      padding    : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 72px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .summary-opened {
+      margin-top: 10px;
+    }
+
+    .summary-opened__title {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 6px;
+    }
+
+    .summary-opened__list {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+    }
+
+    .opened-badge {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      border       : 1px solid rgba(6,214,160,.25);
+      padding      : 3px 10px;
+      border-radius: 4px;
+    }
+
+    .summary-watchouts {
+      margin-top    : 10px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .74rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-icon {
+      flex-shrink: 0;
+      font-size  : .8rem;
+    }
+
+    .watchout-text { line-height: 1.5; }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage1">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Understand what you are given before thinking about what to do with it.
+    </div>
+    <div class="stage-intro__sub">
+      Select every input type that applies. Secondary signals narrow further.
+    </div>
+  </div>
+
+  <!-- PRIMARY INPUT -------------------------------------------------------- -->
+  <div class="stage1__section">
+
+    <div class="stage1__section-title">
+      <span>What is the primary input shape?</span>
+      <span class="stage1__section-sub">Select all that apply</span>
+    </div>
+
+    <!-- Chip grid — built by stage1.js createMultiSelect -->
+    <div class="multi-select" id="input-type-select">
+
+      <div class="chip chip--selected">
+        <span class="chip-icon">▤</span>
+        <span class="chip-label">Single array</span>
+        <span class="chip-sublabel">One sequence</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-icon">▤▤</span>
+        <span class="chip-label">Two arrays</span>
+        <span class="chip-sublabel">Merge, compare</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-icon">"..."</span>
+        <span class="chip-label">Single string</span>
+        <span class="chip-sublabel">Char sequence</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-icon">⊞</span>
+        <span class="chip-label">Matrix / Grid</span>
+        <span class="chip-sublabel">2D array</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-icon">◉—◉</span>
+        <span class="chip-label">Graph — edge list</span>
+        <span class="chip-sublabel">Explicit edges</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-icon">⬡</span>
+        <span class="chip-label">Tree — explicit</span>
+        <span class="chip-sublabel">Root or parent[]</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-icon">[——]</span>
+        <span class="chip-label">Intervals</span>
+        <span class="chip-sublabel">Start/end pairs</span>
+      </div>
+
+    </div>
+
+    <!-- Examples region — populated by stage1.js -->
+    <div class="stage1__examples" id="input-examples-region">
+      <div class="stage1__subsection-title">Examples</div>
+      <div class="examples-grid">
+
+        <div class="example-card">
+          <div class="example-card__header">
+            <span class="example-card__icon">▤</span>
+            <span class="example-card__label">Single array</span>
+          </div>
+          <div class="example-card__examples">
+            <div class="example-card__ex">nums = [1,3,2,5,4]</div>
+            <div class="example-card__ex">heights = [2,1,5,6,2,3]</div>
+          </div>
+          <div class="example-card__watchout">
+            <span class="watchout-icon">⚠</span>
+            Check if order matters before sorting
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SECONDARY SIGNALS ---------------------------------------------------- -->
+  <div class="stage1__section" id="secondary-section">
+
+    <div class="stage1__section-title">
+      <span>Secondary signals</span>
+      <span class="stage1__section-sub">Check all that apply</span>
+    </div>
+
+    <div class="multi-select" id="signal-select">
+
+      <div class="chip chip--selected">
+        <span class="chip-label">Input is already sorted</span>
+        <span class="chip-sublabel">ordering</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-label">Values in small range (0–26)</span>
+        <span class="chip-sublabel">values</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-label">Values can be negative</span>
+        <span class="chip-sublabel">values</span>
+      </div>
+
+      <div class="chip">
+        <span class="chip-label">Answer requires mod 10⁹+7</span>
+        <span class="chip-sublabel">output</span>
+      </div>
+
+    </div>
+
+    <!-- Signal implications -->
+    <div class="stage1__implications" id="signal-implications-region">
+      <div class="signal-impl-list">
+
+        <div class="signal-impl-item">
+          <span class="signal-impl-item__label">Input is already sorted</span>
+          <span class="signal-impl-item__arrow">→</span>
+          <span class="signal-impl-item__impl">
+            Binary Search and Two Pointer become directly applicable
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- QUERY TYPE ----------------------------------------------------------- -->
+  <div class="stage1__section">
+
+    <div class="stage1__section-title">
+      <span>Are there queries on top of the input?</span>
+      <span class="stage1__section-sub">Determines which structures are available</span>
+    </div>
+
+    <div class="single-select__options" id="query-type-select">
+
+      <div class="single-select__option">
+        <span class="option__label">No queries</span>
+        <span class="option__sublabel">Single computation</span>
+      </div>
+
+      <div class="single-select__option">
+        <span class="option__label">One query</span>
+        <span class="option__sublabel">q = 1</span>
+      </div>
+
+      <div class="single-select__option option--selected">
+        <span class="option__label">Multiple queries — offline</span>
+        <span class="option__sublabel">All known upfront</span>
+      </div>
+
+      <div class="single-select__option">
+        <span class="option__label">Multiple queries — online</span>
+        <span class="option__sublabel">Answer before next arrives</span>
+      </div>
+
+      <div class="single-select__option">
+        <span class="option__label">Updates AND queries both</span>
+        <span class="option__sublabel">Modify then query</span>
+      </div>
+
+    </div>
+
+    <!-- Query implication -->
+    <div class="query-impl-card query-impl-card--offline"
+         id="query-implication-region">
+      <div class="query-impl-card__impl">
+        Mo's Algorithm becomes available. Can process queries in optimal order.
+      </div>
+      <div class="query-impl-card__opens">
+        <span class="opens-label">Opens:</span>
+        <span class="opens-badge">Mo's Algorithm</span>
+        <span class="opens-badge">Sort queries + sweep</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- HYBRID SIGNALS ------------------------------------------------------- -->
+  <div class="stage1__section stage1__hybrid-section"
+       id="hybrid-section">
+
+    <div class="stage1__section-title">Combination signals</div>
+
+    <div class="hybrid-card">
+      <div class="hybrid-card__label">Two sorted arrays</div>
+      <div class="hybrid-card__impl">
+        Binary search on one while iterating the other.
+        Two Pointer merge in O(n).
+      </div>
+      <div class="hybrid-card__tmpl">
+        <span class="tmpl-label">Template hint:</span>
+        <span class="tmpl-text">Two Pointer (merge) or Binary Search on one array</span>
+      </div>
+    </div>
+
+    <div class="implicit-hint-card">
+      <span class="implicit-hint-card__icon">🔍</span>
+      <span class="implicit-hint-card__text">
+        n ≤ 20 — Bitmask DP over subsets is feasible (2²⁰ = 1M).
+      </span>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage1__summary" id="stage1-summary">
+
+    <div class="stage1__section-title">Input summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Input:</span>
+      <span class="summary-row__value">Single array</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Queries:</span>
+      <span class="summary-row__value">Multiple queries — offline</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Signals:</span>
+      <span class="summary-row__value">Input is already sorted</span>
+    </div>
+
+    <div class="summary-opened">
+      <div class="summary-opened__title">Candidate families:</div>
+      <div class="summary-opened__list">
+        <span class="opened-badge">Binary Search</span>
+        <span class="opened-badge">Two Pointer</span>
+        <span class="opened-badge">Prefix Sum</span>
+        <span class="opened-badge">Sliding Window</span>
+      </div>
+    </div>
+
+    <div class="summary-watchouts">
+      <div class="watchout-row">
+        <span class="watchout-icon">⚠</span>
+        <span class="watchout-text">
+          Check if order matters before sorting
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /stage1 -->
+
+</body>
+</html>

@@ -1,0 +1,517 @@
+{
+  "_meta": {
+    "purpose": "Auto-generate personalized edge case checklist based on input type and constraints",
+    "usage": "Stage 6 — after approach is identified, before coding",
+    "howToUse": "Select input types that match your problem. Universal cases always apply. Type-specific cases apply based on selection."
+  },
+
+  "universalCases": [
+    {
+      "id": "uc_n1",
+      "case": "n = 1 (single element)",
+      "whyItMatters": "Most algorithms assume at least 2 elements. Single element often breaks loop logic, comparisons, and base cases.",
+      "checkQuestion": "Does your solution return correct answer when input has exactly one element?",
+      "commonFailure": "Off-by-one in loop bounds. Comparing element to itself."
+    },
+    {
+      "id": "uc_n2",
+      "case": "n = 2 (minimal non-trivial)",
+      "whyItMatters": "Smallest case where relationships between elements exist. Catches swap logic, pair comparison bugs.",
+      "checkQuestion": "Does your solution handle exactly two elements correctly in all orderings?",
+      "commonFailure": "Hardcoded assumptions about having at least 3 elements."
+    },
+    {
+      "id": "uc_nmax",
+      "case": "n = MAX (maximum constraint)",
+      "whyItMatters": "Stress tests time and memory. Catches TLE and MLE that small inputs hide.",
+      "checkQuestion": "Does your solution finish within time limit at maximum n? Does memory stay within limit?",
+      "commonFailure": "Solution passes small tests but TLEs at n = 10^5 due to hidden O(n^2) loop."
+    },
+    {
+      "id": "uc_all_same",
+      "case": "All elements identical",
+      "whyItMatters": "Breaks solutions that assume distinct values. Causes issues with strict vs non-strict comparisons.",
+      "checkQuestion": "What does your solution return when all elements are the same value?",
+      "commonFailure": "Greedy or two-pointer solutions that rely on finding different elements to make progress."
+    },
+    {
+      "id": "uc_all_distinct",
+      "case": "All elements distinct",
+      "whyItMatters": "Opposite extreme from all-same. Verifies solution handles no duplicate scenario.",
+      "checkQuestion": "Does solution work correctly when no two elements share a value?",
+      "commonFailure": "Solutions that assume duplicates exist for their logic to work."
+    },
+    {
+      "id": "uc_sorted_asc",
+      "case": "Already sorted ascending",
+      "whyItMatters": "Pre-sorted input can cause worst-case behavior in some algorithms (naive quicksort). Can also simplify or break certain approaches.",
+      "checkQuestion": "Does your solution handle already-sorted input correctly and efficiently?",
+      "commonFailure": "Naive quicksort degrades to O(n^2). Greedy picks wrong element when all are in order."
+    },
+    {
+      "id": "uc_sorted_desc",
+      "case": "Already sorted descending",
+      "whyItMatters": "Reverse-sorted is the other common worst case. Catches reverse iteration bugs.",
+      "checkQuestion": "Does your solution handle reverse-sorted input correctly?",
+      "commonFailure": "Binary search on wrong half. Two pointer moving in wrong direction."
+    },
+    {
+      "id": "uc_answer_zero",
+      "case": "Answer is 0 or empty",
+      "whyItMatters": "Solutions often return wrong default when no valid answer exists. Empty result needs explicit handling.",
+      "checkQuestion": "What does your solution return when the answer is 0, empty, or impossible?",
+      "commonFailure": "Returning uninitialized variable. Returning -1 when 0 is the valid answer."
+    },
+    {
+      "id": "uc_answer_max",
+      "case": "Answer equals maximum possible value",
+      "whyItMatters": "Boundary of answer range. Catches overflow in accumulation.",
+      "checkQuestion": "Does your solution correctly compute and return the maximum possible answer?",
+      "commonFailure": "Integer overflow when answer approaches INT_MAX."
+    }
+  ],
+
+  "arrayCases": [
+    {
+      "id": "ac_single_element",
+      "case": "Array with one element",
+      "checkQuestion": "Does solution return correct answer for [x]?",
+      "commonFailure": "Loop runs 0 times and returns uninitialized value"
+    },
+    {
+      "id": "ac_two_elements",
+      "case": "Array with two elements",
+      "checkQuestion": "Does solution correctly compare/process exactly two elements?",
+      "commonFailure": "Middle index calculation wrong for even-length arrays"
+    },
+    {
+      "id": "ac_all_negative",
+      "case": "All elements negative",
+      "checkQuestion": "Does solution work when every element is negative?",
+      "commonFailure": "Initializing max with 0 instead of INT_MIN. Missing negative-only subarray as valid answer."
+    },
+    {
+      "id": "ac_mixed_signs",
+      "case": "Mix of positive, negative, and zero",
+      "checkQuestion": "Does solution handle sign changes correctly?",
+      "commonFailure": "Absolute value taken incorrectly. Comparison with 0 used as boundary incorrectly."
+    },
+    {
+      "id": "ac_all_zeros",
+      "case": "All elements are zero",
+      "checkQuestion": "Does solution handle zero-only input?",
+      "commonFailure": "Division by zero. Log of zero. Modulo by zero."
+    },
+    {
+      "id": "ac_contains_zero",
+      "case": "Array contains zeros among other values",
+      "checkQuestion": "Does solution handle zeros in mixed input without special-casing incorrectly?",
+      "commonFailure": "Skipping zeros when they should be included. Product becomes zero unexpectedly."
+    },
+    {
+      "id": "ac_overflow",
+      "case": "Values large enough to cause overflow when multiplied or summed",
+      "checkQuestion": "Can any two elements multiplied together exceed INT_MAX (2.1 * 10^9)?",
+      "commonFailure": "int overflow when accumulating sum or product. Use long long."
+    },
+    {
+      "id": "ac_max_int",
+      "case": "Element equals INT_MAX or INT_MIN",
+      "checkQuestion": "Does adding 1 to INT_MAX or subtracting 1 from INT_MIN overflow?",
+      "commonFailure": "Incrementing INT_MAX wraps to INT_MIN silently in C++."
+    },
+    {
+      "id": "ac_duplicate_heavy",
+      "case": "Many duplicates — most elements are the same value",
+      "checkQuestion": "Does solution perform correctly when majority of elements are identical?",
+      "commonFailure": "Two pointer gets stuck. Binary search infinite loop on duplicate boundary."
+    },
+    {
+      "id": "ac_alternating",
+      "case": "Alternating pattern — high low high low",
+      "checkQuestion": "Does solution correctly process alternating value patterns?",
+      "commonFailure": "Greedy that assumes monotonicity fails on alternating input."
+    }
+  ],
+
+  "stringCases": [
+    {
+      "id": "sc_empty",
+      "case": "Empty string",
+      "checkQuestion": "Does solution handle empty string input without crashing?",
+      "commonFailure": "Accessing s[0] on empty string. Length-1 underflow for unsigned types."
+    },
+    {
+      "id": "sc_single_char",
+      "case": "Single character string",
+      "checkQuestion": "Does solution return correct answer for one-character string?",
+      "commonFailure": "Substring of length 0 returned. Palindrome check incorrect for length 1."
+    },
+    {
+      "id": "sc_all_same_char",
+      "case": "All characters identical — aaaaaaa",
+      "checkQuestion": "Does solution handle all-same character input?",
+      "commonFailure": "Sliding window fails to slide. KMP failure function loops."
+    },
+    {
+      "id": "sc_two_chars",
+      "case": "Only two distinct characters — ababab or aabbaabb",
+      "checkQuestion": "Does solution work with minimal alphabet?",
+      "commonFailure": "Solutions hardcoded for 26-character alphabet behave incorrectly."
+    },
+    {
+      "id": "sc_palindrome",
+      "case": "String is a palindrome",
+      "checkQuestion": "Does solution correctly identify or process palindromes?",
+      "commonFailure": "Off-by-one in even vs odd length palindrome expansion."
+    },
+    {
+      "id": "sc_not_palindrome_close",
+      "case": "String is one character away from palindrome",
+      "checkQuestion": "Does solution correctly reject near-palindromes?",
+      "commonFailure": "Palindrome check exits early without checking full string."
+    },
+    {
+      "id": "sc_all_spaces",
+      "case": "String containing only spaces or special characters",
+      "checkQuestion": "Does solution handle non-alphanumeric characters?",
+      "commonFailure": "Character classification assumes only a-z. Space causes word count errors."
+    },
+    {
+      "id": "sc_max_length",
+      "case": "String at maximum allowed length",
+      "checkQuestion": "Does O(n^2) string algorithm TLE at max length?",
+      "commonFailure": "Naive substring search O(n*m) TLEs at n=10^5."
+    },
+    {
+      "id": "sc_repeated_pattern",
+      "case": "String is a repeated pattern — abcabcabc",
+      "checkQuestion": "Does solution correctly identify period or handle repetition?",
+      "commonFailure": "KMP period calculation incorrect for clean repeating strings."
+    },
+    {
+      "id": "sc_unicode_or_upper",
+      "case": "Mixed uppercase and lowercase",
+      "checkQuestion": "Does solution treat uppercase and lowercase correctly per problem statement?",
+      "commonFailure": "Forgot to convert to lowercase when case-insensitive comparison needed."
+    }
+  ],
+
+  "treeCases": [
+    {
+      "id": "tc_single_node",
+      "case": "Tree with single node (root only)",
+      "checkQuestion": "Does solution return correct answer for tree with no children?",
+      "commonFailure": "Accessing left or right child without null check. Returning wrong base case."
+    },
+    {
+      "id": "tc_two_nodes",
+      "case": "Root with one child (left or right only)",
+      "checkQuestion": "Does solution handle tree where one child is null?",
+      "commonFailure": "Assuming both children always exist. Null pointer dereference."
+    },
+    {
+      "id": "tc_chain_left",
+      "case": "Completely left-skewed tree (linked list shape)",
+      "checkQuestion": "Does recursive solution stack overflow on n=10^5 left-skewed tree?",
+      "commonFailure": "Recursive DFS with depth n causes stack overflow. Use iterative DFS."
+    },
+    {
+      "id": "tc_chain_right",
+      "case": "Completely right-skewed tree",
+      "checkQuestion": "Same as left-skewed — does recursion depth exceed stack limit?",
+      "commonFailure": "Same stack overflow risk as left-skewed."
+    },
+    {
+      "id": "tc_complete",
+      "case": "Complete binary tree (all levels full)",
+      "checkQuestion": "Does solution correctly handle perfectly balanced tree?",
+      "commonFailure": "Usually the easy case — but verify base cases still work."
+    },
+    {
+      "id": "tc_all_same_value",
+      "case": "All nodes have identical values",
+      "checkQuestion": "Does solution distinguish nodes by position not value?",
+      "commonFailure": "BST solutions break when all values equal — duplicate handling."
+    },
+    {
+      "id": "tc_negative_values",
+      "case": "Tree nodes with negative values",
+      "checkQuestion": "Does solution initialize path sum with 0 when it should use INT_MIN?",
+      "commonFailure": "Max path sum initialized to 0 — misses all-negative tree."
+    },
+    {
+      "id": "tc_path_through_root",
+      "case": "Optimal path passes through root",
+      "checkQuestion": "Does solution consider paths that go through root specifically?",
+      "commonFailure": "Only checking subtree paths, missing root-crossing path."
+    },
+    {
+      "id": "tc_path_not_through_root",
+      "case": "Optimal path is entirely within one subtree",
+      "checkQuestion": "Does solution check subtree answers independently of root?",
+      "commonFailure": "Forcing all paths through root — misses subtree-only optimal path."
+    },
+    {
+      "id": "tc_large_depth",
+      "case": "Tree with depth up to n (degenerate)",
+      "checkQuestion": "For n=10^5, does recursive solution stay within stack limits?",
+      "commonFailure": "Default stack allows ~10^4 to 10^5 recursive calls. Skewed tree hits this."
+    }
+  ],
+
+  "graphCases": [
+    {
+      "id": "gc_single_node",
+      "case": "Graph with single node and no edges",
+      "checkQuestion": "Does solution handle isolated single node?",
+      "commonFailure": "Returning 0 components instead of 1. Shortest path to self = 0 not handled."
+    },
+    {
+      "id": "gc_two_nodes_no_edge",
+      "case": "Two nodes with no edge between them",
+      "checkQuestion": "Does solution return correct answer when nodes are disconnected?",
+      "commonFailure": "Returning -1 vs infinity vs 0 for unreachable node — inconsistent."
+    },
+    {
+      "id": "gc_two_nodes_edge",
+      "case": "Two nodes connected by single edge",
+      "checkQuestion": "Does solution handle minimal connected graph?",
+      "commonFailure": "Bidirectional edge added only once in undirected graph."
+    },
+    {
+      "id": "gc_complete_graph",
+      "case": "Complete graph — every pair connected",
+      "checkQuestion": "Does solution handle E = O(V^2) without MLE or TLE?",
+      "commonFailure": "Adjacency matrix for V=10^5 complete graph — 40GB MLE."
+    },
+    {
+      "id": "gc_disconnected",
+      "case": "Graph with multiple disconnected components",
+      "checkQuestion": "Does solution handle nodes unreachable from source?",
+      "commonFailure": "BFS from single source marks some nodes unvisited — answer only covers one component."
+    },
+    {
+      "id": "gc_self_loop",
+      "case": "Node with self-loop (edge to itself)",
+      "checkQuestion": "Does solution handle self-loops without infinite loop?",
+      "commonFailure": "DFS revisits node via self-loop. Cycle detection false positive."
+    },
+    {
+      "id": "gc_parallel_edges",
+      "case": "Multiple edges between same pair of nodes",
+      "checkQuestion": "Does solution use minimum weight edge between parallel edges?",
+      "commonFailure": "Counting edges when should count pairs. MST uses both parallel edges."
+    },
+    {
+      "id": "gc_negative_cycle",
+      "case": "Graph contains negative weight cycle",
+      "checkQuestion": "Does solution detect and handle negative cycle correctly?",
+      "commonFailure": "Bellman-Ford runs V-1 rounds but does not check for further relaxation in round V."
+    },
+    {
+      "id": "gc_all_same_weight",
+      "case": "All edges have identical weight",
+      "checkQuestion": "Does Dijkstra degenerate to BFS behavior correctly?",
+      "commonFailure": "Usually fine — but verify MST gives correct answer when all weights equal."
+    },
+    {
+      "id": "gc_star_graph",
+      "case": "Star graph — one center node connected to all others",
+      "checkQuestion": "Does solution handle hub-spoke topology correctly?",
+      "commonFailure": "Diameter calculation off — all paths go through center."
+    }
+  ],
+
+  "intervalCases": [
+    {
+      "id": "ic_no_intervals",
+      "case": "Empty interval list",
+      "checkQuestion": "Does solution return correct answer (0 or empty) for no intervals?",
+      "commonFailure": "Accessing index 0 of empty array. Returning uninitialized value."
+    },
+    {
+      "id": "ic_single_interval",
+      "case": "Single interval only",
+      "checkQuestion": "Does solution handle one interval correctly?",
+      "commonFailure": "Merge logic tries to compare with previous — no previous exists."
+    },
+    {
+      "id": "ic_two_overlapping",
+      "case": "Two intervals that overlap",
+      "checkQuestion": "Does solution correctly merge or count overlapping pair?",
+      "commonFailure": "Overlap condition uses > instead of >= for touching intervals."
+    },
+    {
+      "id": "ic_two_non_overlapping",
+      "case": "Two intervals that do not overlap",
+      "checkQuestion": "Does solution correctly keep separate non-overlapping intervals?",
+      "commonFailure": "Over-merging — incorrectly merging non-overlapping intervals."
+    },
+    {
+      "id": "ic_nested",
+      "case": "One interval completely contains another",
+      "checkQuestion": "Does solution handle fully nested intervals?",
+      "commonFailure": "Nested interval end time not updated correctly during merge."
+    },
+    {
+      "id": "ic_touching",
+      "case": "Two intervals that share exactly one endpoint — [1,3] and [3,5]",
+      "checkQuestion": "Does your definition of overlap include touching endpoints?",
+      "commonFailure": "Problem may define [1,3] and [3,5] as overlapping or not — check problem statement."
+    },
+    {
+      "id": "ic_all_overlapping",
+      "case": "All intervals overlap with each other",
+      "checkQuestion": "Does solution correctly merge all into single interval?",
+      "commonFailure": "Loop exits early — merged interval not updated with maximum end time."
+    },
+    {
+      "id": "ic_identical",
+      "case": "All intervals are identical",
+      "checkQuestion": "Does solution correctly reduce n identical intervals to one?",
+      "commonFailure": "Deduplication not handled — returns n intervals instead of 1."
+    },
+    {
+      "id": "ic_point_interval",
+      "case": "Interval where start equals end — [x, x]",
+      "checkQuestion": "Does solution handle zero-length point intervals?",
+      "commonFailure": "Interval length = 0 causes division by zero or empty range handling."
+    },
+    {
+      "id": "ic_negative_coords",
+      "case": "Intervals with negative coordinates",
+      "checkQuestion": "Does solution work when interval values are negative?",
+      "commonFailure": "Sorting by absolute value instead of actual value."
+    }
+  ],
+
+  "numericCases": [
+    {
+      "id": "nc_zero_input",
+      "case": "Input value is 0",
+      "checkQuestion": "Does solution handle n=0 or value=0 without division by zero or log(0)?",
+      "commonFailure": "Division by n when n=0. log(0) is undefined."
+    },
+    {
+      "id": "nc_one_input",
+      "case": "Input value is 1",
+      "checkQuestion": "Does solution handle n=1 correctly (especially for prime checks, factorials)?",
+      "commonFailure": "1 is not prime but many prime checks return true for 1."
+    },
+    {
+      "id": "nc_negative_input",
+      "case": "Input value is negative",
+      "checkQuestion": "Does solution handle negative input values?",
+      "commonFailure": "Modulo of negative number. Square root of negative. Unsigned type wraps."
+    },
+    {
+      "id": "nc_int_overflow",
+      "case": "Intermediate computation exceeds INT_MAX (2^31 - 1 = 2,147,483,647)",
+      "checkQuestion": "Can any multiplication or addition overflow 32-bit integer?",
+      "commonFailure": "a * b where a and b are both up to 10^5 — product is 10^10 which overflows int."
+    },
+    {
+      "id": "nc_long_overflow",
+      "case": "Intermediate computation exceeds LLONG_MAX (2^63 - 1)",
+      "checkQuestion": "Can any computation overflow even 64-bit integer?",
+      "commonFailure": "Factorial of large n. Power computation without modular arithmetic."
+    },
+    {
+      "id": "nc_mod_arithmetic",
+      "case": "Answer requires modular arithmetic",
+      "checkQuestion": "Are all additions, multiplications, and subtractions taken mod 10^9+7?",
+      "commonFailure": "Adding two numbers each just below 10^9+7 — sum overflows before mod applied."
+    },
+    {
+      "id": "nc_power_of_two",
+      "case": "Input is a power of 2",
+      "checkQuestion": "Does solution handle powers of 2 correctly in bit manipulation?",
+      "commonFailure": "n & (n-1) == 0 check for power of 2 fails for n=0."
+    },
+    {
+      "id": "nc_prime_boundary",
+      "case": "Input is a prime number",
+      "checkQuestion": "Does solution correctly identify prime inputs?",
+      "commonFailure": "Sieve off-by-one — forgetting to mark 0 and 1 as not prime."
+    },
+    {
+      "id": "nc_large_prime",
+      "case": "Input is 10^9 + 7 (the modulus itself)",
+      "checkQuestion": "Does solution handle the case where input equals the modulus?",
+      "commonFailure": "a % MOD when a == MOD gives 0 — may be intended or bug depending on context."
+    },
+    {
+      "id": "nc_floating_point",
+      "case": "Answer involves floating point comparison",
+      "checkQuestion": "Are floating point comparisons using epsilon tolerance instead of direct equality?",
+      "commonFailure": "Comparing doubles with == — fails due to floating point imprecision."
+    }
+  ],
+
+  "dpSpecificCases": [
+    {
+      "id": "dpc_empty_input",
+      "case": "DP on empty array or string",
+      "checkQuestion": "Does dp[0] or dp[0][0] base case handle empty input?",
+      "commonFailure": "Accessing dp[-1] when i=0 without boundary check."
+    },
+    {
+      "id": "dpc_single_element",
+      "case": "DP on single element",
+      "checkQuestion": "Does transition from dp[1] to dp[0] work correctly?",
+      "commonFailure": "Loop starts at i=1 but transition tries to access dp[i-2] when i=1."
+    },
+    {
+      "id": "dpc_all_choices_bad",
+      "case": "No valid solution exists",
+      "checkQuestion": "Does DP return -1, INT_MAX, or 0 correctly when no solution exists?",
+      "commonFailure": "Returning INT_MAX/2 instead of -1. Overflow when adding to INT_MAX."
+    },
+    {
+      "id": "dpc_all_choices_equal",
+      "case": "All choices have equal cost",
+      "checkQuestion": "Does DP correctly return any valid optimal solution?",
+      "commonFailure": "Non-determinism in tie-breaking causes inconsistent results."
+    },
+    {
+      "id": "dpc_reconstruction",
+      "case": "Need to reconstruct path not just value",
+      "checkQuestion": "Is parent/choice array maintained alongside dp array?",
+      "commonFailure": "Computed optimal value but cannot trace back the actual solution."
+    }
+  ],
+
+  "binarySearchCases": [
+    {
+      "id": "bsc_all_feasible",
+      "case": "All values in search space are feasible",
+      "checkQuestion": "Does binary search correctly return minimum feasible value?",
+      "commonFailure": "Returns mid-range value instead of lo when all are feasible."
+    },
+    {
+      "id": "bsc_none_feasible",
+      "case": "No value in search space is feasible",
+      "checkQuestion": "Does binary search correctly indicate no solution?",
+      "commonFailure": "Returns lo which is invalid — needs post-loop feasibility check."
+    },
+    {
+      "id": "bsc_single_feasible",
+      "case": "Exactly one value in search space is feasible",
+      "checkQuestion": "Does binary search find the single valid value?",
+      "commonFailure": "Off-by-one in lo/hi update causes skipping the only valid value."
+    },
+    {
+      "id": "bsc_boundary",
+      "case": "Answer is at lo or hi boundary",
+      "checkQuestion": "Does binary search correctly return lo or hi when answer is at extreme?",
+      "commonFailure": "Loop terminates before checking boundary value."
+    },
+    {
+      "id": "bsc_overflow_mid",
+      "case": "lo + hi overflows int when computing mid",
+      "checkQuestion": "Is mid computed as lo + (hi - lo) / 2 instead of (lo + hi) / 2?",
+      "commonFailure": "(lo + hi) overflows when both are near INT_MAX."
+    }
+  ]
+}

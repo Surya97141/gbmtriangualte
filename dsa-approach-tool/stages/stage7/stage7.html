@@ -1,0 +1,1092 @@
+<!-- stages/stage7/stage7.html -->
+<!-- Reference template for Stage 7 — Final Output -->
+<!-- stage7.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 7 — Final Output</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 840px;
+      margin      : 0 auto;
+    }
+
+    .stage7 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 22px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--green);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SUMMARY STRIP
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s7-summary-strip {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      overflow      : hidden;
+    }
+
+    .s7-summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 12px;
+      padding      : 7px 16px;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .s7-summary-row:last-of-type { border-bottom: none; }
+
+    .s7-summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 72px;
+      flex-shrink   : 0;
+    }
+
+    .s7-summary-row__value {
+      font-size  : .78rem;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       TAB BAR
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s7-tab-bar {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 5px;
+    }
+
+    .s7-tab {
+      padding      : 7px 16px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      background   : var(--surface);
+      font-size    : .76rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+      user-select  : none;
+    }
+
+    .s7-tab:hover        { border-color: var(--yellow); }
+
+    .s7-tab--active {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+      font-weight : 500;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       PANELS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s7-panel         { display: none; flex-direction: column; gap: 14px; }
+    .s7-panel--active { display: flex; }
+    .hidden           { display: none !important; }
+
+    .s7-panel-intro {
+      font-size    : .76rem;
+      color        : var(--muted);
+      line-height  : 1.6;
+      padding      : 8px 12px;
+      background   : var(--surface);
+      border       : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .s7-empty {
+      font-size  : .78rem;
+      color      : var(--muted);
+      font-style : italic;
+      padding    : 12px 0;
+      text-align : center;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       DIRECTION CARDS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s7-direction-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 12px;
+      transition    : border-color .2s;
+    }
+
+    .s7-direction-card--primary {
+      border-color: rgba(6,214,160,.4);
+      border-left : 4px solid var(--green);
+    }
+
+    .s7-direction-card--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    /* ── Card header ─────────────────────────────────────────────────────── */
+    .s7-direction-card__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      flex-wrap      : wrap;
+      gap            : 8px;
+    }
+
+    .s7-direction-card__header-left {
+      display    : flex;
+      align-items: center;
+      gap        : 10px;
+    }
+
+    .s7-primary-badge {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background    : var(--green-bg);
+      color         : #028a5b;
+      border        : 1px solid rgba(6,214,160,.3);
+      padding       : 2px 8px;
+      border-radius : 4px;
+    }
+
+    .s7-secondary-badge {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background    : var(--bg);
+      color         : var(--muted);
+      border        : 1px solid var(--border);
+      padding       : 2px 8px;
+      border-radius : 4px;
+    }
+
+    .s7-direction-card__label {
+      font-size  : .92rem;
+      font-weight: 700;
+      color      : var(--ink);
+    }
+
+    .s7-direction-card__complexity {
+      font-size: .74rem;
+    }
+
+    .detail-mono {
+      font-family: var(--font-mono);
+      font-size  : .7rem;
+      background : rgba(212,204,184,.3);
+      padding    : 2px 6px;
+      border-radius: 3px;
+      color      : var(--ink);
+    }
+
+    /* ── Why / Verify ────────────────────────────────────────────────────── */
+    .s7-direction-card__why,
+    .s7-direction-card__verify {
+      font-size  : .76rem;
+      color      : var(--ink);
+      line-height: 1.6;
+      padding    : 7px 10px;
+      border-radius: var(--radius-sm);
+    }
+
+    .s7-direction-card__why {
+      background: var(--bg);
+      border    : 1px solid var(--border);
+    }
+
+    .s7-direction-card__verify {
+      background: var(--blue-bg);
+      border    : 1px solid rgba(33,150,243,.15);
+    }
+
+    .s7-why-label,
+    .s7-verify-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    .s7-why-label    { color: var(--muted); }
+    .s7-verify-label { color: var(--blue);  }
+
+    /* ── Transform notice ────────────────────────────────────────────────── */
+    .s7-transform-notice {
+      display    : flex;
+      align-items: center;
+      gap        : 7px;
+      font-size  : .74rem;
+      color      : var(--ink);
+      padding    : 6px 10px;
+      background : var(--pur-bg);
+      border     : 1px solid rgba(192,84,252,.2);
+      border-radius: var(--radius-sm);
+    }
+
+    .s7-transform-notice__icon { font-size: .85rem; }
+
+    /* ── Collapsible code shape ───────────────────────────────────────────── */
+    .collapsible {
+      border       : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow     : hidden;
+    }
+
+    .collapsible__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 6px 12px;
+      background     : var(--bg);
+      cursor         : pointer;
+      font-family    : var(--font-mono);
+      font-size      : .6rem;
+      letter-spacing : 1.5px;
+      text-transform : uppercase;
+      color          : var(--muted);
+    }
+
+    .collapsible__header:hover { background: rgba(212,204,184,.3); }
+    .collapsible__body         { padding: 0; }
+
+    .s7-code-shape {
+      font-family: var(--font-mono);
+      font-size  : .62rem;
+      line-height: 1.7;
+      background : #1a1a2e;
+      color      : #e2e8f0;
+      padding    : 12px 14px;
+      overflow-x : auto;
+      white-space: pre;
+      margin     : 0;
+    }
+
+    /* ── Watch outs ──────────────────────────────────────────────────────── */
+    .s7-direction-card__watchouts {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .72rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+    .watchout-text { line-height: 1.5; }
+
+    /* ── Meta badges ─────────────────────────────────────────────────────── */
+    .s7-direction-card__meta {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+    }
+
+    .s7-meta-badge {
+      display      : flex;
+      align-items  : center;
+      gap          : 4px;
+      padding      : 3px 8px;
+      border-radius: 4px;
+      border       : 1px solid;
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+    }
+
+    .s7-meta-badge--green  { background: var(--green-bg); border-color: rgba(6,214,160,.3); }
+    .s7-meta-badge--yellow { background: var(--yellow-bg);border-color: rgba(255,209,102,.4);}
+    .s7-meta-badge--red    { background: var(--red-bg);   border-color: rgba(230,57,70,.3); }
+    .s7-meta-badge--gray   { background: var(--bg);       border-color: var(--border);      }
+
+    .s7-meta-badge__label {
+      color       : var(--muted);
+      font-size   : .58rem;
+      margin-right: 2px;
+    }
+
+    .s7-meta-badge__value { color: var(--ink); }
+
+    /* ── Select button ───────────────────────────────────────────────────── */
+    .s7-select-btn {
+      align-self   : flex-start;
+      padding      : 7px 16px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--bg);
+      font-family  : var(--font-sans);
+      font-size    : .76rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .s7-select-btn:hover {
+      border-color: var(--green);
+      background  : var(--green-bg);
+    }
+
+    .s7-select-btn--selected {
+      border-color: var(--green);
+      background  : var(--green-bg);
+      color       : #028a5b;
+      font-weight : 500;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       FAILURE PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s7-failure-card {
+      background    : var(--surface);
+      border        : 1.5px solid rgba(230,57,70,.2);
+      border-radius : var(--radius-md);
+      padding       : 13px 15px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .s7-failure-card__condition {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 7px;
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s7-failure-icon {
+      font-family: var(--font-mono);
+      font-size  : .8rem;
+      color      : var(--red);
+      flex-shrink: 0;
+      margin-top : 1px;
+    }
+
+    .s7-failure-card__consequence,
+    .s7-failure-card__detection {
+      font-size  : .74rem;
+      color      : var(--ink);
+      line-height: 1.5;
+      padding    : 5px 9px;
+      border-radius: var(--radius-sm);
+    }
+
+    .s7-failure-card__consequence {
+      background: var(--red-bg);
+      border    : 1px solid rgba(230,57,70,.12);
+    }
+
+    .s7-failure-card__detection {
+      background: var(--blue-bg);
+      border    : 1px solid rgba(33,150,243,.12);
+    }
+
+    .s7-consequence-label,
+    .s7-detection-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    .s7-consequence-label { color: var(--red);  }
+    .s7-detection-label   { color: var(--blue); }
+
+    .s7-fix-content {
+      font-size  : .74rem;
+      color      : var(--ink);
+      line-height: 1.6;
+      padding    : 2px 0;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       ACTIONS PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s7-action-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 14px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .s7-action-card__header {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 12px;
+    }
+
+    .s7-action-num {
+      font-family   : var(--font-mono);
+      font-size     : 1.1rem;
+      font-weight   : 700;
+      color         : var(--green);
+      flex-shrink   : 0;
+      min-width     : 20px;
+    }
+
+    .s7-action-card__action {
+      font-size  : .86rem;
+      font-weight: 500;
+      color      : var(--ink);
+      line-height: 1.4;
+      padding-top: 3px;
+    }
+
+    .s7-action-card__detail {
+      font-size    : .74rem;
+      color        : var(--muted);
+      line-height  : 1.6;
+      padding      : 6px 10px;
+      background   : var(--bg);
+      border-radius: var(--radius-sm);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       TRADEOFFS PANEL
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s7-recommendation {
+      display    : flex;
+      align-items: baseline;
+      gap        : 6px;
+      padding    : 9px 14px;
+      background : var(--green-bg);
+      border     : 1.5px solid rgba(6,214,160,.35);
+      border-radius: var(--radius-md);
+      font-size  : .78rem;
+      flex-wrap  : wrap;
+    }
+
+    .s7-rec-label  {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color         : var(--muted);
+    }
+
+    .s7-rec-value  { font-weight: 700; color: #028a5b; }
+    .s7-rec-reason { color: var(--muted); font-size: .72rem; }
+
+    /* ── Comparison table ────────────────────────────────────────────────── */
+    .s7-tradeoff-table {
+      display       : flex;
+      flex-direction: column;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      overflow      : hidden;
+    }
+
+    .s7-tradeoff-header-row,
+    .s7-tradeoff-data-row {
+      display  : grid;
+      grid-template-columns: 2fr 1.5fr 0.8fr 0.8fr 0.8fr;
+      gap      : 0;
+    }
+
+    .s7-tradeoff-header-row {
+      background   : var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .s7-tradeoff-data-row {
+      border-bottom: 1px solid rgba(212,204,184,.25);
+    }
+
+    .s7-tradeoff-data-row:last-of-type { border-bottom: none; }
+
+    .s7-tradeoff-data-row--rec {
+      background: var(--green-bg);
+    }
+
+    .s7-tradeoff-cell {
+      padding    : 8px 12px;
+      font-size  : .74rem;
+      color      : var(--ink);
+      line-height: 1.3;
+    }
+
+    .s7-tradeoff-cell--header {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .s7-tradeoff-rec-dot {
+      color      : var(--green);
+      font-weight: 700;
+    }
+
+    /* Risk color coding */
+    .s7-risk-easy,
+    .s7-risk-low,
+    .s7-risk-short  { color: #028a5b; font-weight: 500; }
+
+    .s7-risk-medium { color: #7a5a00; font-weight: 500; }
+
+    .s7-risk-hard,
+    .s7-risk-high   { color: var(--red); font-weight: 500; }
+
+    /* ── Notes row ───────────────────────────────────────────────────────── */
+    .s7-tradeoff-notes-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      padding    : 5px 12px 8px;
+      background : rgba(212,204,184,.08);
+      border-bottom: 1px solid rgba(212,204,184,.25);
+    }
+
+    .s7-tradeoff-notes-row:last-child { border-bottom: none; }
+
+    .s7-tradeoff-notes-icon {
+      font-family: var(--font-mono);
+      font-size  : .7rem;
+      color      : var(--muted);
+      flex-shrink: 0;
+    }
+
+    .s7-tradeoff-notes-text {
+      font-size  : .71rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage7">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Your approach — built from structural analysis, not pattern matching.
+    </div>
+    <div class="stage-intro__sub">
+      Confidence: High Confidence (82/100) — 2 direction(s) identified
+    </div>
+  </div>
+
+  <!-- SUMMARY STRIP -------------------------------------------------------- -->
+  <div class="s7-summary-strip">
+
+    <div class="s7-summary-row">
+      <span class="s7-summary-row__label">N / Budget</span>
+      <span class="s7-summary-row__value">
+        N = 100,000 · budget: O(n log n) · approach: o(nlogn) · ✓ fits
+      </span>
+    </div>
+
+    <div class="s7-summary-row">
+      <span class="s7-summary-row__label">Input</span>
+      <span class="s7-summary-row__value">
+        single_array · signals: positive integers, distinct values
+      </span>
+    </div>
+
+    <div class="s7-summary-row">
+      <span class="s7-summary-row__label">Output</span>
+      <span class="s7-summary-row__value">
+        single_number · minimize_maximum · exact value
+      </span>
+    </div>
+
+    <div class="s7-summary-row">
+      <span class="s7-summary-row__label">Structure</span>
+      <span class="s7-summary-row__value">
+        can sort · monotone feasibility · overlapping subproblems
+      </span>
+    </div>
+
+    <div class="s7-summary-row">
+      <span class="s7-summary-row__label">Direction</span>
+      <span class="s7-summary-row__value">
+        Directions: Binary Search on Answer or 1D Dynamic Programming
+      </span>
+    </div>
+
+  </div>
+
+  <!-- TAB BAR -------------------------------------------------------------- -->
+  <div class="s7-tab-bar" id="s7-tab-bar">
+    <div class="s7-tab s7-tab--active" data-tab-id="directions">Directions</div>
+    <div class="s7-tab"                data-tab-id="failure">Failure conditions</div>
+    <div class="s7-tab"                data-tab-id="actions">First actions</div>
+    <div class="s7-tab"                data-tab-id="tradeoffs">Tradeoffs</div>
+  </div>
+
+  <!-- PANELS --------------------------------------------------------------- -->
+
+  <!-- DIRECTIONS PANEL (active) ------------------------------------------- -->
+  <div class="s7-panel s7-panel--active" id="panel-directions">
+
+    <!-- PRIMARY DIRECTION -->
+    <div class="s7-direction-card s7-direction-card--primary s7-direction-card--selected"
+         id="dir-card-dir_binary_search_answer">
+
+      <div class="s7-direction-card__header">
+        <div class="s7-direction-card__header-left">
+          <span class="s7-primary-badge">Primary</span>
+          <div class="s7-direction-card__label">Binary Search on Answer</div>
+        </div>
+        <span class="s7-direction-card__complexity detail-mono">
+          O(log(range) × isFeasible)
+        </span>
+      </div>
+
+      <div class="s7-direction-card__why">
+        <span class="s7-why-label">Why:</span>
+        The answer has a monotonic feasibility boundary — if X works, X+1 also works.
+        Binary search finds the boundary in O(log(range)) calls to isFeasible.
+      </div>
+
+      <div class="s7-direction-card__verify">
+        <span class="s7-verify-label">Verify first:</span>
+        Write isFeasible(X). Confirm with two concrete examples: one where X is
+        feasible and one where X is not. Verify the boundary is clean.
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Code shape</span>
+          <span>▲</span>
+        </div>
+        <div class="collapsible__body">
+          <pre class="s7-code-shape">int lo = MIN_ANS, hi = MAX_ANS;
+while (lo &lt; hi) {
+  int mid = lo + (hi - lo) / 2;
+  if (isFeasible(mid)) hi = mid;
+  else                 lo = mid + 1;
+}
+return lo;</pre>
+        </div>
+      </div>
+
+      <div class="s7-direction-card__watchouts">
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            isFeasible must be monotone — validate before writing
+          </span>
+        </div>
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            Integer overflow: use lo + (hi-lo)/2 not (lo+hi)/2
+          </span>
+        </div>
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            Minimize: hi = mid. Maximize: lo = mid (with upper mid)
+          </span>
+        </div>
+      </div>
+
+      <div class="s7-direction-card__meta">
+        <div class="s7-meta-badge s7-meta-badge--yellow">
+          <span class="s7-meta-badge__label">Impl</span>
+          <span class="s7-meta-badge__value">medium</span>
+        </div>
+        <div class="s7-meta-badge s7-meta-badge--green">
+          <span class="s7-meta-badge__label">WA risk</span>
+          <span class="s7-meta-badge__value">low</span>
+        </div>
+        <div class="s7-meta-badge s7-meta-badge--green">
+          <span class="s7-meta-badge__label">TLE risk</span>
+          <span class="s7-meta-badge__value">low</span>
+        </div>
+        <div class="s7-meta-badge s7-meta-badge--green">
+          <span class="s7-meta-badge__label">Code</span>
+          <span class="s7-meta-badge__value">short</span>
+        </div>
+      </div>
+
+      <button class="s7-select-btn s7-select-btn--selected"
+              data-dir-id="dir_binary_search_answer">
+        ✓ This is my direction
+      </button>
+
+    </div>
+
+    <!-- SECONDARY DIRECTION -->
+    <div class="s7-direction-card" id="dir-card-dir_dp_1d">
+
+      <div class="s7-direction-card__header">
+        <div class="s7-direction-card__header-left">
+          <span class="s7-secondary-badge">Option 2</span>
+          <div class="s7-direction-card__label">1D Dynamic Programming</div>
+        </div>
+        <span class="s7-direction-card__complexity detail-mono">
+          O(n) or O(n²)
+        </span>
+      </div>
+
+      <div class="s7-direction-card__why">
+        <span class="s7-why-label">Why:</span>
+        Subproblems overlap and depend on the sequence order. Each state dp[i]
+        captures the optimal answer for a prefix ending at index i.
+      </div>
+
+      <div class="s7-direction-card__verify">
+        <span class="s7-verify-label">Verify first:</span>
+        Define dp[i] precisely. Ask: given only i and dp[0..i-1], can I
+        determine dp[i]? If yes, state is complete.
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Code shape</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <pre class="s7-code-shape">vector&lt;int&gt; dp(n, INF);
+dp[0] = base;
+for (int i = 1; i &lt; n; i++)
+  for (int j = 0; j &lt; i; j++)
+    if (valid(j, i))
+      dp[i] = min(dp[i], dp[j] + cost(j, i));
+return dp[n-1];</pre>
+        </div>
+      </div>
+
+      <div class="s7-direction-card__watchouts">
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            Initialize dp with INF (minimize) or -INF (maximize) or 0 (count)
+          </span>
+        </div>
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            Define dp[i] as "ending AT i" vs "ending BY i" — they differ
+          </span>
+        </div>
+      </div>
+
+      <div class="s7-direction-card__meta">
+        <div class="s7-meta-badge s7-meta-badge--yellow">
+          <span class="s7-meta-badge__label">Impl</span>
+          <span class="s7-meta-badge__value">medium</span>
+        </div>
+        <div class="s7-meta-badge s7-meta-badge--yellow">
+          <span class="s7-meta-badge__label">WA risk</span>
+          <span class="s7-meta-badge__value">medium</span>
+        </div>
+        <div class="s7-meta-badge s7-meta-badge--green">
+          <span class="s7-meta-badge__label">TLE risk</span>
+          <span class="s7-meta-badge__value">low</span>
+        </div>
+        <div class="s7-meta-badge s7-meta-badge--yellow">
+          <span class="s7-meta-badge__label">Code</span>
+          <span class="s7-meta-badge__value">medium</span>
+        </div>
+      </div>
+
+      <button class="s7-select-btn" data-dir-id="dir_dp_1d">
+        Select this direction
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- FAILURE PANEL -------------------------------------------------------- -->
+  <div class="s7-panel hidden" id="panel-failure">
+
+    <div class="s7-panel-intro">
+      These are the specific ways this approach fails — silent wrong answers
+      and TLE conditions.
+    </div>
+
+    <div class="s7-failure-card">
+      <div class="s7-failure-card__condition">
+        <span class="s7-failure-icon">✗</span>
+        isFeasible(X) is NOT monotone
+      </div>
+      <div class="s7-failure-card__consequence">
+        <span class="s7-consequence-label">Consequence:</span>
+        Binary search converges to wrong boundary — returns incorrect answer silently
+      </div>
+      <div class="s7-failure-card__detection">
+        <span class="s7-detection-label">Detect:</span>
+        Test: does isFeasible(X)=true guarantee isFeasible(X+1)=true?
+        Verify with 3 examples.
+      </div>
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Fix</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <div class="s7-fix-content">
+            If not monotone — cannot use Binary Search on Answer.
+            Reconsider approach.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s7-failure-card">
+      <div class="s7-failure-card__condition">
+        <span class="s7-failure-icon">✗</span>
+        mid = (lo + hi) / 2 when lo + hi overflows
+      </div>
+      <div class="s7-failure-card__consequence">
+        <span class="s7-consequence-label">Consequence:</span>
+        Negative mid value → infinite loop
+      </div>
+      <div class="s7-failure-card__detection">
+        <span class="s7-detection-label">Detect:</span>
+        Check: lo and hi both close to INT_MAX?
+      </div>
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Fix</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <div class="s7-fix-content">
+            Always use: mid = lo + (hi - lo) / 2
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ACTIONS PANEL -------------------------------------------------------- -->
+  <div class="s7-panel hidden" id="panel-actions">
+
+    <div class="s7-panel-intro">
+      The exact three steps to take when you open your editor — in order.
+    </div>
+
+    <div class="s7-action-card">
+      <div class="s7-action-card__header">
+        <span class="s7-action-num">1</span>
+        <span class="s7-action-card__action">
+          Write isFeasible(X) as a standalone function first
+        </span>
+      </div>
+      <div class="s7-action-card__detail">
+        Before writing binary search loop, get isFeasible working and tested.
+        Binary search is useless if isFeasible is wrong.
+      </div>
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Code</span>
+          <span>▲</span>
+        </div>
+        <div class="collapsible__body">
+          <pre class="s7-code-shape">bool isFeasible(int x) {
+  // implement greedy check here
+  return /* condition */;
+}</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="s7-action-card">
+      <div class="s7-action-card__header">
+        <span class="s7-action-num">2</span>
+        <span class="s7-action-card__action">
+          Determine lo and hi bounds explicitly
+        </span>
+      </div>
+      <div class="s7-action-card__detail">
+        lo = minimum possible answer. hi = maximum possible answer.
+        Write these as named constants with comments explaining why.
+      </div>
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Code</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <pre class="s7-code-shape">int lo = /* min possible */;
+int hi = /* max possible */;</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="s7-action-card">
+      <div class="s7-action-card__header">
+        <span class="s7-action-num">3</span>
+        <span class="s7-action-card__action">
+          Write binary search loop and test on sample
+        </span>
+      </div>
+      <div class="s7-action-card__detail">
+        Use the minimize template. Test on provided examples before edge cases.
+      </div>
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Code</span>
+          <span>▼</span>
+        </div>
+        <div class="collapsible__body" style="display:none">
+          <pre class="s7-code-shape">while (lo &lt; hi) {
+  int mid = lo + (hi-lo)/2;
+  if (isFeasible(mid)) hi = mid;
+  else lo = mid+1;
+}
+return lo;</pre>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TRADEOFFS PANEL ------------------------------------------------------ -->
+  <div class="s7-panel hidden" id="panel-tradeoffs">
+
+    <div class="s7-panel-intro">
+      Side-by-side comparison of candidate directions.
+    </div>
+
+    <div class="s7-recommendation">
+      <span class="s7-rec-label">Recommended:</span>
+      <span class="s7-rec-value">Binary Search on Answer</span>
+      <span class="s7-rec-reason">— lowest WA risk among options</span>
+    </div>
+
+    <div class="s7-tradeoff-table">
+
+      <!-- Header -->
+      <div class="s7-tradeoff-header-row">
+        <span class="s7-tradeoff-cell s7-tradeoff-cell--header">Direction</span>
+        <span class="s7-tradeoff-cell s7-tradeoff-cell--header">Complexity</span>
+        <span class="s7-tradeoff-cell s7-tradeoff-cell--header">Impl</span>
+        <span class="s7-tradeoff-cell s7-tradeoff-cell--header">WA risk</span>
+        <span class="s7-tradeoff-cell s7-tradeoff-cell--header">TLE risk</span>
+      </div>
+
+      <!-- Binary Search row -->
+      <div class="s7-tradeoff-data-row s7-tradeoff-data-row--rec">
+        <span class="s7-tradeoff-cell">
+          <span class="s7-tradeoff-rec-dot">★ </span>
+          Binary Search on Answer
+        </span>
+        <span class="s7-tradeoff-cell detail-mono">O(log(range)×f)</span>
+        <span class="s7-tradeoff-cell s7-risk-medium">medium</span>
+        <span class="s7-tradeoff-cell s7-risk-low">low</span>
+        <span class="s7-tradeoff-cell s7-risk-low">low</span>
+      </div>
+
+      <div class="s7-tradeoff-notes-row">
+        <span class="s7-tradeoff-notes-icon">→</span>
+        <span class="s7-tradeoff-notes-text">
+          isFeasible must be correct — verify monotonicity before coding
+        </span>
+      </div>
+
+      <!-- DP row -->
+      <div class="s7-tradeoff-data-row">
+        <span class="s7-tradeoff-cell">1D Dynamic Programming</span>
+        <span class="s7-tradeoff-cell detail-mono">O(n) or O(n²)</span>
+        <span class="s7-tradeoff-cell s7-risk-medium">medium</span>
+        <span class="s7-tradeoff-cell s7-risk-medium">medium</span>
+        <span class="s7-tradeoff-cell s7-risk-low">low</span>
+      </div>
+
+      <div class="s7-tradeoff-notes-row">
+        <span class="s7-tradeoff-notes-icon">→</span>
+        <span class="s7-tradeoff-notes-text">
+          Base case and fill order bugs are subtle
+        </span>
+      </div>
+
+    </div>
+
+  </div>
+
+</div><!-- /stage7 -->
+
+</body>
+</html>

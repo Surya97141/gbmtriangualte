@@ -1,0 +1,333 @@
+{
+  "_meta": {
+    "bytesPerInt": 4,
+    "bytesPerLong": 8,
+    "bytesPerDouble": 8,
+    "bytesPerChar": 1,
+    "bytesPerPointer": 8,
+    "commonLimits": [16, 32, 64, 128, 256, 512],
+    "note": "All sizes in MB unless stated. Calculations assume 64-bit system."
+  },
+
+  "structureCosts": [
+    {
+      "id": "array_int",
+      "name": "int array",
+      "formula": "4 * n bytes",
+      "examples": [
+        { "n": 1000000,   "mb": 3.8,   "fits64mb": true  },
+        { "n": 10000000,  "mb": 38.1,  "fits64mb": true  },
+        { "n": 16000000,  "mb": 61.0,  "fits64mb": true  },
+        { "n": 100000000, "mb": 381.5, "fits64mb": false }
+      ],
+      "notes": "int[10^6] = 4MB. int[10^7] = 38MB. Most common structure."
+    },
+    {
+      "id": "array_long",
+      "name": "long long array",
+      "formula": "8 * n bytes",
+      "examples": [
+        { "n": 1000000,  "mb": 7.6,  "fits64mb": true  },
+        { "n": 8000000,  "mb": 61.0, "fits64mb": true  },
+        { "n": 10000000, "mb": 76.3, "fits64mb": false }
+      ],
+      "notes": "Use when values exceed 2*10^9. Half the capacity of int array."
+    },
+    {
+      "id": "array_2d_int",
+      "name": "2D int array [n][m]",
+      "formula": "4 * n * m bytes",
+      "examples": [
+        { "n": 1000,  "m": 1000,  "mb": 3.8,   "fits64mb": true  },
+        { "n": 3000,  "m": 3000,  "mb": 34.3,  "fits64mb": true  },
+        { "n": 4000,  "m": 4000,  "mb": 61.0,  "fits64mb": true  },
+        { "n": 5000,  "m": 5000,  "mb": 95.4,  "fits64mb": false },
+        { "n": 10000, "m": 10000, "mb": 381.5, "fits64mb": false }
+      ],
+      "notes": "Safe up to ~4000x4000 in 64MB. Common DP table — check before declaring state."
+    },
+    {
+      "id": "segment_tree",
+      "name": "Segment Tree",
+      "formula": "4 * 4 * n bytes (4n nodes, each int)",
+      "examples": [
+        { "n": 100000,  "mb": 1.5,  "fits64mb": true  },
+        { "n": 1000000, "mb": 15.3, "fits64mb": true  },
+        { "n": 4000000, "mb": 61.0, "fits64mb": true  },
+        { "n": 10000000,"mb": 152.6,"fits64mb": false }
+      ],
+      "notes": "Uses 4n space. For n=10^6 it is 16MB — very safe. For lazy propagation double it: 8n."
+    },
+    {
+      "id": "segment_tree_lazy",
+      "name": "Segment Tree with Lazy Propagation",
+      "formula": "8 * 4 * n bytes (8n nodes)",
+      "examples": [
+        { "n": 100000,  "mb": 3.1,  "fits64mb": true  },
+        { "n": 1000000, "mb": 30.5, "fits64mb": true  },
+        { "n": 2000000, "mb": 61.0, "fits64mb": true  },
+        { "n": 4000000, "mb": 122.1,"fits64mb": false }
+      ],
+      "notes": "Lazy doubles memory. At n=10^6 uses 32MB — still safe in 64MB."
+    },
+    {
+      "id": "fenwick_tree",
+      "name": "Fenwick Tree (BIT)",
+      "formula": "4 * n bytes",
+      "examples": [
+        { "n": 1000000,  "mb": 3.8,  "fits64mb": true },
+        { "n": 10000000, "mb": 38.1, "fits64mb": true }
+      ],
+      "notes": "Same as int array. Most memory-efficient range structure. No overhead."
+    },
+    {
+      "id": "sparse_table",
+      "name": "Sparse Table",
+      "formula": "4 * n * log2(n) bytes",
+      "examples": [
+        { "n": 100000,  "mb": 6.7,  "fits64mb": true  },
+        { "n": 1000000, "mb": 76.3, "fits64mb": false }
+      ],
+      "notes": "Uses n*log(n) space. Safe for n=10^5. At n=10^6 exceeds 64MB. Static only — no updates."
+    },
+    {
+      "id": "adjacency_list",
+      "name": "Adjacency List (graph)",
+      "formula": "~8 * (n + e) bytes",
+      "examples": [
+        { "n": 100000, "e": 100000,  "mb": 1.5,  "fits64mb": true  },
+        { "n": 100000, "e": 1000000, "mb": 15.3, "fits64mb": true  },
+        { "n": 100000, "e": 5000000, "mb": 76.3, "fits64mb": false }
+      ],
+      "notes": "Standard graph representation. Memory proportional to edges. Use for sparse graphs."
+    },
+    {
+      "id": "adjacency_matrix",
+      "name": "Adjacency Matrix (graph)",
+      "formula": "4 * n * n bytes",
+      "examples": [
+        { "n": 1000,  "mb": 3.8,      "fits64mb": true  },
+        { "n": 3000,  "mb": 34.3,     "fits64mb": true  },
+        { "n": 4000,  "mb": 61.0,     "fits64mb": true  },
+        { "n": 10000, "mb": 381.5,    "fits64mb": false },
+        { "n": 100000,"mb": 38146.97, "fits64mb": false }
+      ],
+      "notes": "ONLY use for dense graphs with n <= 3000-4000. n=10^5 needs 40GB — never use."
+    },
+    {
+      "id": "trie",
+      "name": "Trie (26-char alphabet)",
+      "formula": "~(26 * 8 + 4) * nodes bytes per node = ~212 bytes/node",
+      "examples": [
+        { "nodes": 100000,  "mb": 20.2,  "fits64mb": true  },
+        { "nodes": 300000,  "mb": 60.7,  "fits64mb": true  },
+        { "nodes": 1000000, "mb": 202.2, "fits64mb": false }
+      ],
+      "notes": "Each node stores 26 child pointers (8 bytes each) + data. Very heavy per node. Use array-based Trie to reduce: ~4 bytes per child pointer = ~108 bytes/node."
+    },
+    {
+      "id": "suffix_array",
+      "name": "Suffix Array + LCP",
+      "formula": "~12 * n bytes (SA + LCP + rank arrays)",
+      "examples": [
+        { "n": 100000,  "mb": 1.1,  "fits64mb": true },
+        { "n": 1000000, "mb": 11.4, "fits64mb": true },
+        { "n": 5000000, "mb": 57.2, "fits64mb": true }
+      ],
+      "notes": "Very memory efficient for string processing. 3 int arrays of size n."
+    },
+    {
+      "id": "dp_table_1d",
+      "name": "1D DP table",
+      "formula": "4 * n bytes",
+      "examples": [
+        { "n": 1000000,  "mb": 3.8,  "fits64mb": true },
+        { "n": 10000000, "mb": 38.1, "fits64mb": true }
+      ],
+      "notes": "Essentially free. Never a memory concern for 1D DP."
+    },
+    {
+      "id": "dp_table_2d",
+      "name": "2D DP table [n][m]",
+      "formula": "4 * n * m bytes",
+      "examples": [
+        { "n": 1000,  "m": 1000,  "mb": 3.8,   "fits64mb": true  },
+        { "n": 3000,  "m": 3000,  "mb": 34.3,  "fits64mb": true  },
+        { "n": 5000,  "m": 5000,  "mb": 95.4,  "fits64mb": false },
+        { "n": 10000, "m": 10000, "mb": 381.5, "fits64mb": false }
+      ],
+      "notes": "Most common DP memory issue. Always check n*m before declaring 2D state."
+    },
+    {
+      "id": "dp_table_3d",
+      "name": "3D DP table [n][m][k]",
+      "formula": "4 * n * m * k bytes",
+      "examples": [
+        { "n": 100, "m": 100, "k": 100,  "mb": 3.8,   "fits64mb": true  },
+        { "n": 500, "m": 500, "k": 500,  "mb": 238.4, "fits64mb": false },
+        { "n": 100, "m": 100, "k": 10000,"mb": 381.5, "fits64mb": false }
+      ],
+      "notes": "Dangerous. Even moderate dimensions explode. Always check before writing 3D DP."
+    },
+    {
+      "id": "hash_map",
+      "name": "Hash Map (unordered_map)",
+      "formula": "~50-100 bytes per entry (overhead heavy)",
+      "examples": [
+        { "n": 100000,  "mb": 5.0,  "fits64mb": true  },
+        { "n": 500000,  "mb": 25.0, "fits64mb": true  },
+        { "n": 1000000, "mb": 50.0, "fits64mb": true  },
+        { "n": 5000000, "mb": 250.0,"fits64mb": false }
+      ],
+      "notes": "Much heavier per entry than arrays. Use arrays when keys are bounded integers. Reserve size upfront to avoid rehashing."
+    },
+    {
+      "id": "union_find",
+      "name": "Union Find (DSU)",
+      "formula": "8 * n bytes (parent + rank arrays)",
+      "examples": [
+        { "n": 1000000,  "mb": 7.6,  "fits64mb": true },
+        { "n": 8000000,  "mb": 61.0, "fits64mb": true }
+      ],
+      "notes": "Two int arrays. Extremely memory efficient. Safe up to n=8*10^6 in 64MB."
+    }
+  ],
+
+  "decisionLayer": [
+    {
+      "id": "rule_adjacency_matrix",
+      "condition": "n > 4000 AND structure = adjacency_matrix",
+      "verdict": "ELIMINATE",
+      "reason": "Adjacency matrix for n>4000 exceeds 64MB. Use adjacency list instead.",
+      "alternative": "adjacency_list"
+    },
+    {
+      "id": "rule_sparse_table_large",
+      "condition": "n > 500000 AND structure = sparse_table AND memLimit = 64mb",
+      "verdict": "ELIMINATE",
+      "reason": "Sparse table at n>500K exceeds 64MB. Use Segment Tree instead.",
+      "alternative": "segment_tree"
+    },
+    {
+      "id": "rule_2d_dp_large",
+      "condition": "n * m > 16000000",
+      "verdict": "WARNING",
+      "reason": "2D DP table n*m > 16M integers = 64MB. Check your memory limit.",
+      "alternative": "Consider space optimization — rolling array reduces to O(m) space"
+    },
+    {
+      "id": "rule_3d_dp",
+      "condition": "n * m * k > 4000000",
+      "verdict": "WARNING",
+      "reason": "3D DP table exceeds 16MB. Very likely to MLE on 64MB limits.",
+      "alternative": "Check if one dimension can be eliminated or compressed"
+    },
+    {
+      "id": "rule_trie_large",
+      "condition": "n > 300000 AND structure = trie AND memLimit = 64mb",
+      "verdict": "WARNING",
+      "reason": "Standard Trie with n>300K nodes may exceed 64MB. Use array-based Trie.",
+      "alternative": "array_based_trie"
+    },
+    {
+      "id": "rule_hashmap_vs_array",
+      "condition": "keys_are_bounded_integers = true AND structure = hash_map",
+      "verdict": "SUGGEST_ALTERNATIVE",
+      "reason": "Hash map has 50-100x overhead vs array. If keys are bounded integers, use direct array indexing.",
+      "alternative": "Direct array indexed by key value"
+    },
+    {
+      "id": "rule_segment_tree_safe",
+      "condition": "n <= 4000000 AND structure = segment_tree AND memLimit = 64mb",
+      "verdict": "SAFE",
+      "reason": "Segment tree uses 4n ints. At n=4*10^6 it is 61MB — just fits.",
+      "alternative": null
+    },
+    {
+      "id": "rule_rolling_array",
+      "condition": "dp_dimensions = 2 AND only_need_previous_row = true",
+      "verdict": "OPTIMIZE",
+      "reason": "If DP only reads from previous row, reduce 2D table to two 1D arrays.",
+      "alternative": "Two 1D arrays — reduces from O(n*m) to O(m) space"
+    }
+  ],
+
+  "commonPatterns": [
+    {
+      "id": "pattern_knapsack_space",
+      "name": "0/1 Knapsack space optimization",
+      "naive": "O(n * W) space — 2D DP table",
+      "optimized": "O(W) space — single 1D array, iterate backwards",
+      "when": "Standard 0/1 knapsack where you only need current and previous row",
+      "savings": "Reduces memory by factor of n"
+    },
+    {
+      "id": "pattern_lcs_space",
+      "name": "LCS / Edit Distance space optimization",
+      "naive": "O(n * m) space — full 2D table",
+      "optimized": "O(min(n, m)) space — two rows",
+      "when": "Only need the value, not the reconstruction path",
+      "savings": "Reduces from n*m to 2*min(n,m)"
+    },
+    {
+      "id": "pattern_graph_implicit",
+      "name": "Implicit graph — no explicit storage",
+      "naive": "Store all edges explicitly — O(E) space",
+      "optimized": "Generate neighbors on the fly — O(1) extra space",
+      "when": "Graph is defined by a rule (grid adjacency, one edit away, etc.)",
+      "savings": "Eliminates adjacency list entirely"
+    },
+    {
+      "id": "pattern_coordinate_compression",
+      "name": "Coordinate compression",
+      "naive": "Array indexed by value — O(max_value) space",
+      "optimized": "Compress to rank — O(n) space",
+      "when": "Values are large (up to 10^9) but count is small (n = 10^5)",
+      "savings": "Reduces from 10^9 to n space"
+    },
+    {
+      "id": "pattern_bitset_dp",
+      "name": "Bitset DP optimization",
+      "naive": "O(n^2) boolean DP table",
+      "optimized": "O(n^2 / 64) using bitset",
+      "when": "DP transitions are OR/AND operations on boolean states",
+      "savings": "64x speedup and memory reduction"
+    }
+  ],
+
+  "warningThresholds": {
+    "mb_64": {
+      "int_array_max_n":        16000000,
+      "long_array_max_n":        8000000,
+      "2d_int_max_cells":       16000000,
+      "segment_tree_max_n":      4000000,
+      "sparse_table_max_n":       500000,
+      "adjacency_matrix_max_n":    4000,
+      "trie_max_nodes":           300000,
+      "union_find_max_n":        8000000,
+      "hash_map_max_entries":    1000000
+    },
+    "mb_256": {
+      "int_array_max_n":        64000000,
+      "long_array_max_n":       32000000,
+      "2d_int_max_cells":       64000000,
+      "segment_tree_max_n":     16000000,
+      "sparse_table_max_n":      2000000,
+      "adjacency_matrix_max_n":   8000,
+      "trie_max_nodes":          1200000,
+      "union_find_max_n":       32000000,
+      "hash_map_max_entries":    4000000
+    },
+    "mb_512": {
+      "int_array_max_n":       128000000,
+      "long_array_max_n":       64000000,
+      "2d_int_max_cells":      128000000,
+      "segment_tree_max_n":     32000000,
+      "sparse_table_max_n":      4000000,
+      "adjacency_matrix_max_n":   11000,
+      "trie_max_nodes":          2400000,
+      "union_find_max_n":       64000000,
+      "hash_map_max_entries":    8000000
+    }
+  }
+}

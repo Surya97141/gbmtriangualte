@@ -1,0 +1,504 @@
+/* assets/css/components.css */
+/* Buttons, badges, cards, collapsibles, progress, tabs */
+
+/* ════════════════════════════════════════════════════════════════════════
+   BUTTONS
+════════════════════════════════════════════════════════════════════════ */
+
+.btn {
+  display        : inline-flex;
+  align-items    : center;
+  justify-content: center;
+  gap            : var(--space-2);
+  padding        : var(--space-2) var(--space-5);
+  border-radius  : var(--r-md);
+  font-family    : var(--font-mono);
+  font-size      : .78rem;
+  font-weight    : 500;
+  letter-spacing : .5px;
+  cursor         : pointer;
+  transition     : all var(--transition-fast);
+  white-space    : nowrap;
+  border         : 1px solid transparent;
+  text-decoration: none;
+  line-height    : 1;
+  height         : 36px;
+}
+
+/* Primary — cyan filled */
+.btn--primary {
+  background  : var(--cyan);
+  color       : var(--void);
+  border-color: var(--cyan);
+}
+.btn--primary:hover {
+  background  : #33ddff;
+  box-shadow  : var(--glow-cyan);
+  transform   : translateY(-1px);
+}
+.btn--primary:active { transform: translateY(0); }
+
+/* Secondary — outlined */
+.btn--secondary {
+  background  : transparent;
+  color       : var(--cyan);
+  border-color: var(--cyan-border);
+}
+.btn--secondary:hover {
+  background  : var(--cyan-dim);
+  border-color: var(--cyan);
+}
+
+/* Ghost — very subtle */
+.btn--ghost {
+  background  : transparent;
+  color       : var(--text-secondary);
+  border-color: var(--border-default);
+}
+.btn--ghost:hover {
+  background  : var(--surface-2);
+  color       : var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+/* Danger */
+.btn--danger {
+  background  : transparent;
+  color       : var(--fail);
+  border-color: var(--fail-border);
+}
+.btn--danger:hover {
+  background  : var(--fail-dim);
+  box-shadow  : var(--glow-fail);
+}
+
+/* Disabled */
+.btn:disabled,
+.btn--disabled {
+  opacity       : .35;
+  cursor        : not-allowed;
+  pointer-events: none;
+}
+
+/* Size variants */
+.btn--sm { height: 28px; padding: var(--space-1) var(--space-3); font-size: .7rem; }
+.btn--lg { height: 44px; padding: var(--space-3) var(--space-8); font-size: .86rem; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   ANSWER BUTTONS (stage-specific)
+════════════════════════════════════════════════════════════════════════ */
+
+.answer-btn {
+  padding      : var(--space-2) var(--space-4);
+  border       : 1px solid var(--border-default);
+  border-radius: var(--r-sm);
+  background   : var(--surface-1);
+  font-family  : var(--font-mono);
+  font-size    : .72rem;
+  color        : var(--text-secondary);
+  cursor       : pointer;
+  transition   : all var(--transition-fast);
+}
+
+.answer-btn:hover { border-color: var(--warn); color: var(--text-primary); }
+
+.answer-btn--yes.answer-btn--selected {
+  background  : var(--pass-dim);
+  border-color: var(--pass-border);
+  color       : var(--pass);
+}
+
+.answer-btn--no.answer-btn--selected {
+  background  : rgba(255,255,255,.04);
+  border-color: var(--border-strong);
+  color       : var(--text-muted);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   BADGES
+════════════════════════════════════════════════════════════════════════ */
+
+.badge {
+  display      : inline-flex;
+  align-items  : center;
+  gap          : var(--space-1);
+  padding      : 2px 8px;
+  border-radius: var(--r-full);
+  font-family  : var(--font-mono);
+  font-size    : .65rem;
+  font-weight  : 700;
+  letter-spacing: .5px;
+  border       : 1px solid;
+  white-space  : nowrap;
+}
+
+.badge--cyan    { background: var(--cyan-dim);   color: var(--cyan);  border-color: var(--cyan-border);  }
+.badge--blue    { background: var(--blue-dim);   color: var(--blue);  border-color: var(--blue-border);  }
+.badge--pass    { background: var(--pass-dim);   color: var(--pass);  border-color: var(--pass-border);  }
+.badge--warn    { background: var(--warn-dim);   color: var(--warn);  border-color: var(--warn-border);  }
+.badge--fail    { background: var(--fail-dim);   color: var(--fail);  border-color: var(--fail-border);  }
+.badge--violet  { background: var(--violet-dim); color: var(--violet);border-color: var(--violet-border);}
+.badge--ghost   { background: var(--surface-1);  color: var(--text-muted); border-color: var(--border-dim); }
+
+/* Dot badge */
+.badge--dot::before {
+  content      : '';
+  width        : 5px;
+  height       : 5px;
+  border-radius: 50%;
+  background   : currentColor;
+  flex-shrink  : 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   CARDS
+════════════════════════════════════════════════════════════════════════ */
+
+.card {
+  background    : var(--surface-0);
+  border        : 1px solid var(--border-dim);
+  border-radius : var(--r-lg);
+  padding       : var(--space-4) var(--space-5);
+  transition    : border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.card--hover:hover {
+  border-color: var(--border-default);
+  background  : var(--surface-1);
+  cursor      : pointer;
+}
+
+.card--selected {
+  border-color: var(--cyan-border);
+  background  : var(--surface-1);
+  box-shadow  : inset 0 0 0 1px rgba(0,212,255,.08);
+}
+
+.card--active {
+  border-color: var(--cyan);
+  background  : var(--surface-2);
+}
+
+.card--pass    { border-color: var(--pass-border);   background: rgba(0,229,160,.04); }
+.card--warn    { border-color: var(--warn-border);   background: rgba(255,187,51,.04); }
+.card--fail    { border-color: var(--fail-border);   background: rgba(255,68,102,.04); }
+.card--cyan    { border-color: var(--cyan-border);   background: var(--cyan-glow); }
+
+/* Glowing card */
+.card--glow-cyan {
+  border-color: var(--cyan-border);
+  box-shadow  : 0 0 24px rgba(0,212,255,.08), inset 0 0 24px rgba(0,212,255,.03);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   COLLAPSIBLE
+════════════════════════════════════════════════════════════════════════ */
+
+.collapsible {
+  border       : 1px solid var(--border-dim);
+  border-radius: var(--r-md);
+  overflow     : hidden;
+}
+
+.collapsible__header {
+  display        : flex;
+  align-items    : center;
+  justify-content: space-between;
+  padding        : var(--space-2) var(--space-3);
+  background     : var(--surface-1);
+  cursor         : pointer;
+  font-family    : var(--font-mono);
+  font-size      : .62rem;
+  letter-spacing : 1.5px;
+  text-transform : uppercase;
+  color          : var(--text-muted);
+  transition     : background var(--transition-fast), color var(--transition-fast);
+  user-select    : none;
+}
+
+.collapsible__header:hover {
+  background : var(--surface-2);
+  color      : var(--text-secondary);
+}
+
+.collapsible__arrow {
+  font-size : .65rem;
+  transition: transform var(--transition-base);
+}
+
+.collapsible--open .collapsible__arrow { transform: rotate(180deg); }
+
+.collapsible__body {
+  border-top: 1px solid var(--border-dim);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   PROGRESS INDICATORS
+════════════════════════════════════════════════════════════════════════ */
+
+.progress-track {
+  width        : 100%;
+  height       : 3px;
+  background   : var(--surface-2);
+  border-radius: var(--r-full);
+  overflow     : hidden;
+}
+
+.progress-fill {
+  height        : 100%;
+  background    : var(--cyan);
+  border-radius : var(--r-full);
+  transition    : width var(--transition-slow);
+  box-shadow    : 0 0 8px rgba(0,212,255,.5);
+}
+
+.progress-fill--pass   { background: var(--pass); box-shadow: 0 0 8px rgba(0,229,160,.5); }
+.progress-fill--warn   { background: var(--warn); box-shadow: 0 0 8px rgba(255,187,51,.5); }
+.progress-fill--fail   { background: var(--fail); box-shadow: 0 0 8px rgba(255,68,102,.5); }
+
+/* Segmented progress — stage dots */
+.progress-dots {
+  display : flex;
+  gap     : var(--space-1);
+  align-items: center;
+}
+
+.progress-dot {
+  width        : 6px;
+  height       : 6px;
+  border-radius: 50%;
+  background   : var(--border-default);
+  transition   : all var(--transition-fast);
+  flex-shrink  : 0;
+}
+
+.progress-dot--done    { background: var(--pass); box-shadow: 0 0 5px rgba(0,229,160,.5); }
+.progress-dot--current { background: var(--cyan); box-shadow: 0 0 8px rgba(0,212,255,.6); width: 8px; height: 8px; }
+.progress-dot--locked  { background: var(--border-subtle); }
+
+/* ════════════════════════════════════════════════════════════════════════
+   TABS
+════════════════════════════════════════════════════════════════════════ */
+
+.tabs {
+  display  : flex;
+  gap      : var(--space-1);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border-dim);
+  padding-bottom: var(--space-1);
+}
+
+.tab {
+  padding      : var(--space-2) var(--space-4);
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  font-family  : var(--font-mono);
+  font-size    : .72rem;
+  letter-spacing: .5px;
+  color        : var(--text-muted);
+  cursor       : pointer;
+  transition   : all var(--transition-fast);
+  border       : 1px solid transparent;
+  border-bottom: none;
+  user-select  : none;
+  background   : transparent;
+}
+
+.tab:hover     { color: var(--text-secondary); background: var(--surface-1); }
+
+.tab--active {
+  color       : var(--cyan);
+  background  : var(--surface-1);
+  border-color: var(--border-dim);
+  border-bottom-color: var(--surface-1);
+  position    : relative;
+  bottom      : -1px;
+}
+
+/* Pill tabs variant */
+.tabs--pill    { border-bottom: none; }
+.tabs--pill .tab {
+  border-radius: var(--r-full);
+  border       : 1px solid var(--border-dim);
+  background   : transparent;
+}
+.tabs--pill .tab--active {
+  background  : var(--cyan-dim);
+  border-color: var(--cyan-border);
+  color       : var(--cyan);
+  bottom      : 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   WATCHOUT ROWS
+════════════════════════════════════════════════════════════════════════ */
+
+.watchout-row {
+  display    : flex;
+  align-items: flex-start;
+  gap        : var(--space-2);
+  font-size  : .74rem;
+  color      : var(--warn);
+  line-height: 1.5;
+}
+
+.watchout-icon { flex-shrink: 0; font-size: .8rem; }
+.watchout-text { color: var(--text-secondary); }
+
+/* ════════════════════════════════════════════════════════════════════════
+   VERDICT CARDS
+════════════════════════════════════════════════════════════════════════ */
+
+.verdict-card {
+  display       : flex;
+  align-items   : flex-start;
+  gap           : var(--space-3);
+  padding       : var(--space-3) var(--space-4);
+  border-radius : var(--r-md);
+  border        : 1px solid;
+}
+
+.verdict-card--pass   { background: var(--pass-dim);   border-color: var(--pass-border);   }
+.verdict-card--warn   { background: var(--warn-dim);   border-color: var(--warn-border);   }
+.verdict-card--fail   { background: var(--fail-dim);   border-color: var(--fail-border);   }
+.verdict-card--info   { background: var(--info-dim);   border-color: var(--info-border);   }
+
+.verdict-card__icon   { font-family: var(--font-mono); font-size: 1.1rem; flex-shrink: 0; font-weight: 700; }
+.verdict-card--pass .verdict-card__icon { color: var(--pass); }
+.verdict-card--warn .verdict-card__icon { color: var(--warn); }
+.verdict-card--fail .verdict-card__icon { color: var(--fail); }
+.verdict-card--info .verdict-card__icon { color: var(--info); }
+
+.verdict-card__message { font-size: .82rem; color: var(--text-primary); font-weight: 500; line-height: 1.5; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   SUMMARY ROWS
+════════════════════════════════════════════════════════════════════════ */
+
+.summary-row {
+  display      : flex;
+  align-items  : baseline;
+  gap          : var(--space-3);
+  padding      : var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.summary-row:last-of-type { border-bottom: none; }
+
+.summary-row__label {
+  font-family   : var(--font-mono);
+  font-size     : .6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color         : var(--text-muted);
+  min-width     : 90px;
+  flex-shrink   : 0;
+}
+
+.summary-row__value {
+  font-size  : .82rem;
+  color      : var(--text-primary);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.summary-placeholder {
+  font-size : .78rem;
+  color     : var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding   : var(--space-5) 0;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   CODE BLOCKS
+════════════════════════════════════════════════════════════════════════ */
+
+.code-block {
+  font-family  : var(--font-mono);
+  font-size    : .72rem;
+  line-height  : 1.8;
+  background   : var(--void);
+  color        : var(--text-primary);
+  padding      : var(--space-4) var(--space-5);
+  border-radius: var(--r-md);
+  overflow-x   : auto;
+  white-space  : pre;
+  border       : 1px solid var(--border-dim);
+  border-left  : 2px solid var(--cyan-border);
+  margin       : 0;
+}
+
+/* Inline monospace token */
+.mono-token {
+  font-family  : var(--font-mono);
+  font-size    : .72rem;
+  background   : var(--surface-1);
+  color        : var(--cyan);
+  padding      : 1px 6px;
+  border-radius: var(--r-xs);
+  border       : 1px solid var(--border-subtle);
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   LOADING / SKELETON
+════════════════════════════════════════════════════════════════════════ */
+
+.skeleton {
+  background   : var(--surface-1);
+  border-radius: var(--r-sm);
+  position     : relative;
+  overflow     : hidden;
+}
+
+.skeleton::after {
+  content   : '';
+  position  : absolute;
+  inset     : 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,212,255,.04) 50%,
+    transparent 100%
+  );
+  animation : skeleton-sweep 1.5s infinite;
+}
+
+@keyframes skeleton-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   TOAST NOTIFICATION
+════════════════════════════════════════════════════════════════════════ */
+
+.toast-container {
+  position  : fixed;
+  bottom    : var(--space-6);
+  right     : var(--space-6);
+  z-index   : 10000;
+  display   : flex;
+  flex-direction: column;
+  gap       : var(--space-2);
+  max-width : 360px;
+}
+
+.toast {
+  padding      : var(--space-3) var(--space-4);
+  background   : var(--surface-2);
+  border       : 1px solid var(--border-default);
+  border-radius: var(--r-md);
+  font-family  : var(--font-mono);
+  font-size    : .72rem;
+  color        : var(--text-primary);
+  box-shadow   : var(--shadow-lg);
+  animation    : slide-in-right var(--transition-slow) ease;
+  display      : flex;
+  align-items  : center;
+  gap          : var(--space-2);
+}
+
+.toast--info    { border-color: var(--cyan-border);   }
+.toast--success { border-color: var(--pass-border);   }
+.toast--warning { border-color: var(--warn-border);   }
+.toast--error   { border-color: var(--fail-border);   }

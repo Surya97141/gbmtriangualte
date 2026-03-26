@@ -1,0 +1,1321 @@
+<!-- stages/stage3/stage3.html -->
+<!-- Reference template for Stage 3 — Structural Properties -->
+<!-- stage3.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 3 — Structural Properties</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --gray-bg    : rgba(138,128,112,.08);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 820px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage3 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 28px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Progress strip ──────────────────────────────────────────────────── */
+    .stage3__progress-strip {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+    }
+
+    .s3-dot {
+      display       : flex;
+      align-items   : center;
+      gap           : 6px;
+      padding       : 5px 10px;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : 20px;
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s;
+      font-size     : .72rem;
+    }
+
+    .s3-dot:hover            { border-color: var(--yellow); }
+
+    .s3-dot--answered {
+      border-color: var(--green);
+      background  : var(--green-bg);
+    }
+
+    .s3-dot--unsure {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .s3-dot__num {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      font-weight  : 700;
+      background   : var(--border);
+      color        : var(--ink);
+      width        : 16px;
+      height       : 16px;
+      border-radius: 50%;
+      display      : flex;
+      align-items  : center;
+      justify-content: center;
+      flex-shrink  : 0;
+    }
+
+    .s3-dot--answered .s3-dot__num {
+      background: var(--green);
+      color     : #fff;
+    }
+
+    .s3-dot--unsure .s3-dot__num {
+      background: var(--yellow);
+      color     : var(--ink);
+    }
+
+    .s3-dot__label {
+      color    : var(--ink);
+      font-size: .72rem;
+    }
+
+    /* ── Property block ──────────────────────────────────────────────────── */
+    .stage3__properties-panel {
+      display       : flex;
+      flex-direction: column;
+      gap           : 20px;
+    }
+
+    .s3-prop-block {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 12px;
+      transition    : border-color .2s;
+    }
+
+    .s3-prop-block--answered {
+      border-color: rgba(6,214,160,.35);
+    }
+
+    .s3-prop-block__label {
+      font-family   : var(--font-mono);
+      font-size     : .68rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .s3-prop-block__question {
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .s3-prop-block__why {
+      font-size  : .76rem;
+      color      : var(--muted);
+      line-height: 1.6;
+      padding    : 8px 12px;
+      background : var(--bg);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--border);
+    }
+
+    .why-label {
+      font-family: var(--font-mono);
+      font-size  : .62rem;
+      color      : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right: 4px;
+    }
+
+    /* ── Answer cards ────────────────────────────────────────────────────── */
+    .s3-prop-block__options {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 8px;
+    }
+
+    .s3-answer-card {
+      flex          : 1;
+      min-width     : 160px;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 10px 13px;
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s, transform .1s;
+    }
+
+    .s3-answer-card:hover { transform: translateY(-1px); }
+
+    /* Color variants */
+    .s3-answer-card--green:hover,
+    .s3-answer-card--green.s3-answer-card--selected {
+      border-color: var(--green);
+      background  : var(--green-bg);
+    }
+
+    .s3-answer-card--red:hover,
+    .s3-answer-card--red.s3-answer-card--selected {
+      border-color: rgba(230,57,70,.5);
+      background  : var(--red-bg);
+    }
+
+    .s3-answer-card--yellow:hover,
+    .s3-answer-card--yellow.s3-answer-card--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .s3-answer-card--blue:hover,
+    .s3-answer-card--blue.s3-answer-card--selected {
+      border-color: rgba(33,150,243,.5);
+      background  : var(--blue-bg);
+    }
+
+    .s3-answer-card--pur:hover,
+    .s3-answer-card--pur.s3-answer-card--selected {
+      border-color: rgba(192,84,252,.4);
+      background  : var(--pur-bg);
+    }
+
+    .s3-answer-card--gray:hover,
+    .s3-answer-card--gray.s3-answer-card--selected {
+      border-color: var(--muted);
+      background  : var(--gray-bg);
+    }
+
+    .s3-answer-card__label {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .s3-answer-card__sublabel {
+      font-size  : .68rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Property impact ─────────────────────────────────────────────────── */
+    .s3-prop-block__impact { min-height: 0; }
+
+    .s3-followup {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      padding    : 7px 11px;
+      background : var(--blue-bg);
+      border     : 1px solid rgba(33,150,243,.18);
+      border-radius: var(--radius-sm);
+      font-size  : .75rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .s3-followup__icon {
+      font-family: var(--font-mono);
+      color      : var(--blue);
+      flex-shrink: 0;
+    }
+
+    .s3-unsure-warning {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 7px;
+      font-size  : .74rem;
+      color      : #7a5a00;
+      background : var(--yellow-bg);
+      border     : 1px solid rgba(255,209,102,.3);
+      border-radius: var(--radius-sm);
+      padding    : 6px 10px;
+    }
+
+    .s3-prop-impact {
+      display  : flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap      : 6px;
+      margin-top: 4px;
+    }
+
+    .s3-prop-impact__label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      flex-shrink   : 0;
+    }
+
+    .opens-label  { color: #028a5b; }
+    .elim-label   { color: var(--red); }
+
+    .opens-list,
+    .elim-list {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 5px;
+    }
+
+    .opened-badge {
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      border       : 1px solid rgba(6,214,160,.25);
+      padding      : 2px 8px;
+      border-radius: 4px;
+    }
+
+    .elim-badge {
+      font-family    : var(--font-mono);
+      font-size      : .65rem;
+      background     : rgba(230,57,70,.08);
+      color          : var(--red);
+      border         : 1px solid rgba(230,57,70,.2);
+      padding        : 2px 8px;
+      border-radius  : 4px;
+      text-decoration: line-through;
+    }
+
+    /* ── Collapsible test cases ───────────────────────────────────────────── */
+    .collapsible {
+      border        : 1px solid var(--border);
+      border-radius : var(--radius-sm);
+      overflow      : hidden;
+    }
+
+    .collapsible__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 7px 12px;
+      background     : var(--bg);
+      cursor         : pointer;
+      font-family    : var(--font-mono);
+      font-size      : .62rem;
+      letter-spacing : 1.5px;
+      text-transform : uppercase;
+      color          : var(--muted);
+    }
+
+    .collapsible__header:hover { background: rgba(212,204,184,.3); }
+    .collapsible__arrow        { font-size: .7rem; }
+
+    .collapsible__body { padding: 10px 12px; }
+
+    .s3-test-cases {
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .s3-test-case {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+      padding       : 7px 10px;
+      background    : var(--bg);
+      border-radius : var(--radius-sm);
+    }
+
+    .s3-test-case__scenario {
+      font-size  : .76rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s3-test-case__answer {
+      display  : flex;
+      gap      : 7px;
+      align-items: flex-start;
+    }
+
+    .tc-answer-badge {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      background   : var(--blue-bg);
+      color        : var(--blue);
+      padding      : 1px 7px;
+      border-radius: 4px;
+      flex-shrink  : 0;
+    }
+
+    .tc-reasoning {
+      font-size  : .7rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Sub-classifier panels ───────────────────────────────────────────── */
+    .stage3__dp-panel,
+    .stage3__graph-panel {
+      background    : var(--surface);
+      border        : 1.5px solid rgba(33,150,243,.3);
+      border-radius : var(--radius-lg);
+      padding       : 18px 20px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 16px;
+    }
+
+    .stage3__graph-panel {
+      border-color: rgba(192,84,252,.3);
+    }
+
+    .stage3__sub-header {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 12px;
+    }
+
+    .sub-header__icon {
+      font-size  : 1.3rem;
+      flex-shrink: 0;
+      margin-top : 2px;
+    }
+
+    .sub-header__title {
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .sub-header__sub {
+      font-size  : .74rem;
+      color      : var(--muted);
+      margin-top : 3px;
+    }
+
+    /* ── DP sub-classifier ───────────────────────────────────────────────── */
+    .s3-dp-question {
+      font-size  : .88rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s3-dp-sublabel {
+      font-size: .74rem;
+      color    : var(--muted);
+    }
+
+    .s3-dp-options {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap                  : 8px;
+    }
+
+    .s3-dp-card {
+      background    : var(--bg);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 10px 12px;
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s;
+    }
+
+    .s3-dp-card:hover        { border-color: var(--blue); }
+
+    .s3-dp-card--selected {
+      border-color: var(--blue);
+      background  : var(--blue-bg);
+    }
+
+    .s3-dp-card__label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .s3-dp-card__sublabel {
+      font-size  : .67rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── DP type detail ──────────────────────────────────────────────────── */
+    .s3-dp-detail { min-height: 0; }
+
+    .s3-dp-type-detail {
+      background    : var(--bg);
+      border        : 1.5px solid rgba(33,150,243,.25);
+      border-radius : var(--radius-md);
+      padding       : 14px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .s3-dp-type-detail__name {
+      font-size  : .9rem;
+      font-weight: 700;
+      color      : var(--blue);
+    }
+
+    .s3-dp-type-detail__state,
+    .s3-dp-type-detail__base,
+    .s3-dp-type-detail__fill,
+    .s3-dp-type-detail__complexity {
+      font-size  : .76rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .detail-label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 5px;
+    }
+
+    .detail-mono {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      background : var(--bg);
+      padding    : 1px 6px;
+      border-radius: 3px;
+    }
+
+    .detail-example {
+      font-size : .72rem;
+      color     : var(--muted);
+    }
+
+    .s3-dp-type-detail__watchouts {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      margin-top    : 4px;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .72rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+    .watchout-text { line-height: 1.5; }
+
+    .s3-dp-type-detail__opts { margin-top: 4px; }
+
+    .opts-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      margin-top    : 5px;
+    }
+
+    .opt-badge {
+      font-size    : .72rem;
+      color        : var(--ink);
+      background   : var(--blue-bg);
+      border       : 1px solid rgba(33,150,243,.2);
+      padding      : 3px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Graph panel ─────────────────────────────────────────────────────── */
+    .s3-graph-props__title,
+    .s3-graph-goals__title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 8px;
+    }
+
+    .s3-graph-props {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .s3-graph-prop-row {
+      display    : flex;
+      align-items: center;
+      gap        : 12px;
+      padding    : 8px 12px;
+      background : var(--bg);
+      border     : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .s3-graph-prop-row.hidden { display: none; }
+
+    .s3-graph-prop-row__q {
+      font-size: .8rem;
+      color    : var(--ink);
+      flex     : 1;
+    }
+
+    .s3-graph-prop-row__btns {
+      display: flex;
+      gap    : 6px;
+    }
+
+    .graph-prop-btn {
+      padding      : 4px 12px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--surface);
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .graph-prop-btn:hover            { border-color: var(--yellow); }
+
+    .graph-prop-btn--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    /* ── Graph goal grid ─────────────────────────────────────────────────── */
+    .s3-graph-goal-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap                  : 7px;
+    }
+
+    .s3-graph-goal-card {
+      background    : var(--bg);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 10px 12px;
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s;
+    }
+
+    .s3-graph-goal-card:hover         { border-color: var(--pur); }
+
+    .s3-graph-goal-card--selected {
+      border-color: var(--pur);
+      background  : var(--pur-bg);
+    }
+
+    .s3-graph-goal-card__label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .s3-graph-goal-card__question {
+      font-size  : .67rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Graph recommendation ────────────────────────────────────────────── */
+    .s3-graph-recommendation { min-height: 0; }
+
+    .s3-graph-rec-card {
+      background    : var(--surface);
+      border        : 1.5px solid rgba(192,84,252,.3);
+      border-radius : var(--radius-md);
+      padding       : 14px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .s3-graph-rec-card__algo {
+      font-size  : .92rem;
+      font-weight: 700;
+      color      : var(--pur);
+    }
+
+    .s3-graph-rec-card__complexity {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      color      : var(--muted);
+    }
+
+    .s3-graph-rec-card__why {
+      font-size  : .78rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .s3-graph-rec-card__warn {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .72rem;
+      color      : #7a5a00;
+      background : var(--yellow-bg);
+      border     : 1px solid rgba(255,209,102,.3);
+      border-radius: var(--radius-sm);
+      padding    : 5px 8px;
+      margin-top : 4px;
+    }
+
+    .mistake-card {
+      background    : var(--red-bg);
+      border        : 1px solid rgba(230,57,70,.2);
+      border-radius : var(--radius-sm);
+      padding       : 8px 10px;
+      margin-bottom : 5px;
+    }
+
+    .mistake-card__mistake,
+    .mistake-card__fix {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .73rem;
+      line-height: 1.5;
+    }
+
+    .mistake-card__mistake { color: var(--red);   margin-bottom: 4px; }
+    .mistake-card__fix     { color: #028a5b; }
+
+    .fix-icon { flex-shrink: 0; }
+
+    /* ── Summary ─────────────────────────────────────────────────────────── */
+    .stage3__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .stage3__section-title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 12px;
+    }
+
+    .s3-summary-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap                  : 6px;
+      margin-bottom        : 12px;
+    }
+
+    .s3-summary-item {
+      padding      : 7px 11px;
+      border-radius: var(--radius-sm);
+      border       : 1px solid var(--border);
+    }
+
+    .s3-summary-item--green  { background: var(--green-bg);  border-color: rgba(6,214,160,.25);   }
+    .s3-summary-item--red    { background: var(--red-bg);    border-color: rgba(230,57,70,.2);    }
+    .s3-summary-item--yellow { background: var(--yellow-bg); border-color: rgba(255,209,102,.3);  }
+    .s3-summary-item--blue   { background: var(--blue-bg);   border-color: rgba(33,150,243,.2);   }
+    .s3-summary-item--pur    { background: var(--pur-bg);    border-color: rgba(192,84,252,.25);  }
+    .s3-summary-item--gray   { background: var(--gray-bg);   border-color: var(--border);         }
+
+    .s3-summary-item__label {
+      font-family   : var(--font-mono);
+      font-size     : .58rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 3px;
+    }
+
+    .s3-summary-item__answer {
+      font-size  : .78rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 80px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s3-summary-progress {
+      font-family   : var(--font-mono);
+      font-size     : .65rem;
+      color         : var(--muted);
+      text-align    : right;
+      margin-top    : 10px;
+    }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+    .hidden { display: none !important; }
+
+  </style>
+</head>
+<body>
+
+<div class="stage3">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Answer structural questions — not "what algorithm". The algorithm follows from structure.
+    </div>
+    <div class="stage-intro__sub">
+      Seven structural properties narrow the approach. Sub-classifiers activate when relevant.
+    </div>
+  </div>
+
+  <!-- PROGRESS STRIP ------------------------------------------------------- -->
+  <div class="stage3__progress-strip" id="stage3-progress-strip">
+
+    <div class="s3-dot s3-dot--answered" data-prop-id="orderSensitivity">
+      <span class="s3-dot__num">1</span>
+      <span class="s3-dot__label">Order sensitivity</span>
+    </div>
+
+    <div class="s3-dot s3-dot--answered" data-prop-id="subproblemOverlap">
+      <span class="s3-dot__num">2</span>
+      <span class="s3-dot__label">Subproblem overlap</span>
+    </div>
+
+    <div class="s3-dot s3-dot--unsure" data-prop-id="feasibilityBoundary">
+      <span class="s3-dot__num">3</span>
+      <span class="s3-dot__label">Feasibility boundary</span>
+    </div>
+
+    <div class="s3-dot" data-prop-id="localOptimality">
+      <span class="s3-dot__num">4</span>
+      <span class="s3-dot__label">Local optimality</span>
+    </div>
+
+    <div class="s3-dot" data-prop-id="stateSpace">
+      <span class="s3-dot__num">5</span>
+      <span class="s3-dot__label">State space</span>
+    </div>
+
+    <div class="s3-dot" data-prop-id="dependencyStructure">
+      <span class="s3-dot__num">6</span>
+      <span class="s3-dot__label">Dependency structure</span>
+    </div>
+
+    <div class="s3-dot" data-prop-id="searchSpace">
+      <span class="s3-dot__num">7</span>
+      <span class="s3-dot__label">Search space</span>
+    </div>
+
+  </div>
+
+  <!-- PROPERTIES PANEL ----------------------------------------------------- -->
+  <div class="stage3__properties-panel" id="properties-panel">
+
+    <!-- 3A — Order Sensitivity -->
+    <div class="s3-prop-block s3-prop-block--answered" id="prop-block-orderSensitivity">
+
+      <div class="s3-prop-block__label">3A — Order sensitivity</div>
+      <div class="s3-prop-block__question">
+        Does the relative order of elements matter for the answer?
+      </div>
+
+      <div class="s3-prop-block__why">
+        <span class="why-label">Why:</span>
+        If order does not matter — you can sort freely. Sorting opens Two Pointer,
+        Greedy, and Binary Search. If order matters — locked into original sequence.
+      </div>
+
+      <div class="s3-prop-block__options">
+
+        <div class="s3-answer-card s3-answer-card--green s3-answer-card--selected">
+          <div class="s3-answer-card__label">No — order does not matter</div>
+          <div class="s3-answer-card__sublabel">Can sort freely without breaking the problem</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--red">
+          <div class="s3-answer-card__label">Yes — original order is essential</div>
+          <div class="s3-answer-card__sublabel">Position i relative to j matters</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--yellow">
+          <div class="s3-answer-card__label">Partial</div>
+          <div class="s3-answer-card__sublabel">Some structure can be sorted, some cannot</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--gray">
+          <div class="s3-answer-card__label">Unsure</div>
+          <div class="s3-answer-card__sublabel">Cannot determine without more analysis</div>
+        </div>
+
+      </div>
+
+      <!-- Impact region -->
+      <div class="s3-prop-block__impact" id="impact-orderSensitivity">
+        <div class="s3-followup">
+          <span class="s3-followup__icon">→</span>
+          Confirm: does your answer change if you shuffle the input?
+          If no — order truly does not matter.
+        </div>
+        <div class="s3-prop-impact">
+          <span class="s3-prop-impact__label opens-label">Opens:</span>
+          <div class="opens-list">
+            <span class="opened-badge">Sorting-based approaches</span>
+            <span class="opened-badge">Two Pointer on sorted array</span>
+            <span class="opened-badge">Greedy</span>
+            <span class="opened-badge">Binary Search after sorting</span>
+          </div>
+        </div>
+        <div class="s3-prop-impact">
+          <span class="s3-prop-impact__label elim-label">Eliminates:</span>
+          <div class="elim-list">
+            <span class="elim-badge">Position-dependent approaches</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Collapsible test cases -->
+      <div class="collapsible">
+        <div class="collapsible__header">
+          <span>Example problems</span>
+          <span class="collapsible__arrow">▼</span>
+        </div>
+        <div class="collapsible__body">
+          <div class="s3-test-cases">
+
+            <div class="s3-test-case">
+              <div class="s3-test-case__scenario">Find two numbers that sum to target</div>
+              <div class="s3-test-case__answer">
+                <span class="tc-answer-badge">no</span>
+                <span class="tc-reasoning">
+                  Sort then two pointer works — original order irrelevant.
+                </span>
+              </div>
+            </div>
+
+            <div class="s3-test-case">
+              <div class="s3-test-case__scenario">Longest increasing subsequence</div>
+              <div class="s3-test-case__answer">
+                <span class="tc-answer-badge">yes</span>
+                <span class="tc-reasoning">
+                  Subsequence respects original order — sorting changes the problem entirely.
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 3B — Subproblem Overlap -->
+    <div class="s3-prop-block" id="prop-block-subproblemOverlap">
+
+      <div class="s3-prop-block__label">3B — Subproblem overlap</div>
+      <div class="s3-prop-block__question">
+        If you knew the optimal answer for a smaller version — does it directly help solve the full problem?
+      </div>
+
+      <div class="s3-prop-block__why">
+        <span class="why-label">Why:</span>
+        Core test for DP vs Greedy vs Divide and Conquer.
+        Overlapping subproblems → DP. Independent → D&C. No structure → Greedy.
+      </div>
+
+      <div class="s3-prop-block__options">
+
+        <div class="s3-answer-card s3-answer-card--blue">
+          <div class="s3-answer-card__label">Yes — directly helps</div>
+          <div class="s3-answer-card__sublabel">Prefix/suffix/range feeds into larger solution</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--pur">
+          <div class="s3-answer-card__label">Yes — only if problem splits</div>
+          <div class="s3-answer-card__sublabel">Independent halves that combine cleanly</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--green">
+          <div class="s3-answer-card__label">No — each step is independent</div>
+          <div class="s3-answer-card__sublabel">Each decision is fresh</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--gray">
+          <div class="s3-answer-card__label">Unsure</div>
+          <div class="s3-answer-card__sublabel">Cannot determine relationship</div>
+        </div>
+
+      </div>
+
+      <div class="s3-prop-block__impact" id="impact-subproblemOverlap"></div>
+
+    </div>
+
+    <!-- 3C — Feasibility Boundary (abbreviated for space) -->
+    <div class="s3-prop-block" id="prop-block-feasibilityBoundary">
+
+      <div class="s3-prop-block__label">3C — Feasibility boundary</div>
+      <div class="s3-prop-block__question">
+        Is there a value X such that: if X is achievable, then X+1 is also always achievable?
+      </div>
+
+      <div class="s3-prop-block__why">
+        <span class="why-label">Why:</span>
+        Monotonic feasibility → Binary Search on Answer.
+        Find the boundary in O(log n) checks instead of brute force.
+      </div>
+
+      <div class="s3-prop-block__options">
+
+        <div class="s3-answer-card s3-answer-card--green">
+          <div class="s3-answer-card__label">Yes — monotonic feasibility exists</div>
+          <div class="s3-answer-card__sublabel">If X works then X±1 also works</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--red">
+          <div class="s3-answer-card__label">No — not monotonic</div>
+          <div class="s3-answer-card__sublabel">Valid / Invalid / Valid pattern exists</div>
+        </div>
+
+        <div class="s3-answer-card s3-answer-card--gray">
+          <div class="s3-answer-card__label">Unsure</div>
+          <div class="s3-answer-card__sublabel">Need to check with examples</div>
+        </div>
+
+      </div>
+
+      <div class="s3-prop-block__impact" id="impact-feasibilityBoundary"></div>
+
+    </div>
+
+    <!-- Remaining properties follow same pattern — abbreviated -->
+    <!-- 3D, 3E, 3F, 3G blocks rendered same way by stage3.js -->
+
+  </div>
+
+  <!-- DP SUB-CLASSIFIER ---------------------------------------------------- -->
+  <div class="stage3__dp-panel" id="dp-panel">
+
+    <div class="stage3__sub-header">
+      <span class="sub-header__icon">⬡</span>
+      <div class="sub-header__content">
+        <div class="sub-header__title">DP Sub-Classifier</div>
+        <div class="sub-header__sub">
+          Overlapping subproblems detected — identify which DP variant applies
+        </div>
+      </div>
+    </div>
+
+    <div class="s3-dp-question">
+      What does your DP state index represent?
+    </div>
+    <div class="s3-dp-sublabel">
+      What varies between different subproblems?
+    </div>
+
+    <div class="s3-dp-options">
+
+      <div class="s3-dp-card s3-dp-card--selected">
+        <div class="s3-dp-card__label">A single position in one sequence</div>
+        <div class="s3-dp-card__sublabel">dp[i] = answer for prefix ending at i</div>
+      </div>
+
+      <div class="s3-dp-card">
+        <div class="s3-dp-card__label">Two positions — one in each sequence</div>
+        <div class="s3-dp-card__sublabel">dp[i][j] = answer for prefixes of length i, j</div>
+      </div>
+
+      <div class="s3-dp-card">
+        <div class="s3-dp-card__label">A range [i, j] within one sequence</div>
+        <div class="s3-dp-card__sublabel">dp[i][j] = answer for subarray from i to j</div>
+      </div>
+
+      <div class="s3-dp-card">
+        <div class="s3-dp-card__label">A subset of elements</div>
+        <div class="s3-dp-card__sublabel">dp[mask] = answer for subset as bitmask</div>
+      </div>
+
+      <div class="s3-dp-card">
+        <div class="s3-dp-card__label">A node in a tree</div>
+        <div class="s3-dp-card__sublabel">dp[node] = answer for subtree at node</div>
+      </div>
+
+      <div class="s3-dp-card">
+        <div class="s3-dp-card__label">Position + remaining capacity</div>
+        <div class="s3-dp-card__sublabel">dp[i][w] = best value with capacity w</div>
+      </div>
+
+    </div>
+
+    <!-- DP type detail -->
+    <div class="s3-dp-detail" id="dp-type-detail">
+      <div class="s3-dp-type-detail">
+        <div class="s3-dp-type-detail__name">1D DP</div>
+        <div class="s3-dp-type-detail__state">
+          <span class="detail-label">State:</span>
+          <span class="detail-mono">dp[i]</span>
+          <span class="detail-example"> — maximum sum of subarray ending exactly at index i</span>
+        </div>
+        <div class="s3-dp-type-detail__base">
+          <span class="detail-label">Base:</span>
+          dp[0] = a[0]
+        </div>
+        <div class="s3-dp-type-detail__fill">
+          <span class="detail-label">Fill order:</span>
+          Left to right: i = 0, 1, 2, ..., n-1
+        </div>
+        <div class="s3-dp-type-detail__complexity">
+          <span class="detail-label">Complexity:</span>
+          <span class="detail-mono">O(n) time → O(1) with rolling variables</span>
+        </div>
+        <div class="s3-dp-type-detail__watchouts">
+          <div class="watchout-row">
+            <span class="watchout-icon">⚠</span>
+            <span class="watchout-text">
+              Define dp[i] precisely — "ending AT i" vs "ending BY i" are different
+            </span>
+          </div>
+        </div>
+        <div class="s3-dp-type-detail__opts">
+          <span class="detail-label">Possible optimizations:</span>
+          <div class="opts-list">
+            <span class="opt-badge">Rolling Array: O(n) → O(1) space</span>
+            <span class="opt-badge">Convex Hull Trick: O(n²) → O(n log n) if linear cost</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- GRAPH DEEP-DIVE ------------------------------------------------------ -->
+  <div class="stage3__graph-panel" id="graph-panel">
+
+    <div class="stage3__sub-header">
+      <span class="sub-header__icon">◉</span>
+      <div class="sub-header__content">
+        <div class="sub-header__title">Graph Deep-Dive</div>
+        <div class="sub-header__sub">
+          Graph input detected — identify graph properties and goal
+        </div>
+      </div>
+    </div>
+
+    <!-- Graph property questions -->
+    <div class="s3-graph-props">
+      <div class="s3-graph-props__title">First — characterize the graph</div>
+
+      <div class="s3-graph-prop-row">
+        <div class="s3-graph-prop-row__q">Are edges directed?</div>
+        <div class="s3-graph-prop-row__btns">
+          <button class="graph-prop-btn graph-prop-btn--selected">Yes</button>
+          <button class="graph-prop-btn">No</button>
+        </div>
+      </div>
+
+      <div class="s3-graph-prop-row">
+        <div class="s3-graph-prop-row__q">Do edges have weights?</div>
+        <div class="s3-graph-prop-row__btns">
+          <button class="graph-prop-btn">Yes</button>
+          <button class="graph-prop-btn graph-prop-btn--selected">No</button>
+        </div>
+      </div>
+
+      <div class="s3-graph-prop-row hidden" id="graph-prop-row-negative">
+        <div class="s3-graph-prop-row__q">Can edge weights be negative?</div>
+        <div class="s3-graph-prop-row__btns">
+          <button class="graph-prop-btn">Yes</button>
+          <button class="graph-prop-btn">No</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Graph goal grid -->
+    <div class="s3-graph-goals">
+      <div class="s3-graph-goals__title">What is the primary goal on the graph?</div>
+      <div class="s3-graph-goal-grid">
+
+        <div class="s3-graph-goal-card">
+          <div class="s3-graph-goal-card__label">Shortest / minimum cost path</div>
+          <div class="s3-graph-goal-card__question">Minimum steps or cost from A to B</div>
+        </div>
+
+        <div class="s3-graph-goal-card s3-graph-goal-card--selected">
+          <div class="s3-graph-goal-card__label">Topological ordering</div>
+          <div class="s3-graph-goal-card__question">Valid order respecting dependencies</div>
+        </div>
+
+        <div class="s3-graph-goal-card">
+          <div class="s3-graph-goal-card__label">Cycle detection</div>
+          <div class="s3-graph-goal-card__question">Does the graph contain a cycle?</div>
+        </div>
+
+        <div class="s3-graph-goal-card">
+          <div class="s3-graph-goal-card__label">Connected components</div>
+          <div class="s3-graph-goal-card__question">Count or identify separate groups</div>
+        </div>
+
+        <div class="s3-graph-goal-card">
+          <div class="s3-graph-goal-card__label">Minimum spanning tree</div>
+          <div class="s3-graph-goal-card__question">Connect all nodes at minimum cost</div>
+        </div>
+
+        <div class="s3-graph-goal-card">
+          <div class="s3-graph-goal-card__label">Strongly connected components</div>
+          <div class="s3-graph-goal-card__question">Mutually reachable groups</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Algorithm recommendation -->
+    <div class="s3-graph-recommendation" id="graph-recommendation">
+      <div class="s3-graph-rec-card">
+        <div class="s3-graph-rec-card__algo">Kahn's Algorithm</div>
+        <div class="s3-graph-rec-card__complexity">O(V + E)</div>
+        <div class="s3-graph-rec-card__why">
+          Directed graph topological sort — process in-degree 0 nodes.
+          Cycle detection built in.
+        </div>
+        <div class="s3-graph-rec-card__warn">
+          <span class="watchout-icon">⚠</span>
+          After Kahn's: check order.size() == V. If not — cycle exists.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage3__summary" id="stage3-summary">
+
+    <div class="stage3__section-title">Structural findings</div>
+
+    <div class="s3-summary-grid">
+
+      <div class="s3-summary-item s3-summary-item--green">
+        <div class="s3-summary-item__label">Order sensitivity</div>
+        <div class="s3-summary-item__answer">No — order does not matter</div>
+      </div>
+
+      <div class="s3-summary-item s3-summary-item--blue">
+        <div class="s3-summary-item__label">Subproblem overlap</div>
+        <div class="s3-summary-item__answer">Yes — directly helps</div>
+      </div>
+
+      <div class="s3-summary-item s3-summary-item--gray">
+        <div class="s3-summary-item__label">Feasibility boundary</div>
+        <div class="s3-summary-item__answer">Unsure</div>
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">DP type:</span>
+      <span class="summary-row__value">1D DP</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Graph goal:</span>
+      <span class="summary-row__value">Topological ordering</span>
+    </div>
+
+    <div class="s3-summary-progress">3 / 7 properties answered</div>
+
+  </div>
+
+</div><!-- /stage3 -->
+
+</body>
+</html>

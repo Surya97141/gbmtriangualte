@@ -1,0 +1,463 @@
+{
+  "_meta": {
+    "purpose": "DP sub-classifier — identify which kind of DP applies and what the state/transition looks like",
+    "usage": "Stage 3H — triggered when structural analysis confirms overlapping subproblems",
+    "howToUse": "Work through stateIndexType first, then transitionType, then check optimizations"
+  },
+
+  "stateIndexTypes": [
+    {
+      "id": "dp_1d_index",
+      "name": "1D DP — single position index",
+      "stateRepresents": "dp[i] = answer for prefix ending at or including index i",
+      "recognize": [
+        "Single sequence input",
+        "Answer at position i depends only on previous positions",
+        "No two-sequence interaction",
+        "No range or subset involved"
+      ],
+      "typicalTransitions": [
+        "dp[i] = dp[i-1] + something (additive)",
+        "dp[i] = max/min over all j < i of dp[j] + cost(j, i)",
+        "dp[i] = dp[i-1] or dp[i-2] (Fibonacci-style)"
+      ],
+      "baseCase": "dp[0] = 0 or dp[0] = a[0] depending on problem",
+      "spaceOptimization": "If dp[i] only depends on dp[i-1] — reduce to two variables O(1) space",
+      "examples": [
+        "Maximum subarray sum (Kadane)",
+        "Climbing stairs",
+        "House robber",
+        "Minimum cost to reach end"
+      ],
+      "watchOut": "Ensure dp[i] meaning is consistent — ending AT i vs ending BY i are different."
+    },
+    {
+      "id": "dp_2d_two_sequences",
+      "name": "2D DP — two sequence indices",
+      "stateRepresents": "dp[i][j] = answer considering first i elements of s1 and first j elements of s2",
+      "recognize": [
+        "Two string or sequence inputs",
+        "Problem involves matching, aligning, or comparing two sequences",
+        "Edit distance, LCS, or alignment problems"
+      ],
+      "typicalTransitions": [
+        "If s1[i] == s2[j]: dp[i][j] = dp[i-1][j-1] + 1",
+        "Else: dp[i][j] = max/min of dp[i-1][j], dp[i][j-1], dp[i-1][j-1] + cost"
+      ],
+      "baseCase": "dp[0][j] = j (delete all of s2 prefix), dp[i][0] = i (delete all of s1 prefix)",
+      "spaceOptimization": "Only need previous row — reduce from O(nm) to O(m) space",
+      "examples": [
+        "Edit distance (Levenshtein)",
+        "Longest Common Subsequence",
+        "Shortest Common Supersequence",
+        "Regular expression matching",
+        "Wildcard matching"
+      ],
+      "watchOut": "At n=m=10^4 full table needs 400MB. Always apply rolling row optimization for large inputs."
+    },
+    {
+      "id": "dp_2d_single_sequence",
+      "name": "2D DP — single sequence, two pointers (interval DP)",
+      "stateRepresents": "dp[i][j] = answer for subarray/substring from index i to j inclusive",
+      "recognize": [
+        "Single sequence but answer involves ranges within it",
+        "Optimal way to split or combine a range",
+        "Problem involves palindromes, matrix chain, or burst balloons style problems",
+        "Merging adjacent elements optimally"
+      ],
+      "typicalTransitions": [
+        "dp[i][j] = min/max over all k in [i, j-1] of dp[i][k] + dp[k+1][j] + cost(i, j, k)",
+        "dp[i][j] = dp[i+1][j-1] + something if s[i]==s[j] (palindrome)"
+      ],
+      "baseCase": "dp[i][i] = 0 or base value, dp[i][i+1] = cost of adjacent pair",
+      "spaceOptimization": "Cannot easily optimize — O(n^2) space is typical",
+      "fillOrder": "CRITICAL — must fill by increasing interval length, not by row",
+      "examples": [
+        "Longest palindromic subsequence",
+        "Minimum cost to merge stones",
+        "Matrix chain multiplication",
+        "Burst balloons",
+        "Optimal BST construction"
+      ],
+      "watchOut": "Fill order matters critically. Fill dp[i][j] for length 1, then length 2, ..., then length n. Wrong fill order gives wrong answers."
+    },
+    {
+      "id": "dp_bitmask",
+      "name": "Bitmask DP — subset state",
+      "stateRepresents": "dp[mask] or dp[mask][i] = answer for subset represented by mask, currently at element i",
+      "recognize": [
+        "n is small — typically n <= 20",
+        "Problem involves assigning each of n items optimally",
+        "All subsets need to be considered",
+        "TSP-type problems, assignment problems"
+      ],
+      "typicalTransitions": [
+        "dp[mask | (1<<j)][j] = dp[mask][i] + cost(i, j) for all j not in mask",
+        "dp[mask] = min over all i in mask of dp[mask ^ (1<<i)] + cost"
+      ],
+      "baseCase": "dp[0] = 0 or dp[1<<start][start] = 0",
+      "spaceOptimization": "2^n * n states — cannot reduce further",
+      "examples": [
+        "Travelling Salesman Problem (TSP)",
+        "Minimum cost to assign tasks to workers",
+        "Shortest path visiting all nodes",
+        "Partition into k equal subsets"
+      ],
+      "watchOut": "2^20 * 20 = 20M states is fine. 2^25 = 33M states starts being risky. Never use for n > 20."
+    },
+    {
+      "id": "dp_tree",
+      "name": "Tree DP — node and subtree state",
+      "stateRepresents": "dp[node][state] = answer for subtree rooted at node with given state",
+      "recognize": [
+        "Input is explicitly a tree",
+        "Answer for a node depends on answers for its children",
+        "Problem involves subtree properties or path properties",
+        "Rooted tree traversal"
+      ],
+      "typicalTransitions": [
+        "dp[node] = f(dp[child1], dp[child2], ...) combining children",
+        "dp[node][0] = not selecting node, dp[node][1] = selecting node",
+        "For paths: track best single path going down, update global answer at each node"
+      ],
+      "baseCase": "dp[leaf] = leaf value or 0",
+      "fillOrder": "Post-order DFS — children before parent",
+      "examples": [
+        "Maximum independent set on tree",
+        "Minimum vertex cover on tree",
+        "Diameter of tree",
+        "Maximum path sum in tree",
+        "Number of nodes in largest subtree satisfying property"
+      ],
+      "watchOut": "Recursive DFS may stack overflow for n=10^5 with skewed tree. Use iterative post-order."
+    },
+    {
+      "id": "dp_digit",
+      "name": "Digit DP — position and tight constraint",
+      "stateRepresents": "dp[pos][tight][accumulated_state] = count of valid numbers from position pos onward",
+      "recognize": [
+        "Count numbers in range [0, N] satisfying digit property",
+        "N can be very large — up to 10^18",
+        "Property depends on individual digits",
+        "Digit sum, digit count, digit pattern constraints"
+      ],
+      "typicalTransitions": [
+        "For each digit d from 0 to (tight ? current_digit : 9):",
+        "  new_tight = tight AND (d == current_digit)",
+        "  dp[pos+1][new_tight][new_state] += dp[pos][tight][state]"
+      ],
+      "baseCase": "dp[n_digits][any][valid_state] = 1 if valid, 0 otherwise",
+      "spaceOptimization": "Memoize — states are (pos, tight, accumulated). tight is boolean so 2 values.",
+      "examples": [
+        "Count numbers with digit sum = k up to N",
+        "Count numbers with no two adjacent equal digits",
+        "Count stepping numbers (adjacent digits differ by 1)",
+        "Count numbers divisible by d with digit constraints"
+      ],
+      "watchOut": "tight must be passed correctly through recursion. Leading zero handling needs separate flag."
+    },
+    {
+      "id": "dp_knapsack_01",
+      "name": "0/1 Knapsack — item and capacity",
+      "stateRepresents": "dp[i][w] = max value using first i items with weight capacity w",
+      "recognize": [
+        "Each item used at most once",
+        "Fixed capacity or budget constraint",
+        "Maximize value subject to weight constraint",
+        "Binary choice per item — include or exclude"
+      ],
+      "typicalTransitions": [
+        "dp[i][w] = max(dp[i-1][w], dp[i-1][w - weight[i]] + value[i]) if w >= weight[i]",
+        "dp[i][w] = dp[i-1][w] otherwise"
+      ],
+      "baseCase": "dp[0][w] = 0 for all w",
+      "spaceOptimization": "Iterate w from W down to weight[i] — reduces to O(W) space with 1D array",
+      "fillOrder": "For space optimization — iterate items outer, weights inner in DECREASING order",
+      "examples": [
+        "0/1 Knapsack classic",
+        "Subset sum (value = weight = element value)",
+        "Partition equal subset sum",
+        "Target sum with + and - assignments"
+      ],
+      "watchOut": "Decreasing order for 0/1 (each item once). Increasing order for unbounded (item reusable). Mixing these is the most common knapsack bug."
+    },
+    {
+      "id": "dp_knapsack_unbounded",
+      "name": "Unbounded Knapsack — item reusable",
+      "stateRepresents": "dp[w] = max value achievable with capacity exactly w (items reusable)",
+      "recognize": [
+        "Each item can be used unlimited times",
+        "Coin change type problems",
+        "Rod cutting — cut rod into pieces, maximize value"
+      ],
+      "typicalTransitions": [
+        "dp[w] = max over all items i where weight[i] <= w of dp[w - weight[i]] + value[i]"
+      ],
+      "baseCase": "dp[0] = 0",
+      "fillOrder": "Iterate w from 1 to W (increasing) — allows reuse of same item",
+      "examples": [
+        "Coin change — minimum coins",
+        "Coin change 2 — number of ways",
+        "Rod cutting — maximum revenue",
+        "Perfect squares — minimum count"
+      ],
+      "watchOut": "Increasing order for unbounded. The only difference from 0/1 knapsack is fill direction."
+    },
+    {
+      "id": "dp_lis_type",
+      "name": "LIS-type DP — patience sorting / binary search optimization",
+      "stateRepresents": "dp[i] = length of longest increasing subsequence ending at index i",
+      "recognize": [
+        "Looking for longest subsequence with ordering property",
+        "Elements must be in strictly or non-strictly increasing order",
+        "Can extend subsequence by appending elements"
+      ],
+      "typicalTransitions": [
+        "O(n^2): dp[i] = max over all j < i where a[j] < a[i] of dp[j] + 1",
+        "O(n log n): Maintain tails array — binary search for insertion position"
+      ],
+      "baseCase": "dp[i] = 1 for all i (each element alone is subsequence of length 1)",
+      "spaceOptimization": "O(n log n) approach uses O(n) tails array",
+      "examples": [
+        "Longest Increasing Subsequence",
+        "Longest Non-Decreasing Subsequence",
+        "Number of Longest Increasing Subsequences",
+        "Russian Doll Envelopes (2D LIS)"
+      ],
+      "watchOut": "At n=10^5 must use O(n log n) patience sorting. O(n^2) will TLE."
+    },
+    {
+      "id": "dp_state_machine",
+      "name": "State Machine DP — explicit states with transitions",
+      "stateRepresents": "dp[i][state] = answer at index i being in given state",
+      "recognize": [
+        "Problem has distinct modes or phases",
+        "Can transition between modes at each step",
+        "Stock trading problems with cooldown or transaction limits",
+        "Problems with at most k operations allowed"
+      ],
+      "typicalTransitions": [
+        "dp[i][HOLD] = max(dp[i-1][HOLD], dp[i-1][EMPTY] - price[i])",
+        "dp[i][EMPTY] = max(dp[i-1][EMPTY], dp[i-1][HOLD] + price[i])",
+        "dp[i][COOLDOWN] = dp[i-1][HOLD] + price[i]"
+      ],
+      "baseCase": "dp[0][each_state] = initial value for that state",
+      "spaceOptimization": "Only need previous row — O(states) space",
+      "examples": [
+        "Best time to buy and sell stock with cooldown",
+        "Best time to buy and sell with at most k transactions",
+        "Paint fence with at most 2 consecutive same color"
+      ],
+      "watchOut": "Draw state transition diagram explicitly before coding. Missing a transition is the most common bug."
+    },
+    {
+      "id": "dp_grid",
+      "name": "Grid DP — row and column indices",
+      "stateRepresents": "dp[r][c] = answer for reaching or considering cell (r, c)",
+      "recognize": [
+        "2D grid input",
+        "Movement restricted to specific directions (usually right and down)",
+        "Counting paths or finding optimal path in grid",
+        "No backtracking — movement is one-directional"
+      ],
+      "typicalTransitions": [
+        "dp[r][c] = dp[r-1][c] + dp[r][c-1] (path counting)",
+        "dp[r][c] = min(dp[r-1][c], dp[r][c-1]) + cost[r][c] (min cost)",
+        "dp[r][c] = grid[r][c] * max(dp[r-1][c], dp[r][c-1]) (max product)"
+      ],
+      "baseCase": "dp[0][c] = prefix values along top row, dp[r][0] = prefix values along left column",
+      "spaceOptimization": "Only need previous row — O(cols) space",
+      "examples": [
+        "Unique paths in grid",
+        "Minimum path sum",
+        "Dungeon game (min health to reach end)",
+        "Maximal square of 1s"
+      ],
+      "watchOut": "If movement is allowed in all 4 directions — grid DP breaks, must use BFS/DFS instead."
+    }
+  ],
+
+  "transitionTypes": [
+    {
+      "id": "tt_adjacent",
+      "name": "Adjacent transition",
+      "pattern": "dp[i] depends only on dp[i-1] or dp[i-2]",
+      "spaceOptimization": "O(1) — just keep last 1 or 2 values",
+      "examples": ["Fibonacci", "Climbing stairs", "House robber"]
+    },
+    {
+      "id": "tt_all_previous",
+      "name": "All previous transition",
+      "pattern": "dp[i] = max/min over all j < i of dp[j] + f(j, i)",
+      "spaceOptimization": "Cannot reduce below O(n) without special structure",
+      "examples": ["LIS O(n^2)", "Maximum sum increasing subsequence"],
+      "optimization": "If f(j, i) has special structure — may apply Convex Hull Trick or Divide and Conquer DP"
+    },
+    {
+      "id": "tt_range_split",
+      "name": "Range split transition",
+      "pattern": "dp[i][j] = min/max over all k in [i, j) of dp[i][k] + dp[k+1][j] + cost",
+      "spaceOptimization": "Cannot reduce — O(n^2) space required",
+      "examples": ["Matrix chain multiplication", "Burst balloons", "Optimal BST"],
+      "optimization": "Knuth optimization if cost satisfies quadrangle inequality — reduces O(n^3) to O(n^2)"
+    },
+    {
+      "id": "tt_push_vs_pull",
+      "name": "Push vs Pull DP",
+      "push": "From dp[i] update future states: dp[j] = f(dp[i]) for all valid j > i",
+      "pull": "dp[i] = f(dp[j]) for all valid j that can reach i",
+      "note": "Both are equivalent. Pull is more common in top-down. Push is natural in BFS-style DP.",
+      "examples": ["Coin change (pull)", "BFS layer DP (push)"]
+    }
+  ],
+
+  "dpOptimizations": [
+    {
+      "id": "opt_convex_hull_trick",
+      "name": "Convex Hull Trick (CHT)",
+      "appliesWhen": [
+        "dp[i] = min over j < i of dp[j] + b[j] * a[i]",
+        "Transition is of form: linear function in a[i] with slope b[j] and intercept dp[j]",
+        "Standard O(n^2) transition needs to be reduced"
+      ],
+      "reduces": "O(n^2) → O(n log n) or O(n) if slopes are monotonic",
+      "howItWorks": "Maintain lower convex hull of lines y = b[j]*x + dp[j]. Query minimum at x = a[i].",
+      "examples": [
+        "Minimum cost to divide array with penalty",
+        "Slope trick problems",
+        "Certain DP on sequences with linear cost"
+      ]
+    },
+    {
+      "id": "opt_divide_conquer_dp",
+      "name": "Divide and Conquer DP Optimization",
+      "appliesWhen": [
+        "dp[i][j] = min over k in [i, j] of dp[i-1][k] + cost(k, j)",
+        "Optimal split point opt(i, j) is monotone: opt(i, j) <= opt(i, j+1)",
+        "Cost function satisfies the quadrangle inequality"
+      ],
+      "reduces": "O(n^2) per DP layer → O(n log n) per layer",
+      "howItWorks": "Recursively solve left and right halves, sharing the optimal split point search.",
+      "examples": [
+        "Optimal BST construction",
+        "K-partition with minimization",
+        "Certain interval DP problems"
+      ]
+    },
+    {
+      "id": "opt_knuth",
+      "name": "Knuth Optimization",
+      "appliesWhen": [
+        "Interval DP: dp[i][j] = min over k of dp[i][k] + dp[k+1][j] + cost(i, j)",
+        "Cost satisfies: cost(a, c) + cost(b, d) <= cost(a, d) + cost(b, c) for a<=b<=c<=d",
+        "Optimal split point is monotone"
+      ],
+      "reduces": "O(n^3) → O(n^2)",
+      "examples": [
+        "Optimal BST",
+        "Matrix chain with specific cost structure"
+      ]
+    },
+    {
+      "id": "opt_rolling_array",
+      "name": "Rolling Array Space Optimization",
+      "appliesWhen": [
+        "dp[i] only depends on dp[i-1] (or small constant number of previous rows)",
+        "Do not need to reconstruct path — just need final value"
+      ],
+      "reduces": "O(n*m) space → O(m) space",
+      "howItWorks": "Use two 1D arrays — current and previous. Or use dp[i % 2] indexing.",
+      "examples": [
+        "LCS space optimization",
+        "Edit distance space optimization",
+        "Grid DP space optimization"
+      ],
+      "watchOut": "Cannot use rolling array if you need to reconstruct the actual path — need full table for backtracking."
+    },
+    {
+      "id": "opt_monotonic_queue_dp",
+      "name": "Monotonic Queue DP Optimization",
+      "appliesWhen": [
+        "dp[i] = min/max over j in sliding window [i-k, i-1] of dp[j] + cost",
+        "Window of valid previous states has fixed or bounded size"
+      ],
+      "reduces": "O(n*k) → O(n)",
+      "howItWorks": "Maintain deque of indices in monotonic order. Front is always the optimal previous state.",
+      "examples": [
+        "Jump game with at most k steps",
+        "Sliding window minimum DP",
+        "Constrained subsequence sum"
+      ]
+    }
+  ],
+
+  "stateVerification": {
+    "completenessCheck": {
+      "question": "Can I reconstruct the full solution from just the state?",
+      "example": {
+        "state": "dp[i] = max sum ending at index i",
+        "check": "Can I find global max? YES — take max over all dp[i]",
+        "verdict": "Complete"
+      },
+      "failureExample": {
+        "state": "dp[i] = true if sum of some subset equals i",
+        "check": "Can I find which elements were chosen? NO — need to track choices",
+        "fix": "Add parent tracking array or reconstruct by tracing back"
+      }
+    },
+    "redundancyCheck": {
+      "question": "Is any part of the state derivable from other parts?",
+      "example": {
+        "state": "dp[i][j][sum] where sum = prefix[j] - prefix[i]",
+        "check": "Sum is computable from i and j — redundant dimension",
+        "fix": "Reduce to dp[i][j] — saves O(sum_range) factor"
+      }
+    },
+    "dimensionReductionCheck": {
+      "question": "Do I actually need all dimensions or can one be eliminated?",
+      "example": {
+        "state": "dp[i][j] where j = previous element chosen",
+        "check": "Is j always i-1 or i-2? If yes — eliminate j dimension",
+        "fix": "dp[i] with implicit previous from loop structure"
+      }
+    }
+  },
+
+  "commonMistakes": [
+    {
+      "id": "cm_wrong_fill_order",
+      "mistake": "Wrong fill order in interval DP",
+      "description": "Filling dp[i][j] by row (i from 0 to n) instead of by length (length from 1 to n)",
+      "consequence": "dp[i][k] or dp[k+1][j] not yet computed when needed",
+      "fix": "Always fill interval DP by increasing interval length: for len in range(1, n+1): for i in range(n-len+1): j = i + len - 1"
+    },
+    {
+      "id": "cm_knapsack_direction",
+      "mistake": "Wrong iteration direction in knapsack",
+      "description": "Iterating capacity forward (increasing) in 0/1 knapsack allows item reuse",
+      "consequence": "0/1 knapsack becomes unbounded knapsack silently",
+      "fix": "0/1: iterate capacity DECREASING. Unbounded: iterate capacity INCREASING"
+    },
+    {
+      "id": "cm_overlapping_states",
+      "mistake": "State does not capture enough information",
+      "description": "dp[i] represents answer at position i but same position can be reached in different modes",
+      "consequence": "Different modes overwrite each other — wrong answer",
+      "fix": "Add state dimension for mode: dp[i][mode]"
+    },
+    {
+      "id": "cm_base_case_wrong",
+      "mistake": "Incorrect base case initialization",
+      "description": "Initializing dp[0] = 0 when it should be dp[0] = a[0] or vice versa",
+      "consequence": "Off-by-one in entire DP table",
+      "fix": "Carefully define what dp[0] means and initialize accordingly. Test on n=1."
+    },
+    {
+      "id": "cm_no_reconstruction",
+      "mistake": "Forgot to track parent pointers for reconstruction",
+      "description": "Computed optimal value but cannot trace back the actual solution",
+      "consequence": "Can output value but not the actual sequence or path",
+      "fix": "Maintain parent[] or choice[] array alongside dp[]. Fill during DP, trace back at end."
+    }
+  ]
+}

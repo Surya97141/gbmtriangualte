@@ -1,0 +1,922 @@
+<!-- stages/stage2-5/stage2-5.html -->
+<!-- Reference template for Stage 2.5 — Problem Decomposition -->
+<!-- stage2-5.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 2.5 — Problem Decomposition</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 780px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage2-5 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 28px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Likelihood banner ───────────────────────────────────────────────── */
+    .likelihood-banner {
+      display       : flex;
+      align-items   : flex-start;
+      gap           : 12px;
+      padding       : 12px 16px;
+      border-radius : var(--radius-md);
+      border        : 1.5px solid;
+    }
+
+    .likelihood-banner--high {
+      background  : var(--yellow-bg);
+      border-color: rgba(255,209,102,.45);
+    }
+
+    .likelihood-banner--medium {
+      background  : var(--blue-bg);
+      border-color: rgba(33,150,243,.25);
+    }
+
+    .likelihood-banner--low {
+      background  : var(--surface);
+      border-color: var(--border);
+    }
+
+    .likelihood-banner__icon {
+      font-size  : 1.1rem;
+      flex-shrink: 0;
+      margin-top : 1px;
+    }
+
+    .likelihood-banner__label {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .likelihood-banner__reason {
+      font-size  : .74rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Section ─────────────────────────────────────────────────────────── */
+    .stage2-5__section {
+      display        : flex;
+      flex-direction : column;
+      gap            : 12px;
+    }
+
+    .stage2-5__section-title {
+      display    : flex;
+      align-items: baseline;
+      gap        : 10px;
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .stage2-5__section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .stage2-5__reframe-note {
+      font-size  : .78rem;
+      color      : var(--muted);
+      line-height: 1.6;
+      padding    : 8px 12px;
+      background : var(--surface);
+      border     : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Pattern grid ────────────────────────────────────────────────────── */
+    .stage2-5__pattern-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap                  : 8px;
+    }
+
+    .pattern-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      cursor        : pointer;
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+      transition    : border-color .15s, background .15s, transform .1s;
+    }
+
+    .pattern-card:hover {
+      border-color: var(--yellow);
+      transform   : translateY(-1px);
+    }
+
+    .pattern-card--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .pattern-card--negative {
+      border-style: dashed;
+      opacity     : .85;
+    }
+
+    .pattern-card--negative.pattern-card--selected {
+      border-color : var(--muted);
+      border-style : solid;
+      background   : rgba(138,128,112,.06);
+    }
+
+    .pattern-card__label {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .pattern-card__question {
+      font-size  : .71rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── Pattern detail ──────────────────────────────────────────────────── */
+    .stage2-5__pattern-detail { min-height: 0; }
+
+    .pattern-detail {
+      background    : var(--surface);
+      border        : 1.5px solid rgba(255,209,102,.4);
+      border-radius : var(--radius-md);
+      padding       : 14px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 10px;
+    }
+
+    .pattern-detail--single {
+      border-color: var(--border);
+    }
+
+    .pattern-detail__signal {
+      font-size  : .78rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .signal-label {
+      font-family: var(--font-mono);
+      font-size  : .65rem;
+      color      : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right: 4px;
+    }
+
+    .pattern-detail__impl {
+      font-size  : .78rem;
+      color      : var(--muted);
+      line-height: 1.6;
+      padding    : 8px 10px;
+      background : var(--bg);
+      border-radius: var(--radius-sm);
+    }
+
+    .pattern-detail__note {
+      font-size  : .76rem;
+      color      : var(--muted);
+      font-style : italic;
+    }
+
+    .pattern-detail__ex-title,
+    .pattern-detail__sub-title {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 5px;
+    }
+
+    .pattern-detail__examples {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .pattern-detail__ex {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 7px;
+      font-size  : .74rem;
+      color      : var(--ink);
+    }
+
+    .ex-bullet {
+      color      : var(--muted);
+      flex-shrink: 0;
+    }
+
+    .pattern-detail__subproblems {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+      margin-top: 2px;
+    }
+
+    .subproblem-chip {
+      display    : flex;
+      align-items: center;
+      gap        : 6px;
+      padding    : 5px 10px;
+      background : var(--blue-bg);
+      border     : 1px solid rgba(33,150,243,.2);
+      border-radius: 20px;
+      font-size  : .72rem;
+    }
+
+    .subproblem-chip__num {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      font-weight  : 700;
+      background   : var(--blue);
+      color        : #fff;
+      width        : 16px;
+      height       : 16px;
+      border-radius: 50%;
+      display      : flex;
+      align-items  : center;
+      justify-content: center;
+      flex-shrink  : 0;
+    }
+
+    .subproblem-chip__label {
+      color: var(--ink);
+    }
+
+    /* ── Reframe list ────────────────────────────────────────────────────── */
+    .reframe-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .reframe-row {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+      transition    : border-color .2s;
+    }
+
+    .reframe-row--answered {
+      border-color: rgba(33,150,243,.3);
+    }
+
+    .reframe-row__question {
+      font-size  : .82rem;
+      color      : var(--ink);
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .reframe-row__purpose {
+      font-size  : .71rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .reframe-row__answers {
+      display: flex;
+      gap    : 7px;
+    }
+
+    /* ── Answer buttons ──────────────────────────────────────────────────── */
+    .answer-btn {
+      padding      : 5px 14px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--bg);
+      font-family  : var(--font-mono);
+      font-size    : .7rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .answer-btn:hover { border-color: var(--yellow); }
+
+    .answer-btn--yes.answer-btn--selected {
+      background  : var(--green-bg);
+      border-color: var(--green);
+      color       : #024d37;
+    }
+
+    .answer-btn--no.answer-btn--selected {
+      background  : rgba(138,128,112,.1);
+      border-color: var(--muted);
+      color       : var(--muted);
+    }
+
+    /* ── Reframe example ─────────────────────────────────────────────────── */
+    .reframe-row__example {
+      font-size    : .72rem;
+      color        : var(--ink);
+      background   : var(--blue-bg);
+      border       : 1px solid rgba(33,150,243,.18);
+      border-radius: var(--radius-sm);
+      padding      : 6px 10px;
+      line-height  : 1.5;
+    }
+
+    .reframe-row__example.hidden { display: none; }
+
+    .example-label {
+      font-family: var(--font-mono);
+      font-size  : .62rem;
+      color      : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right: 4px;
+    }
+
+    /* ── Transformation hints ────────────────────────────────────────────── */
+    .stage2-5__transform-hints {
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .transform-hints-title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .transform-hint-card {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      padding    : 9px 12px;
+      background : var(--pur-bg);
+      border     : 1.5px solid rgba(192,84,252,.25);
+      border-radius: var(--radius-sm);
+    }
+
+    .transform-hint-card__icon { font-size: .9rem; flex-shrink: 0; }
+
+    .transform-hint-card__text {
+      font-size  : .76rem;
+      color      : var(--ink);
+      font-weight: 500;
+      flex       : 1;
+    }
+
+    .transform-hint-card__note {
+      font-size : .65rem;
+      color     : var(--muted);
+      font-style: italic;
+      margin-top: 1px;
+    }
+
+    /* ── Implicit checks ─────────────────────────────────────────────────── */
+    .implicit-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+    }
+
+    .implicit-row {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 10px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+      transition    : border-color .2s, background .2s;
+    }
+
+    .implicit-row--triggered {
+      border-color: rgba(230,57,70,.4);
+      background  : var(--red-bg);
+    }
+
+    .implicit-row__check {
+      font-size  : .8rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .implicit-row__answers {
+      display: flex;
+      gap    : 7px;
+    }
+
+    .implicit-row__ifyes {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      padding       : 8px 10px;
+      background    : var(--red-bg);
+      border        : 1px solid rgba(230,57,70,.2);
+      border-radius : var(--radius-sm);
+    }
+
+    .implicit-row__ifyes.hidden { display: none; }
+
+    .ifyes-arrow {
+      font-family: var(--font-mono);
+      font-size  : .9rem;
+      color      : var(--red);
+      font-weight: 700;
+    }
+
+    .ifyes-text {
+      font-size  : .76rem;
+      color      : var(--ink);
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    .ifyes-example {
+      font-size  : .7rem;
+      color      : var(--muted);
+      font-style : italic;
+      line-height: 1.4;
+    }
+
+    /* ── Summary ─────────────────────────────────────────────────────────── */
+    .stage2-5__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 80px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .summary-triggered {
+      margin-top    : 10px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+    }
+
+    .summary-triggered__title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--red);
+      margin-bottom : 4px;
+    }
+
+    .triggered-item {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      font-size  : .76rem;
+      color      : var(--ink);
+    }
+
+    .triggered-item__icon {
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      font-weight  : 700;
+      background   : var(--red);
+      color        : #fff;
+      width        : 16px;
+      height       : 16px;
+      border-radius: 50%;
+      display      : flex;
+      align-items  : center;
+      justify-content: center;
+      flex-shrink  : 0;
+    }
+
+    .triggered-item__text { line-height: 1.5; }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage2-5">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Is this one problem or multiple problems chained together?
+    </div>
+    <div class="stage-intro__sub">
+      Forcing a single approach onto a multi-part problem is the most
+      common source of wrong architecture.
+    </div>
+  </div>
+
+  <!-- LIKELIHOOD BANNER ---------------------------------------------------- -->
+  <div class="likelihood-banner likelihood-banner--high">
+    <span class="likelihood-banner__icon">⚡</span>
+    <div class="likelihood-banner__content">
+      <div class="likelihood-banner__label">Decomposition very likely</div>
+      <div class="likelihood-banner__reason">
+        Multiple strong signals — Q queries on N elements,
+        multiple input types detected
+      </div>
+    </div>
+  </div>
+
+  <!-- PATTERN GRID --------------------------------------------------------- -->
+  <div class="stage2-5__section">
+
+    <div class="stage2-5__section-title">
+      <span>Which pattern best describes this problem?</span>
+      <span class="stage2-5__section-sub">Pick one</span>
+    </div>
+
+    <div class="stage2-5__pattern-grid">
+
+      <div class="pattern-card pattern-card--selected">
+        <div class="pattern-card__label">Structure build + query answering</div>
+        <div class="pattern-card__question">
+          Are there Q queries where building a structure once answers all efficiently?
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-card__label">Preprocessing + main solve</div>
+        <div class="pattern-card__question">
+          Is there a step that transforms input before the real problem begins?
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-card__label">Two independent phases</div>
+        <div class="pattern-card__question">
+          Can the problem split into two completely independent sub-problems?
+        </div>
+      </div>
+
+      <div class="pattern-card">
+        <div class="pattern-card__label">Meet in the middle</div>
+        <div class="pattern-card__question">
+          Is n around 40 and the problem involves all subsets or combinations?
+        </div>
+      </div>
+
+      <div class="pattern-card pattern-card--negative">
+        <div class="pattern-card__label">Single unified problem</div>
+        <div class="pattern-card__question">
+          Is this a single problem with no natural split point?
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Pattern detail -->
+    <div class="stage2-5__pattern-detail" id="pattern-detail-region">
+      <div class="pattern-detail">
+        <div class="pattern-detail__signal">
+          <span class="signal-label">Signal:</span>
+          Build once in O(n log n). Answer each query in O(log n) or O(1).
+        </div>
+        <div class="pattern-detail__impl">
+          Total complexity = O(build) + O(Q × query).
+          Optimize build and query separately.
+        </div>
+        <div class="pattern-detail__ex-title">Examples:</div>
+        <div class="pattern-detail__examples">
+          <div class="pattern-detail__ex">
+            <span class="ex-bullet">·</span>
+            Build segment tree then answer Q range max queries
+          </div>
+          <div class="pattern-detail__ex">
+            <span class="ex-bullet">·</span>
+            BFS from source then answer Q distance queries in O(1)
+          </div>
+        </div>
+        <div class="pattern-detail__sub-title">Sub-problems to analyze separately:</div>
+        <div class="pattern-detail__subproblems">
+          <div class="subproblem-chip">
+            <span class="subproblem-chip__num">1</span>
+            <span class="subproblem-chip__label">Structure construction</span>
+          </div>
+          <div class="subproblem-chip">
+            <span class="subproblem-chip__num">2</span>
+            <span class="subproblem-chip__label">Query answering</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- REFRAME QUESTIONS ---------------------------------------------------- -->
+  <div class="stage2-5__section" id="reframe-section">
+
+    <div class="stage2-5__section-title">
+      <span>Forced perspective shifts</span>
+      <span class="stage2-5__section-sub">Answer each before committing</span>
+    </div>
+
+    <div class="stage2-5__reframe-note">
+      These questions force you to look at the problem from 8 different angles.
+      A "yes" may reveal a hidden structure or transformation.
+    </div>
+
+    <div class="reframe-list">
+
+      <!-- Answered yes -->
+      <div class="reframe-row reframe-row--answered">
+        <div class="reframe-row__q">
+          <div class="reframe-row__question">
+            Instead of computing the answer directly — what if you binary searched for it?
+          </div>
+          <div class="reframe-row__purpose">
+            Reveals Binary Search on Answer when direct optimization is hard.
+          </div>
+        </div>
+        <div class="reframe-row__answers">
+          <button class="answer-btn answer-btn--yes answer-btn--selected">✓ Yes</button>
+          <button class="answer-btn answer-btn--no">✗ No</button>
+        </div>
+        <div class="reframe-row__example">
+          <span class="example-label">Example:</span>
+          Minimum capacity to ship packages → binary search on capacity,
+          check feasibility greedily
+        </div>
+      </div>
+
+      <!-- Unanswered -->
+      <div class="reframe-row">
+        <div class="reframe-row__q">
+          <div class="reframe-row__question">
+            What if each element is a node — what would the edges be?
+          </div>
+          <div class="reframe-row__purpose">
+            Reveals hidden graph structure in array or string problems.
+          </div>
+        </div>
+        <div class="reframe-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes</button>
+          <button class="answer-btn answer-btn--no">✗ No</button>
+        </div>
+        <div class="reframe-row__example hidden">
+          <span class="example-label">Example:</span>
+          Word ladder → BFS shortest path
+        </div>
+      </div>
+
+      <!-- Answered no -->
+      <div class="reframe-row reframe-row--answered">
+        <div class="reframe-row__q">
+          <div class="reframe-row__question">
+            Is counting the complement easier than counting valid cases?
+          </div>
+          <div class="reframe-row__purpose">
+            Complement counting — Total minus Invalid.
+          </div>
+        </div>
+        <div class="reframe-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes</button>
+          <button class="answer-btn answer-btn--no answer-btn--selected">✗ No</button>
+        </div>
+        <div class="reframe-row__example hidden">
+          <span class="example-label">Example:</span>
+          Strings with at least one vowel → Total minus no-vowel strings
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Transformation hints -->
+    <div class="stage2-5__transform-hints" id="reframe-transform-hints">
+      <div class="transform-hints-title">Transformation signals detected</div>
+      <div class="transform-hint-card">
+        <span class="transform-hint-card__icon">🔄</span>
+        <span class="transform-hint-card__text">
+          Consider transformation: optimization to binary search
+        </span>
+        <span class="transform-hint-card__note">
+          Will be explored in detail in Stage 3.5
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- IMPLICIT STRUCTURE CHECKS -------------------------------------------- -->
+  <div class="stage2-5__section" id="implicit-section">
+
+    <div class="stage2-5__section-title">
+      <span>Hidden structure checks</span>
+      <span class="stage2-5__section-sub">Yes changes the approach entirely</span>
+    </div>
+
+    <div class="implicit-list">
+
+      <!-- Not triggered -->
+      <div class="implicit-row">
+        <div class="implicit-row__check">
+          Does element A constrain or depend on element B?
+        </div>
+        <div class="implicit-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes</button>
+          <button class="answer-btn answer-btn--no answer-btn--selected">✗ No</button>
+        </div>
+        <div class="implicit-row__ifyes hidden" id="implicit-ifyes-ic_hidden_dag">
+          <div class="ifyes-arrow">→</div>
+          <div class="ifyes-text">
+            Hidden DAG — model as directed graph, apply topological sort
+          </div>
+          <div class="ifyes-example">
+            e.g. Task A before task B → DAG → topological DP
+          </div>
+        </div>
+      </div>
+
+      <!-- Triggered -->
+      <div class="implicit-row implicit-row--triggered">
+        <div class="implicit-row__check">
+          Does each element point to exactly one parent?
+        </div>
+        <div class="implicit-row__answers">
+          <button class="answer-btn answer-btn--yes answer-btn--selected">✓ Yes</button>
+          <button class="answer-btn answer-btn--no">✗ No</button>
+        </div>
+        <div class="implicit-row__ifyes" id="implicit-ifyes-ic_hidden_tree">
+          <div class="ifyes-arrow">→</div>
+          <div class="ifyes-text">
+            Hidden tree from parent array — reconstruct, apply tree DP
+          </div>
+          <div class="ifyes-example">
+            e.g. a[i] = parent of node i → build tree → tree DP
+          </div>
+        </div>
+      </div>
+
+      <!-- Unanswered -->
+      <div class="implicit-row">
+        <div class="implicit-row__check">
+          Do elements have natural start and end times or positions?
+        </div>
+        <div class="implicit-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes</button>
+          <button class="answer-btn answer-btn--no">✗ No</button>
+        </div>
+        <div class="implicit-row__ifyes hidden">
+          <div class="ifyes-arrow">→</div>
+          <div class="ifyes-text">
+            Hidden interval structure — sort by start, use sweep line
+          </div>
+          <div class="ifyes-example">
+            e.g. Meeting start/end times → minimum rooms = max overlap
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage2-5__summary" id="stage2-5-summary">
+
+    <div class="stage2-5__section-title">Decomposition summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Pattern:</span>
+      <span class="summary-row__value">Structure build + query answering</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Sub-problems:</span>
+      <span class="summary-row__value">Structure construction → Query answering</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Reframe:</span>
+      <span class="summary-row__value">5 / 8 questions answered</span>
+    </div>
+
+    <div class="summary-triggered">
+      <div class="summary-triggered__title">Hidden structures detected:</div>
+      <div class="triggered-item">
+        <div class="triggered-item__icon">!</div>
+        <div class="triggered-item__text">
+          Hidden tree from parent array — reconstruct, apply tree DP
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Transforms:</span>
+      <span class="summary-row__value">optimization to binary search</span>
+    </div>
+
+  </div>
+
+</div><!-- /stage2-5 -->
+
+</body>
+</html>

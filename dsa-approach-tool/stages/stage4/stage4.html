@@ -1,0 +1,1057 @@
+<!-- stages/stage4/stage4.html -->
+<!-- Reference template for Stage 4 — Constraint Interaction -->
+<!-- stage4.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 4 — Constraint Interaction</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 800px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage4 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 28px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Section ─────────────────────────────────────────────────────────── */
+    .stage4__section {
+      display        : flex;
+      flex-direction : column;
+      gap            : 12px;
+    }
+
+    .stage4__section-title {
+      display    : flex;
+      align-items: baseline;
+      gap        : 8px;
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .stage4__section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .stage4__section-note {
+      font-size    : .76rem;
+      color        : var(--muted);
+      line-height  : 1.6;
+      padding      : 8px 12px;
+      background   : var(--surface);
+      border       : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .stage4__suggested-label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       AUTO WARNINGS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .warn-icon { font-size: 1rem; }
+
+    .constraint-warning {
+      display      : flex;
+      align-items  : flex-start;
+      gap          : 8px;
+      padding      : 10px 14px;
+      background   : rgba(230,57,70,.06);
+      border       : 1.5px solid rgba(230,57,70,.3);
+      border-radius: var(--radius-md);
+      font-size    : .78rem;
+      color        : var(--ink);
+      line-height  : 1.5;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       INTERACTION BLOCKS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s4-interaction-block {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      overflow      : hidden;
+      transition    : border-color .2s;
+    }
+
+    .s4-interaction-block--suggested {
+      border-color: rgba(255,209,102,.4);
+    }
+
+    .s4-interaction-block--selected {
+      border-color: var(--yellow);
+    }
+
+    .s4-interaction-block__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 12px 16px;
+      cursor         : pointer;
+      transition     : background .15s;
+    }
+
+    .s4-interaction-block__header:hover {
+      background: rgba(255,209,102,.05);
+    }
+
+    .s4-interaction-block--selected .s4-interaction-block__header {
+      background: var(--yellow-bg);
+    }
+
+    .s4-interaction-block__meta {
+      display    : flex;
+      align-items: center;
+      gap        : 10px;
+    }
+
+    .s4-interaction-block__label {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s4-interaction-block__pattern {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : var(--bg);
+      color        : var(--muted);
+      padding      : 2px 8px;
+      border-radius: 4px;
+      border       : 1px solid var(--border);
+    }
+
+    .s4-suggested-badge {
+      font-family   : var(--font-mono);
+      font-size     : .58rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background    : var(--yellow-bg);
+      color         : #7a5a00;
+      padding       : 2px 8px;
+      border-radius : 4px;
+      border        : 1px solid rgba(255,209,102,.3);
+    }
+
+    /* ── Recognize signals ───────────────────────────────────────────────── */
+    .s4-interaction-block__recognize {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+      padding       : 0 16px 12px;
+    }
+
+    .s4-recognize-item {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .74rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .recognize-bullet {
+      color      : var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ── Analysis table ──────────────────────────────────────────────────── */
+    .s4-analysis-table {
+      padding      : 12px 16px;
+      background   : var(--bg);
+      border-top   : 1px solid var(--border);
+      display      : flex;
+      flex-direction: column;
+      gap          : 8px;
+    }
+
+    .s4-analysis-table.hidden { display: none; }
+
+    .s4-analysis-table__rows {
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+    }
+
+    .s4-analysis-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      padding    : 6px 10px;
+      background : var(--surface);
+      border     : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size  : .74rem;
+      flex-wrap  : wrap;
+    }
+
+    .s4-analysis-row__condition {
+      font-family: var(--font-mono);
+      font-size  : .68rem;
+      color      : var(--muted);
+      flex-shrink: 0;
+      min-width  : 140px;
+    }
+
+    .s4-analysis-row__arrow {
+      font-family: var(--font-mono);
+      color      : var(--muted);
+      flex-shrink: 0;
+    }
+
+    .s4-analysis-row__verdict {
+      color      : var(--ink);
+      line-height: 1.4;
+      flex       : 1;
+    }
+
+    .s4-structure-badge {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      background    : var(--blue-bg);
+      color         : var(--blue);
+      border        : 1px solid rgba(33,150,243,.2);
+      padding       : 2px 8px;
+      border-radius : 4px;
+      white-space   : nowrap;
+      flex-shrink   : 0;
+    }
+
+    .s4-structure-badge--highlight {
+      background: var(--green-bg);
+      color     : #028a5b;
+      border-color: rgba(6,214,160,.3);
+      font-size : .68rem;
+      padding   : 3px 10px;
+    }
+
+    /* ── Complexity row ──────────────────────────────────────────────────── */
+    .s4-complexity-row {
+      display    : flex;
+      align-items: center;
+      gap        : 8px;
+      padding    : 5px 0;
+      border-top : 1px solid rgba(212,204,184,.3);
+    }
+
+    .s4-complexity-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .detail-mono {
+      font-family: var(--font-mono);
+      font-size  : .7rem;
+      background : rgba(212,204,184,.3);
+      padding    : 2px 6px;
+      border-radius: 3px;
+      color      : var(--ink);
+    }
+
+    /* ── Condition flags ─────────────────────────────────────────────────── */
+    .s4-condition-flags {
+      padding      : 10px;
+      background   : rgba(212,204,184,.1);
+      border-radius: var(--radius-sm);
+      border       : 1px solid var(--border);
+      display      : flex;
+      flex-direction: column;
+      gap          : 6px;
+    }
+
+    .s4-condition-flags__title {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 2px;
+    }
+
+    .flag-item {
+      display    : flex;
+      align-items: center;
+      gap        : 7px;
+      padding    : 5px 8px;
+      background : var(--surface);
+      border     : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor     : pointer;
+      transition : border-color .15s, background .15s;
+    }
+
+    .flag-item:has(.flag-checkbox:checked) {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .flag-checkbox {
+      width       : 14px;
+      height      : 14px;
+      cursor      : pointer;
+      accent-color: var(--yellow);
+      flex-shrink : 0;
+    }
+
+    .flag-item__label {
+      font-size: .76rem;
+      color    : var(--ink);
+      cursor   : pointer;
+    }
+
+    /* ── Flag verdict ────────────────────────────────────────────────────── */
+    .s4-flag-verdict {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      padding       : 10px 12px;
+      background    : var(--green-bg);
+      border        : 1.5px solid rgba(6,214,160,.3);
+      border-radius : var(--radius-md);
+      margin-top    : 4px;
+    }
+
+    .s4-flag-verdict__condition {
+      font-family: var(--font-mono);
+      font-size  : .65rem;
+      color      : var(--muted);
+    }
+
+    .s4-flag-verdict__verdict {
+      font-size  : .78rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    /* ── Watchouts ───────────────────────────────────────────────────────── */
+    .s4-watchouts {
+      padding        : 10px 14px;
+      background     : var(--yellow-bg);
+      border-top     : 1px solid rgba(255,209,102,.3);
+      display        : flex;
+      flex-direction : column;
+      gap            : 5px;
+    }
+
+    .s4-watchouts.hidden { display: none; }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .73rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-text { line-height: 1.5; }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       HIDDEN STRUCTURE
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .hidden-structure-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+    }
+
+    .hs-row {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 11px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+      transition    : border-color .2s, background .2s;
+    }
+
+    .hs-row--answered  { border-color: rgba(33,150,243,.2); }
+
+    .hs-row--applicable {
+      border-color: rgba(6,214,160,.4);
+      background  : var(--green-bg);
+    }
+
+    .hs-row__header {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 8px;
+      align-items: center;
+    }
+
+    .hs-row__label {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+      flex       : 1;
+      min-width  : 140px;
+    }
+
+    .hs-row__signal {
+      font-size  : .73rem;
+      color      : var(--muted);
+      line-height: 1.4;
+      width      : 100%;
+    }
+
+    .complexity-badge {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      border       : 1px solid rgba(6,214,160,.25);
+      padding      : 2px 8px;
+      border-radius: 4px;
+      white-space  : nowrap;
+    }
+
+    .hs-row__answers {
+      display: flex;
+      gap    : 7px;
+    }
+
+    /* ── Answer buttons ──────────────────────────────────────────────────── */
+    .answer-btn {
+      padding      : 5px 14px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--bg);
+      font-family  : var(--font-mono);
+      font-size    : .7rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .answer-btn:hover { border-color: var(--yellow); }
+
+    .answer-btn--yes.answer-btn--selected {
+      background  : var(--green-bg);
+      border-color: var(--green);
+      color       : #024d37;
+    }
+
+    .answer-btn--no.answer-btn--selected {
+      background  : rgba(138,128,112,.1);
+      border-color: var(--muted);
+      color       : var(--muted);
+    }
+
+    /* ── HS examples ─────────────────────────────────────────────────────── */
+    .hs-row__examples {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+      padding       : 7px 10px;
+      background    : var(--bg);
+      border-radius : var(--radius-sm);
+    }
+
+    .hs-row__examples.hidden { display: none; }
+
+    .hs-example {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .73rem;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .hs-example__bullet {
+      color      : var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SUMMARY
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage4__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 76px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .summary-found {
+      margin-top: 10px;
+    }
+
+    .summary-found__title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : #028a5b;
+      margin-bottom : 6px;
+    }
+
+    .summary-found__list {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+    }
+
+    .found-badge {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      border       : 1px solid rgba(6,214,160,.25);
+      padding      : 3px 10px;
+      border-radius: 4px;
+    }
+
+    .summary-warnings {
+      margin-top    : 10px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .74rem;
+      color      : #7a5a00;
+    }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+    .hidden { display: none !important; }
+
+  </style>
+</head>
+<body>
+
+<div class="stage4">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Constraints interact — N×Q, N×K, N×W each suggest different structures.
+    </div>
+    <div class="stage-intro__sub">
+      Check how your constraints combine and whether a hidden structure was missed.
+    </div>
+  </div>
+
+  <!-- AUTO WARNINGS -------------------------------------------------------- -->
+  <div class="stage4__section" id="warnings-section">
+
+    <div class="stage4__section-title">
+      <span class="warn-icon">⚡</span>
+      <span>Auto-detected constraint warnings</span>
+    </div>
+
+    <div class="constraint-warning">
+      <span class="watchout-icon">⚠</span>
+      N > 1000 and Q > 1000: O(NQ) = 10⁶ at minimum. Need O(log N) per query.
+    </div>
+
+    <div class="constraint-warning">
+      <span class="watchout-icon">⚠</span>
+      N > 10,000: O(N²) = 10⁸ — borderline TLE. Aim for O(N log N).
+    </div>
+
+  </div>
+
+  <!-- INTERACTION BLOCKS --------------------------------------------------- -->
+  <div class="stage4__section" id="interactions-section">
+
+    <div class="stage4__section-title">
+      <span>Which constraint combinations apply?</span>
+      <span class="stage4__section-sub">Select all that apply</span>
+    </div>
+
+    <div class="stage4__suggested-label">Suggested based on your constraints:</div>
+
+    <!-- N + Q (selected + suggested) -->
+    <div class="s4-interaction-block s4-interaction-block--selected s4-interaction-block--suggested">
+
+      <div class="s4-interaction-block__header">
+        <div class="s4-interaction-block__meta">
+          <div class="s4-interaction-block__label">N elements + Q queries</div>
+          <div class="s4-interaction-block__pattern">N × Q</div>
+        </div>
+        <span class="s4-suggested-badge">Suggested</span>
+      </div>
+
+      <div class="s4-interaction-block__recognize">
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          Given N elements and Q queries on those elements
+        </div>
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          Each query asks about a range, sum, max, or property of a subarray
+        </div>
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          Q can be up to 10^5 — naive O(N) per query = O(NQ) TLE
+        </div>
+      </div>
+
+      <!-- Analysis table (visible when selected) -->
+      <div class="s4-analysis-table" id="analysis-ci_n_and_q">
+        <div class="s4-analysis-table__rows">
+
+          <div class="s4-analysis-row">
+            <div class="s4-analysis-row__condition">Q = 1</div>
+            <div class="s4-analysis-row__arrow">→</div>
+            <div class="s4-analysis-row__verdict">No preprocessing needed. O(N) direct solve.</div>
+          </div>
+
+          <div class="s4-analysis-row">
+            <div class="s4-analysis-row__condition">Static, no updates</div>
+            <div class="s4-analysis-row__arrow">→</div>
+            <div class="s4-analysis-row__verdict">Prefix Sum (sum) or Sparse Table (min/max)</div>
+            <span class="s4-structure-badge">Prefix Sum / Sparse Table</span>
+          </div>
+
+          <div class="s4-analysis-row">
+            <div class="s4-analysis-row__condition">Updates + queries</div>
+            <div class="s4-analysis-row__arrow">→</div>
+            <div class="s4-analysis-row__verdict">Segment Tree or Fenwick Tree — O(log N) each</div>
+            <span class="s4-structure-badge">Segment Tree / BIT</span>
+          </div>
+
+          <div class="s4-analysis-row">
+            <div class="s4-analysis-row__condition">Offline queries OK</div>
+            <div class="s4-analysis-row__arrow">→</div>
+            <div class="s4-analysis-row__verdict">Mo's Algorithm — O((N+Q)√N)</div>
+            <span class="s4-structure-badge">Mo's Algorithm</span>
+          </div>
+
+        </div>
+
+        <div class="s4-complexity-row">
+          <div class="s4-complexity-row__label">Best:</div>
+          <div class="s4-complexity-row__value detail-mono">
+            O(N log N) build + O(log N) or O(1) per query
+          </div>
+        </div>
+
+        <!-- Condition flags -->
+        <div class="s4-condition-flags">
+          <div class="s4-condition-flags__title">Your specific condition:</div>
+
+          <div class="flag-item">
+            <input type="checkbox" id="flag-updates" class="flag-checkbox">
+            <label class="flag-item__label" for="flag-updates">
+              Has updates (not just queries)
+            </label>
+          </div>
+
+          <div class="flag-item">
+            <input type="checkbox" id="flag-offline" class="flag-checkbox" checked>
+            <label class="flag-item__label" for="flag-offline">
+              Queries can be sorted offline
+            </label>
+          </div>
+
+          <div class="flag-item">
+            <input type="checkbox" id="flag-online" class="flag-checkbox">
+            <label class="flag-item__label" for="flag-online">
+              Must answer queries online
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Flag verdict -->
+        <div class="s4-flag-verdict">
+          <div class="s4-flag-verdict__condition">Offline queries OK</div>
+          <div class="s4-flag-verdict__verdict">
+            Mo's Algorithm — O((N+Q)√N) for range queries
+          </div>
+          <span class="s4-structure-badge s4-structure-badge--highlight">
+            Mo's Algorithm
+          </span>
+        </div>
+
+      </div>
+
+      <!-- Watch outs -->
+      <div class="s4-watchouts">
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            Sparse Table answers range MIN/MAX in O(1) but cannot handle updates
+          </span>
+        </div>
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            Segment Tree handles both updates and queries in O(log N)
+          </span>
+        </div>
+        <div class="watchout-row">
+          <span class="watchout-icon">⚠</span>
+          <span class="watchout-text">
+            Mo's Algorithm requires offline queries — cannot answer online
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Small N (collapsed) -->
+    <div class="s4-interaction-block">
+
+      <div class="s4-interaction-block__header">
+        <div class="s4-interaction-block__meta">
+          <div class="s4-interaction-block__label">Very small N (N ≤ 20)</div>
+          <div class="s4-interaction-block__pattern">Bitmask / Exponential</div>
+        </div>
+      </div>
+
+      <div class="s4-interaction-block__recognize">
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          N ≤ 20 explicitly in constraints
+        </div>
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          Problem involves assigning or selecting from N items
+        </div>
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          TSP-type, assignment-type problems
+        </div>
+      </div>
+
+      <div class="s4-analysis-table hidden" id="analysis-ci_small_n">
+        <!-- Populated by stage4.js when selected -->
+      </div>
+
+    </div>
+
+    <!-- Graph constraints -->
+    <div class="s4-interaction-block s4-interaction-block--suggested">
+
+      <div class="s4-interaction-block__header">
+        <div class="s4-interaction-block__meta">
+          <div class="s4-interaction-block__label">Graph V + E constraints</div>
+          <div class="s4-interaction-block__pattern">V/E determines algorithm</div>
+        </div>
+        <span class="s4-suggested-badge">Suggested</span>
+      </div>
+
+      <div class="s4-interaction-block__recognize">
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          Graph problem with explicit V and E bounds
+        </div>
+        <div class="s4-recognize-item">
+          <span class="recognize-bullet">·</span>
+          Algorithm choice depends on V vs E ratio
+        </div>
+      </div>
+
+      <div class="s4-analysis-table hidden" id="analysis-ci_graph_constraints">
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- HIDDEN STRUCTURE CHECK ----------------------------------------------- -->
+  <div class="stage4__section" id="hidden-structure-section">
+
+    <div class="stage4__section-title">
+      <span>Hidden structure check</span>
+      <span class="stage4__section-sub">Did you miss a simpler O(n) structure?</span>
+    </div>
+
+    <div class="stage4__section-note">
+      Each of these structures replaces an O(n²) approach with O(n) or O(n log n).
+      Check if any applies before proceeding.
+    </div>
+
+    <div class="hidden-structure-list">
+
+      <!-- Applicable -->
+      <div class="hs-row hs-row--applicable hs-row--answered">
+        <div class="hs-row__header">
+          <div class="hs-row__label">Prefix Sum</div>
+          <span class="complexity-badge">O(1) query after O(n) build</span>
+          <div class="hs-row__signal">
+            Repeated range sum queries on static array
+          </div>
+        </div>
+        <div class="hs-row__answers">
+          <button class="answer-btn answer-btn--yes answer-btn--selected">✓ Applies</button>
+          <button class="answer-btn answer-btn--no">✗ Does not apply</button>
+        </div>
+        <div class="hs-row__examples">
+          <div class="hs-example">
+            <span class="hs-example__bullet">·</span>
+            Range sum query — O(1) with prefix sum not O(n)
+          </div>
+          <div class="hs-example">
+            <span class="hs-example__bullet">·</span>
+            Number of subarrays with sum = k — prefix sum + HashMap
+          </div>
+        </div>
+      </div>
+
+      <!-- Not applicable -->
+      <div class="hs-row hs-row--answered">
+        <div class="hs-row__header">
+          <div class="hs-row__label">Monotonic Stack</div>
+          <span class="complexity-badge">O(n) instead of O(n²)</span>
+          <div class="hs-row__signal">
+            Need next greater / previous smaller element for each position
+          </div>
+        </div>
+        <div class="hs-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Applies</button>
+          <button class="answer-btn answer-btn--no answer-btn--selected">✗ Does not apply</button>
+        </div>
+        <div class="hs-row__examples hidden">
+          <div class="hs-example">
+            <span class="hs-example__bullet">·</span>
+            Next Greater Element — O(n) with monotonic stack not O(n²)
+          </div>
+        </div>
+      </div>
+
+      <!-- Unanswered -->
+      <div class="hs-row">
+        <div class="hs-row__header">
+          <div class="hs-row__label">Two Pointer</div>
+          <span class="complexity-badge">O(n) instead of O(n²)</span>
+          <div class="hs-row__signal">
+            Looking for pairs satisfying a monotone condition on sorted array
+          </div>
+        </div>
+        <div class="hs-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Applies</button>
+          <button class="answer-btn answer-btn--no">✗ Does not apply</button>
+        </div>
+        <div class="hs-row__examples hidden">
+          <div class="hs-example">
+            <span class="hs-example__bullet">·</span>
+            Two sum on sorted array — O(n) not O(n²)
+          </div>
+        </div>
+      </div>
+
+      <!-- Union Find -->
+      <div class="hs-row">
+        <div class="hs-row__header">
+          <div class="hs-row__label">Union Find</div>
+          <span class="complexity-badge">O(α(n)) per operation</span>
+          <div class="hs-row__signal">
+            Dynamic connectivity — groups merging over time
+          </div>
+        </div>
+        <div class="hs-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Applies</button>
+          <button class="answer-btn answer-btn--no">✗ Does not apply</button>
+        </div>
+        <div class="hs-row__examples hidden">
+          <div class="hs-example">
+            <span class="hs-example__bullet">·</span>
+            Accounts merge — union emails sharing accounts
+          </div>
+        </div>
+      </div>
+
+      <!-- Segment Tree -->
+      <div class="hs-row">
+        <div class="hs-row__header">
+          <div class="hs-row__label">Segment Tree</div>
+          <span class="complexity-badge">O(log n) per operation</span>
+          <div class="hs-row__signal">
+            Range queries AND point/range updates on array
+          </div>
+        </div>
+        <div class="hs-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Applies</button>
+          <button class="answer-btn answer-btn--no">✗ Does not apply</button>
+        </div>
+        <div class="hs-row__examples hidden">
+          <div class="hs-example">
+            <span class="hs-example__bullet">·</span>
+            Range max with point updates — O(log n) each
+          </div>
+        </div>
+      </div>
+
+      <!-- Trie -->
+      <div class="hs-row">
+        <div class="hs-row__header">
+          <div class="hs-row__label">Trie</div>
+          <span class="complexity-badge">O(L) per insert/search</span>
+          <div class="hs-row__signal">
+            Multiple strings sharing prefixes, XOR maximization
+          </div>
+        </div>
+        <div class="hs-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Applies</button>
+          <button class="answer-btn answer-btn--no">✗ Does not apply</button>
+        </div>
+        <div class="hs-row__examples hidden">
+          <div class="hs-example">
+            <span class="hs-example__bullet">·</span>
+            Longest common prefix — O(total chars) not O(n²)
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage4__summary" id="stage4-summary">
+
+    <div class="stage4__section-title">Constraint analysis summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Patterns:</span>
+      <span class="summary-row__value">N elements + Q queries, Graph V + E constraints</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Hidden:</span>
+      <span class="summary-row__value">4 / 6 checked</span>
+    </div>
+
+    <div class="summary-found">
+      <div class="summary-found__title">Applicable hidden structures:</div>
+      <div class="summary-found__list">
+        <span class="found-badge">Prefix Sum</span>
+      </div>
+    </div>
+
+    <div class="summary-warnings">
+      <div class="watchout-row">
+        <span class="watchout-icon">⚠</span>
+        <span class="watchout-text">
+          N > 1000 and Q > 1000: O(NQ) = 10⁶ minimum. Need O(log N) per query.
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /stage4 -->
+
+</body>
+</html>

@@ -1,0 +1,375 @@
+{
+  "_meta": {
+    "opsPerSecond": 100000000,
+    "safeOpsThreshold": 100000000,
+    "riskyOpsThreshold": 300000000,
+    "timeLimits": {
+      "strict": 0.5,
+      "standard": 1,
+      "relaxed": 2,
+      "generous": 5
+    },
+    "notes": "All operation counts assume simple operations. Heavy ops (cache miss, complex compare) divide threshold by 10."
+  },
+
+  "singleConstraint": [
+    {
+      "id": "n_10",
+      "label": "N ≤ 10",
+      "maxN": 10,
+      "complexities": [
+        { "class": "O(n!)",     "ops": 3628800, "status": "green",  "display": "3.6M" },
+        { "class": "O(2^n)",    "ops": 1024,    "status": "green",  "display": "1K" },
+        { "class": "O(n^3)",    "ops": 1000,    "status": "green",  "display": "1K" },
+        { "class": "O(n^2)",    "ops": 100,     "status": "green",  "display": "100" },
+        { "class": "O(n log n)","ops": 33,      "status": "green",  "display": "33" },
+        { "class": "O(n)",      "ops": 10,      "status": "green",  "display": "10" },
+        { "class": "O(log n)",  "ops": 3,       "status": "green",  "display": "3" }
+      ],
+      "allowedDirections": [
+        "Backtracking", "Brute Force", "Bitmask DP",
+        "Meet in the Middle", "State Compression",
+        "Direct computation", "Hashing", "Math", "Greedy", "Any DP variant"
+      ],
+      "eliminatedDirections": [],
+      "keyInsight": "N is tiny. No optimization needed. Try naive first.",
+      "watchOut": "Do not over-engineer. Naive recursive solution is likely fast enough."
+    },
+    {
+      "id": "n_20",
+      "label": "N ≤ 20",
+      "maxN": 20,
+      "complexities": [
+        { "class": "O(n!)",      "ops": null,     "status": "red",   "display": "2.4 * 10^18 — TLE" },
+        { "class": "O(2^n)",     "ops": 1048576,  "status": "green", "display": "1M" },
+        { "class": "O(2^n * n)", "ops": 20971520, "status": "green", "display": "20M" },
+        { "class": "O(n^3)",     "ops": 8000,     "status": "green", "display": "8K" },
+        { "class": "O(n^2)",     "ops": 400,      "status": "green", "display": "400" },
+        { "class": "O(n log n)", "ops": 86,       "status": "green", "display": "86" },
+        { "class": "O(n)",       "ops": 20,       "status": "green", "display": "20" }
+      ],
+      "allowedDirections": [
+        "Bitmask DP", "State Compression", "Meet in the Middle",
+        "Backtracking with pruning", "Floyd-Warshall", "3-Loop DP"
+      ],
+      "eliminatedDirections": [
+        { "direction": "O(n!) Brute Force", "reason": "2.4 * 10^18 ops — will never finish" }
+      ],
+      "keyInsight": "This is the Bitmask DP range. 2^20 = 1M is safe. 2^20 * 20 = 20M still safe.",
+      "watchOut": "If you see n ≤ 20 with subset or assignment in problem — Bitmask DP is almost certainly the answer."
+    },
+    {
+      "id": "n_100",
+      "label": "N ≤ 100",
+      "maxN": 100,
+      "complexities": [
+        { "class": "O(n!)",          "ops": null,      "status": "red",    "display": "Astronomical — TLE" },
+        { "class": "O(2^n)",         "ops": null,      "status": "red",    "display": "10^30 — TLE" },
+        { "class": "O(n^3)",         "ops": 1000000,   "status": "green",  "display": "1M" },
+        { "class": "O(n^2 * k) k=100","ops": 100000000,"status": "yellow", "display": "100M — borderline" },
+        { "class": "O(n^2)",         "ops": 10000,     "status": "green",  "display": "10K" },
+        { "class": "O(n log n)",     "ops": 664,       "status": "green",  "display": "664" },
+        { "class": "O(n)",           "ops": 100,       "status": "green",  "display": "100" }
+      ],
+      "allowedDirections": [
+        "Floyd-Warshall", "3-Loop DP", "Knuth Optimization",
+        "Interval DP", "All-pairs shortest path", "O(n^2 * k) DP if k is small"
+      ],
+      "eliminatedDirections": [
+        { "direction": "Bitmask DP",               "reason": "2^100 is not feasible" },
+        { "direction": "Backtracking without pruning","reason": "Search space too large" }
+      ],
+      "keyInsight": "O(n^3) = 10^6 is safe. This is the Interval DP / Floyd-Warshall range.",
+      "watchOut": "O(n^2 * k) needs careful check — only safe if k stays small."
+    },
+    {
+      "id": "n_500",
+      "label": "N ≤ 500",
+      "maxN": 500,
+      "complexities": [
+        { "class": "O(n^3)",     "ops": 125000000, "status": "yellow", "display": "125M — risky" },
+        { "class": "O(n^2 log n)","ops": 2238751,  "status": "green",  "display": "2.2M" },
+        { "class": "O(n^2)",     "ops": 250000,    "status": "green",  "display": "250K" },
+        { "class": "O(n log n)", "ops": 4483,      "status": "green",  "display": "4.5K" },
+        { "class": "O(n)",       "ops": 500,       "status": "green",  "display": "500" }
+      ],
+      "allowedDirections": [
+        "2D DP", "Interval DP", "All-pairs checking O(n^2)", "O(n^2) Graph algorithms"
+      ],
+      "eliminatedDirections": [
+        { "direction": "Floyd-Warshall",    "reason": "O(n^3) = 125M — too slow" },
+        { "direction": "3-Loop DP general", "reason": "O(n^3) is risky at n=500" }
+      ],
+      "keyInsight": "O(n^2) is the workhorse here. O(n^3) starts being risky.",
+      "watchOut": "If your solution is O(n^3) at n=500, expect TLE. Look for O(n^2 log n) optimization."
+    },
+    {
+      "id": "n_3000",
+      "label": "N ≤ 3,000",
+      "maxN": 3000,
+      "complexities": [
+        { "class": "O(n^3)",          "ops": 27000000000, "status": "red",   "display": "27B — TLE" },
+        { "class": "O(n^2)",          "ops": 9000000,     "status": "green", "display": "9M" },
+        { "class": "O(n^2 / 64) bitset","ops": 140625,   "status": "green", "display": "140K with bitset" },
+        { "class": "O(n log n)",      "ops": 34000,       "status": "green", "display": "34K" },
+        { "class": "O(n)",            "ops": 3000,        "status": "green", "display": "3K" }
+      ],
+      "allowedDirections": [
+        "Tight 2D DP", "Bitset optimization O(n^2/64)", "Advanced DP", "O(n^2) string algorithms"
+      ],
+      "eliminatedDirections": [
+        { "direction": "O(n^3) anything", "reason": "27B ops — hard TLE" }
+      ],
+      "keyInsight": "O(n^2) = 9M is fine. Bitset trick multiplies feasibility by 64 for certain DP problems.",
+      "watchOut": "LCS-type 2D DP at n=3000 is fine. Interval DP is risky — often O(n^3)."
+    },
+    {
+      "id": "n_10000",
+      "label": "N ≤ 10,000",
+      "maxN": 10000,
+      "complexities": [
+        { "class": "O(n^2)",          "ops": 100000000, "status": "yellow", "display": "100M — borderline" },
+        { "class": "O(n^2 / 64) bitset","ops": 1562500, "status": "green",  "display": "1.5M with bitset" },
+        { "class": "O(n log^2 n)",    "ops": 1800000,   "status": "green",  "display": "1.8M" },
+        { "class": "O(n log n)",      "ops": 133000,    "status": "green",  "display": "133K" },
+        { "class": "O(n)",            "ops": 10000,     "status": "green",  "display": "10K" }
+      ],
+      "allowedDirections": [
+        "Binary Search", "Tight 2D DP (careful)", "BFS/DFS on sparse graphs", "Sorting-based"
+      ],
+      "eliminatedDirections": [
+        { "direction": "O(n^2) DP general", "reason": "100M — passes only with small constant and relaxed TL" }
+      ],
+      "keyInsight": "O(n^2) is on the boundary. Must have tight constant. Prefer O(n log n).",
+      "watchOut": "O(n^2) may pass with 2s TL but not 1s. Always calculate actual ops."
+    },
+    {
+      "id": "n_100000",
+      "label": "N ≤ 100,000",
+      "maxN": 100000,
+      "complexities": [
+        { "class": "O(n^2)",     "ops": 10000000000, "status": "red",   "display": "10B — TLE" },
+        { "class": "O(n log^2 n)","ops": 2890000,   "status": "green", "display": "2.89M" },
+        { "class": "O(n log n)", "ops": 1700000,    "status": "green", "display": "1.7M" },
+        { "class": "O(n sqrt n)","ops": 31622776,   "status": "green", "display": "31.6M" },
+        { "class": "O(n)",       "ops": 100000,     "status": "green", "display": "100K" }
+      ],
+      "allowedDirections": [
+        "Sorting-based", "Binary Search", "Segment Tree", "Fenwick Tree (BIT)",
+        "Merge Sort", "Divide and Conquer", "Monotonic Stack / Queue",
+        "Two Pointer", "Sliding Window", "KMP / Z-Algorithm",
+        "Union Find", "Trie", "Sparse Table (static)", "Mo's Algorithm (offline)"
+      ],
+      "eliminatedDirections": [
+        { "direction": "O(n^2) anything", "reason": "10B ops — hard TLE" },
+        { "direction": "Floyd-Warshall",  "reason": "Only works up to n=500" }
+      ],
+      "keyInsight": "Most common constraint. O(n log n) is the target. O(n sqrt n) passes with generous TL.",
+      "watchOut": "O(n log n) = 1.7M is very safe. O(n sqrt n) = 31M is fine for 1-2s."
+    },
+    {
+      "id": "n_1000000",
+      "label": "N ≤ 1,000,000",
+      "maxN": 1000000,
+      "complexities": [
+        { "class": "O(n log n)",    "ops": 20000000,   "status": "green", "display": "20M" },
+        { "class": "O(n sqrt n)",   "ops": 1000000000, "status": "red",   "display": "1B — TLE" },
+        { "class": "O(n log log n)","ops": 5000000,    "status": "green", "display": "5M" },
+        { "class": "O(n)",          "ops": 1000000,    "status": "green", "display": "1M" }
+      ],
+      "allowedDirections": [
+        "Linear DP", "Sliding Window", "Two Pointer", "KMP / Z-Algorithm",
+        "Union Find (with path compression)", "Counting Sort / Radix Sort",
+        "Sieve of Eratosthenes", "Trie (careful memory)", "Monotonic Stack / Queue"
+      ],
+      "eliminatedDirections": [
+        { "direction": "O(n sqrt n) Mo's Algorithm", "reason": "1B ops — TLE at this scale" },
+        { "direction": "Segment Tree with heavy ops", "reason": "Constant factor too high" }
+      ],
+      "keyInsight": "Must be O(n) or O(n log n) with small constant. Memory also becomes a concern.",
+      "watchOut": "At n=10^6, int array = 4MB. Long array = 8MB. 2D arrays become dangerous."
+    },
+    {
+      "id": "n_1000000000",
+      "label": "N ≤ 10^9",
+      "maxN": 1000000000,
+      "complexities": [
+        { "class": "O(n)",      "ops": 1000000000, "status": "red",   "display": "1B — TLE" },
+        { "class": "O(sqrt n)", "ops": 31623,      "status": "green", "display": "31.6K" },
+        { "class": "O(log n)",  "ops": 30,         "status": "green", "display": "30" },
+        { "class": "O(log^2 n)","ops": 900,        "status": "green", "display": "900" }
+      ],
+      "allowedDirections": [
+        "Binary Search", "Binary Search on Answer",
+        "Matrix Exponentiation", "Number Theory",
+        "Mathematical formula / closed form", "Digit DP"
+      ],
+      "eliminatedDirections": [
+        { "direction": "Any O(n) or worse", "reason": "Cannot iterate over 10^9 elements in 1-2s" }
+      ],
+      "keyInsight": "You cannot iterate. Must find mathematical pattern or binary search on answer.",
+      "watchOut": "If n is this large you almost certainly need binary search on answer or a formula."
+    }
+  ],
+
+  "combinedConstraints": [
+    {
+      "id": "n_q_logn",
+      "label": "N=10^5, Q=10^5, O(log n) per query",
+      "n": 100000, "q": 100000,
+      "perQueryComplexity": "O(log n)",
+      "totalOps": 1700000,
+      "status": "green",
+      "display": "1.7M",
+      "verdict": "Safe — use Segment Tree or Fenwick Tree"
+    },
+    {
+      "id": "n_q_n_per_query",
+      "label": "N=10^5, Q=10^5, O(n) per query",
+      "n": 100000, "q": 100000,
+      "perQueryComplexity": "O(n)",
+      "totalOps": 10000000000,
+      "status": "red",
+      "display": "10B",
+      "verdict": "Hard TLE — must reduce per-query to O(log n) or O(sqrt n)"
+    },
+    {
+      "id": "n_q_sqrtn",
+      "label": "N=10^5, Q=10^5, O(sqrt n) per query",
+      "n": 100000, "q": 100000,
+      "perQueryComplexity": "O(sqrt n)",
+      "totalOps": 31622776,
+      "status": "green",
+      "display": "31.6M",
+      "verdict": "Safe — Mo's Algorithm range"
+    },
+    {
+      "id": "bitmask_k20",
+      "label": "Bitmask DP, k=20 items",
+      "n": 20, "q": 1,
+      "perQueryComplexity": "O(2^k * k)",
+      "totalOps": 20971520,
+      "status": "green",
+      "display": "20M",
+      "verdict": "Safe — standard Bitmask DP"
+    },
+    {
+      "id": "bitmask_k25",
+      "label": "Bitmask DP, k=25 items",
+      "n": 25, "q": 1,
+      "perQueryComplexity": "O(2^k * k)",
+      "totalOps": 838860800,
+      "status": "red",
+      "display": "838M",
+      "verdict": "TLE — k=25 is too large for standard Bitmask DP"
+    },
+    {
+      "id": "grid_bfs",
+      "label": "Grid N=1000, M=1000, BFS/DFS",
+      "n": 1000, "q": 1,
+      "perQueryComplexity": "O(n * m)",
+      "totalOps": 1000000,
+      "status": "green",
+      "display": "1M",
+      "verdict": "Safe"
+    },
+    {
+      "id": "grid_prefix_queries",
+      "label": "Grid N=1000, M=1000, Q=10^5 queries with 2D prefix sum",
+      "n": 1000, "q": 100000,
+      "perQueryComplexity": "O(1) after O(nm) preprocessing",
+      "totalOps": 1100000,
+      "status": "green",
+      "display": "1M pre + 100K queries",
+      "verdict": "Safe — use 2D prefix sum"
+    },
+    {
+      "id": "graph_dense_dijkstra",
+      "label": "Dense graph N=10^4, Dijkstra with array",
+      "n": 10000, "q": 1,
+      "perQueryComplexity": "O(n^2)",
+      "totalOps": 100000000,
+      "status": "yellow",
+      "display": "100M",
+      "verdict": "Borderline — use array Dijkstra on dense, PQ on sparse"
+    },
+    {
+      "id": "graph_sparse_dijkstra",
+      "label": "Sparse graph N=10^5, Dijkstra with PQ",
+      "n": 100000, "q": 1,
+      "perQueryComplexity": "O((n + e) log n)",
+      "totalOps": 3400000,
+      "status": "green",
+      "display": "3.4M",
+      "verdict": "Safe — standard Dijkstra with priority queue"
+    }
+  ],
+
+  "memoryConstraints": [
+    {
+      "id": "mem_64mb",
+      "label": "64 MB limit",
+      "bytes": 67108864,
+      "fits": [
+        "int array of 16M elements",
+        "Segment tree for n=10^6 (uses 4n ints = 16M)",
+        "Adjacency list for n=10^4 with E=10^5",
+        "2D array 3000 x 3000 ints",
+        "Suffix array + LCP for n=10^5"
+      ],
+      "doesNotFit": [
+        "Adjacency matrix for n=10^5 (10^10 bytes)",
+        "Full memoization table 10^6 x 10^6",
+        "Trie with n=10^6 nodes if each node is large"
+      ]
+    },
+    {
+      "id": "mem_256mb",
+      "label": "256 MB limit",
+      "bytes": 268435456,
+      "fits": [
+        "int array of 64M elements",
+        "Segment tree for n=4*10^6",
+        "Suffix array + LCP for n=10^6",
+        "Adjacency list for large sparse graphs",
+        "2D DP table 10^4 x 10^4"
+      ],
+      "doesNotFit": [
+        "Adjacency matrix for n=10^5",
+        "3D DP table 1000 x 1000 x 1000"
+      ]
+    },
+    {
+      "id": "mem_512mb",
+      "label": "512 MB limit",
+      "bytes": 536870912,
+      "fits": [
+        "Heavier preprocessing structures",
+        "Multiple large arrays simultaneously",
+        "Suffix automaton for long strings"
+      ],
+      "doesNotFit": [
+        "Adjacency matrix for n=10^5",
+        "4D DP tables of significant size"
+      ]
+    }
+  ],
+
+  "timeLimitAdjustments": {
+    "0.5": { "multiplier": 0.5, "note": "Very strict. Halve your op budget. Avoid O(n log^2 n) at n=10^5." },
+    "1":   { "multiplier": 1.0, "note": "Standard. Use 10^8 as your safe threshold." },
+    "2":   { "multiplier": 2.0, "note": "Relaxed. Can push borderline solutions through." },
+    "5":   { "multiplier": 5.0, "note": "Very generous. O(n^2) at n=10^4 is now comfortable." }
+  },
+
+  "operationCountRule": {
+    "description": "Always calculate ACTUAL operation count before deciding feasibility",
+    "formula": "actualOps = f(n) where f is your complexity class evaluated at your specific n",
+    "examples": [
+      { "scenario": "n=10^5, O(n log n)",                "calculation": "10^5 * 17 = 1.7 * 10^6",  "verdict": "Safe (0.017s)" },
+      { "scenario": "n=10^5, q=10^5, O(q log n)/query",  "calculation": "10^5 * 17 = 1.7 * 10^6",  "verdict": "Safe" },
+      { "scenario": "n=10^5, q=10^5, O(q * n)",          "calculation": "10^5 * 10^5 = 10^10",      "verdict": "Hard TLE (100s)" },
+      { "scenario": "n=500, O(n^3)",                      "calculation": "500^3 = 1.25 * 10^8",      "verdict": "Borderline — risky at 1s, ok at 2s" }
+    ]
+  }
+}

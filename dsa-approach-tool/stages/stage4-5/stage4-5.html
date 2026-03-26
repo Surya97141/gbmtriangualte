@@ -1,0 +1,811 @@
+<!-- stages/stage4-5/stage4-5.html -->
+<!-- Reference template for Stage 4.5 — Approach Variant + Complexity Re-check -->
+<!-- stage4-5.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 4.5 — Approach Variant</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 820px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage4-5 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 28px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Section ─────────────────────────────────────────────────────────── */
+    .stage4-5__section {
+      display        : flex;
+      flex-direction : column;
+      gap            : 12px;
+    }
+
+    .stage4-5__section-title {
+      display    : flex;
+      align-items: baseline;
+      gap        : 10px;
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .stage4-5__section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       DIRECTION SUMMARY CARDS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s45-direction-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap                  : 8px;
+    }
+
+    .s45-direction-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .s45-direction-card--active {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .s45-direction-card__label {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s45-direction-card__why {
+      font-size  : .72rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .s45-direction-card__verify {
+      font-size  : .71rem;
+      color      : var(--ink);
+      line-height: 1.4;
+      padding    : 5px 8px;
+      background : var(--blue-bg);
+      border-radius: var(--radius-sm);
+    }
+
+    .verify-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       VARIANT CARDS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .s45-group-title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-top    : 4px;
+    }
+
+    .s45-variant-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap                  : 8px;
+    }
+
+    .s45-variant-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 13px 15px;
+      cursor        : pointer;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+      transition    : border-color .15s, background .15s, transform .1s;
+    }
+
+    .s45-variant-card:hover {
+      border-color: var(--yellow);
+      transform   : translateY(-1px);
+    }
+
+    .s45-variant-card--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    /* Feasibility tints */
+    .s45-variant-card--safe {
+      border-left: 3px solid var(--green);
+    }
+
+    .s45-variant-card--warn {
+      border-left: 3px solid var(--yellow);
+    }
+
+    .s45-variant-card--tle {
+      border-left: 3px solid var(--red);
+      opacity    : .75;
+    }
+
+    .s45-variant-card__header {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+    }
+
+    .s45-variant-card__name {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .s45-variant-card__tagline {
+      font-size  : .69rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Complexity + badge ──────────────────────────────────────────────── */
+    .s45-variant-card__complex {
+      display    : flex;
+      align-items: center;
+      gap        : 8px;
+      flex-wrap  : wrap;
+    }
+
+    .detail-mono {
+      font-family: var(--font-mono);
+      font-size  : .7rem;
+      background : rgba(212,204,184,.3);
+      padding    : 2px 6px;
+      border-radius: 3px;
+      color      : var(--ink);
+    }
+
+    .feasibility-badge {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      padding      : 2px 8px;
+      border-radius: 4px;
+      font-weight  : 700;
+    }
+
+    .feasibility-badge--safe {
+      background: var(--green-bg);
+      color     : #028a5b;
+      border    : 1px solid rgba(6,214,160,.3);
+    }
+
+    .feasibility-badge--warn {
+      background: var(--yellow-bg);
+      color     : #7a5a00;
+      border    : 1px solid rgba(255,209,102,.4);
+    }
+
+    .feasibility-badge--tle {
+      background: var(--red-bg);
+      color     : var(--red);
+      border    : 1px solid rgba(230,57,70,.3);
+    }
+
+    /* ── When to use ─────────────────────────────────────────────────────── */
+    .s45-variant-card__when {
+      display       : flex;
+      flex-direction: column;
+      gap           : 3px;
+    }
+
+    .s45-variant-when-item {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 5px;
+      font-size  : .71rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .when-bullet { color: var(--muted); flex-shrink: 0; }
+
+    /* ── Collapsible code template ────────────────────────────────────────── */
+    .collapsible {
+      border        : 1px solid var(--border);
+      border-radius : var(--radius-sm);
+      overflow      : hidden;
+    }
+
+    .collapsible__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 6px 10px;
+      background     : var(--bg);
+      cursor         : pointer;
+      font-family    : var(--font-mono);
+      font-size      : .58rem;
+      letter-spacing : 1.5px;
+      text-transform : uppercase;
+      color          : var(--muted);
+    }
+
+    .collapsible__header:hover { background: rgba(212,204,184,.3); }
+    .collapsible__body         { padding: 0; }
+
+    .s45-code-template {
+      font-family  : var(--font-mono);
+      font-size    : .62rem;
+      line-height  : 1.7;
+      color        : var(--ink);
+      background   : #1a1a2e;
+      color        : #e2e8f0;
+      padding      : 12px 14px;
+      overflow-x   : auto;
+      white-space  : pre;
+      margin       : 0;
+    }
+
+    /* ── Watch outs ──────────────────────────────────────────────────────── */
+    .s45-variant-card__watchouts {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 5px;
+      font-size  : .7rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+    .watchout-text { line-height: 1.5; }
+
+    /* ── No variants ─────────────────────────────────────────────────────── */
+    .stage4-5__no-variants {
+      font-size  : .78rem;
+      color      : var(--muted);
+      font-style : italic;
+      padding    : 10px 0;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       RECHECK RESULT
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .recheck-placeholder {
+      font-size  : .78rem;
+      color      : var(--muted);
+      font-style : italic;
+      padding    : 12px 0;
+    }
+
+    .recheck-result-card {
+      border-radius : var(--radius-md);
+      border        : 1.5px solid;
+      padding       : 14px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .recheck-result-card--safe {
+      background  : var(--green-bg);
+      border-color: rgba(6,214,160,.4);
+    }
+
+    .recheck-result-card--warn {
+      background  : var(--yellow-bg);
+      border-color: rgba(255,209,102,.5);
+    }
+
+    .recheck-result-card--tle {
+      background  : var(--red-bg);
+      border-color: rgba(230,57,70,.4);
+    }
+
+    .recheck-result-card__icon {
+      font-family: var(--font-mono);
+      font-size  : 1.4rem;
+      font-weight: 700;
+    }
+
+    .recheck-result-card--safe .recheck-result-card__icon { color: var(--green); }
+    .recheck-result-card--warn .recheck-result-card__icon { color: #7a5a00; }
+    .recheck-result-card--tle  .recheck-result-card__icon { color: var(--red); }
+
+    .recheck-result-card__message {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .recheck-result-card__detail {
+      font-size  : .74rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    .recheck-tle-warn {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 7px;
+      font-size  : .74rem;
+      color      : var(--red);
+      padding    : 7px 10px;
+      background : rgba(230,57,70,.06);
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Override ────────────────────────────────────────────────────────── */
+    .stage4-5__override {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+      padding       : 12px 14px;
+      background    : var(--yellow-bg);
+      border        : 1.5px solid rgba(255,209,102,.4);
+      border-radius : var(--radius-md);
+    }
+
+    .stage4-5__override-note {
+      font-size  : .78rem;
+      color      : #7a5a00;
+      line-height: 1.5;
+    }
+
+    .stage4-5__override-btns {
+      display: flex;
+      gap    : 8px;
+      flex-wrap: wrap;
+    }
+
+    .override-btn {
+      padding      : 7px 14px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--surface);
+      font-family  : var(--font-sans);
+      font-size    : .76rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .override-btn:hover { border-color: var(--yellow); }
+
+    .override-btn--selected {
+      border-color: var(--yellow);
+      background  : rgba(255,209,102,.15);
+      font-weight : 500;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SUMMARY
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage4-5__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 90px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .feasibility-inline {
+      font-family: var(--font-mono);
+      font-size  : .74rem;
+    }
+
+    .feasibility-inline--safe { color: #028a5b; }
+    .feasibility-inline--warn { color: #7a5a00; }
+    .feasibility-inline--tle  { color: var(--red); }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+    .hidden { display: none !important; }
+
+  </style>
+</head>
+<body>
+
+<div class="stage4-5">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Pick the specific variant of your approach. Re-check complexity at actual N.
+    </div>
+    <div class="stage-intro__sub">
+      Different variants of the same family have very different complexities.
+      Verify before coding.
+    </div>
+  </div>
+
+  <!-- DIRECTION SUMMARY ---------------------------------------------------- -->
+  <div class="stage4-5__section">
+
+    <div class="stage4-5__section-title">
+      <span>Candidate directions from Stage 3</span>
+      <span class="stage4-5__section-sub">Which direction are you pursuing?</span>
+    </div>
+
+    <div class="s45-direction-grid">
+
+      <div class="s45-direction-card s45-direction-card--active">
+        <div class="s45-direction-card__label">Binary Search on Answer</div>
+        <div class="s45-direction-card__why">
+          Monotonic feasibility boundary — if X works then X+1 also works
+        </div>
+        <div class="s45-direction-card__verify">
+          <span class="verify-label">Verify:</span>
+          Write isFeasible(X). Confirm monotonicity with 2 examples.
+        </div>
+      </div>
+
+      <div class="s45-direction-card">
+        <div class="s45-direction-card__label">Dynamic Programming</div>
+        <div class="s45-direction-card__why">
+          Overlapping subproblems with one-directional dependencies
+        </div>
+        <div class="s45-direction-card__verify">
+          <span class="verify-label">Verify:</span>
+          Define state. Check completeness and non-redundancy.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- VARIANT SECTION ------------------------------------------------------ -->
+  <div class="stage4-5__section" id="variant-section">
+
+    <div class="stage4-5__section-title">
+      <span>Select the specific variant</span>
+      <span class="stage4-5__section-sub">Pick the exact algorithm</span>
+    </div>
+
+    <div class="s45-group-title">Binary Search on Answer variants:</div>
+
+    <div class="s45-variant-grid">
+
+      <!-- Safe variant — selected -->
+      <div class="s45-variant-card s45-variant-card--selected s45-variant-card--safe">
+
+        <div class="s45-variant-card__header">
+          <div class="s45-variant-card__name">Binary Search on Answer</div>
+          <div class="s45-variant-card__tagline">
+            Search for the optimal value in [lo, hi]
+          </div>
+        </div>
+
+        <div class="s45-variant-card__complex">
+          <span class="detail-mono">O(log(range) × isFeasible)</span>
+          <span class="feasibility-badge feasibility-badge--safe">✓ 1.7M ops</span>
+        </div>
+
+        <div class="s45-variant-card__when">
+          <div class="s45-variant-when-item">
+            <span class="when-bullet">·</span>
+            Minimize maximum or maximize minimum
+          </div>
+          <div class="s45-variant-when-item">
+            <span class="when-bullet">·</span>
+            Answer is a value in a known range
+          </div>
+          <div class="s45-variant-when-item">
+            <span class="when-bullet">·</span>
+            isFeasible(X) can be checked greedily in O(n)
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <div class="collapsible__header">
+            <span>Code template</span>
+            <span>▼</span>
+          </div>
+          <div class="collapsible__body">
+            <pre class="s45-code-template">int lo = MIN_ANSWER, hi = MAX_ANSWER;
+while (lo &lt; hi) {
+  int mid = lo + (hi - lo) / 2;
+  if (isFeasible(mid)) hi = mid;
+  else                 lo = mid + 1;
+}
+return lo;</pre>
+          </div>
+        </div>
+
+        <div class="s45-variant-card__watchouts">
+          <div class="watchout-row">
+            <span class="watchout-icon">⚠</span>
+            <span class="watchout-text">
+              isFeasible must be monotone — verify with 2 examples
+            </span>
+          </div>
+          <div class="watchout-row">
+            <span class="watchout-icon">⚠</span>
+            <span class="watchout-text">
+              Integer overflow: use lo + (hi-lo)/2 not (lo+hi)/2
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Borderline variant -->
+      <div class="s45-variant-card s45-variant-card--warn">
+
+        <div class="s45-variant-card__header">
+          <div class="s45-variant-card__name">Binary Search on Prefix Sum</div>
+          <div class="s45-variant-card__tagline">
+            Binary search on cumulative sums
+          </div>
+        </div>
+
+        <div class="s45-variant-card__complex">
+          <span class="detail-mono">O(n log n)</span>
+          <span class="feasibility-badge feasibility-badge--warn">~ 28M ops</span>
+        </div>
+
+        <div class="s45-variant-card__when">
+          <div class="s45-variant-when-item">
+            <span class="when-bullet">·</span>
+            Find subarray with sum closest to target
+          </div>
+          <div class="s45-variant-when-item">
+            <span class="when-bullet">·</span>
+            All values must be non-negative
+          </div>
+        </div>
+
+        <div class="collapsible">
+          <div class="collapsible__header">
+            <span>Code template</span>
+            <span>▼</span>
+          </div>
+          <div class="collapsible__body" style="display:none">
+            <pre class="s45-code-template">vector&lt;int&gt; prefix(n+1, 0);
+for (int i=0; i&lt;n; i++) prefix[i+1]=prefix[i]+a[i];
+int j = lower_bound(prefix.begin()+i,
+        prefix.end(), prefix[i]+target) - prefix.begin();</pre>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TLE variant -->
+      <div class="s45-variant-card s45-variant-card--tle">
+
+        <div class="s45-variant-card__header">
+          <div class="s45-variant-card__name">Standard DP O(n²)</div>
+          <div class="s45-variant-card__tagline">
+            Would TLE at current N
+          </div>
+        </div>
+
+        <div class="s45-variant-card__complex">
+          <span class="detail-mono">O(n²)</span>
+          <span class="feasibility-badge feasibility-badge--tle">✗ TLE 10B ops</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- RECHECK SECTION ------------------------------------------------------ -->
+  <div class="stage4-5__section" id="recheck-section">
+
+    <div class="stage4-5__section-title">
+      <span>Complexity re-check at your N</span>
+      <span class="stage4-5__section-sub">Final confirmation before verification</span>
+    </div>
+
+    <!-- Safe result -->
+    <div class="stage4-5__recheck-region" id="recheck-region">
+      <div class="recheck-result-card recheck-result-card--safe">
+        <div class="recheck-result-card__icon">✓</div>
+        <div class="recheck-result-card__message">
+          Safe — Binary Search on Answer at n=100,000 is well within limits
+        </div>
+        <div class="recheck-result-card__detail">
+          <span class="detail-mono">O(n log n)</span>
+          at n=100,000 =
+          <span class="detail-mono">1.7M</span>
+          ops (~17ms)
+        </div>
+      </div>
+    </div>
+
+    <!-- Borderline result (example) -->
+    <!--
+    <div class="recheck-result-card recheck-result-card--warn">
+      <div class="recheck-result-card__icon">~</div>
+      <div class="recheck-result-card__message">
+        Borderline — O(n log² n) at n=100,000 = 28M ops (~280ms)
+      </div>
+      <div class="recheck-result-card__detail">
+        May pass with 2s time limit and tight constant factor.
+      </div>
+    </div>
+
+    <div class="stage4-5__override">
+      <div class="stage4-5__override-note">
+        Borderline complexity — do you want to proceed with this variant anyway?
+      </div>
+      <div class="stage4-5__override-btns">
+        <button class="override-btn override-btn--selected">
+          → Proceed anyway (tight constant may pass)
+        </button>
+        <button class="override-btn">
+          ← Choose faster variant
+        </button>
+      </div>
+    </div>
+    -->
+
+    <!-- TLE result (example) -->
+    <!--
+    <div class="recheck-result-card recheck-result-card--tle">
+      <div class="recheck-result-card__icon">✗</div>
+      <div class="recheck-result-card__message">
+        TLE — O(n²) at n=100,000 = 10B ops far exceeds 1s limit
+      </div>
+      <div class="recheck-result-card__detail">
+        <span class="detail-mono">O(n²)</span>
+        at n=100,000 =
+        <span class="detail-mono">10B</span>
+        ops (~100s)
+      </div>
+      <div class="recheck-tle-warn">
+        <span class="watchout-icon">⚠</span>
+        This variant will TLE at your N. Choose a faster variant.
+      </div>
+    </div>
+    -->
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage4-5__summary" id="stage4-5-summary">
+
+    <div class="stage4-5__section-title">Variant summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Variant:</span>
+      <span class="summary-row__value">Binary Search on Answer</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Complexity:</span>
+      <span class="summary-row__value detail-mono">o(nlogn)</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">At N:</span>
+      <span class="summary-row__value feasibility-inline feasibility-inline--safe">
+        ✓ Safe — o(nlogn) at n=100000 = 1.7M ops (~17ms)
+      </span>
+    </div>
+
+  </div>
+
+</div><!-- /stage4-5 -->
+
+</body>
+</html>

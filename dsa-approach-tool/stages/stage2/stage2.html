@@ -1,0 +1,839 @@
+<!-- stages/stage2/stage2.html -->
+<!-- Reference template for Stage 2 — Output Anatomy -->
+<!-- stage2.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 2 — Output Anatomy</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 780px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage2 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 28px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Section ─────────────────────────────────────────────────────────── */
+    .stage2__section {
+      display        : flex;
+      flex-direction : column;
+      gap            : 12px;
+    }
+
+    .stage2__section-title {
+      display    : flex;
+      align-items: baseline;
+      gap        : 10px;
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .stage2__section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    /* ── Output form cards ───────────────────────────────────────────────── */
+    .stage2__form-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap                  : 8px;
+    }
+
+    .output-form-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 11px 13px;
+      cursor        : pointer;
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+      transition    : border-color .15s, background .15s, transform .1s;
+    }
+
+    .output-form-card:hover {
+      border-color: var(--yellow);
+      transform   : translateY(-1px);
+    }
+
+    .output-form-card--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .output-form-card__header {
+      display    : flex;
+      align-items: center;
+      gap        : 7px;
+    }
+
+    .output-form-card__icon {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      color      : var(--muted);
+      flex-shrink: 0;
+      min-width  : 28px;
+    }
+
+    .output-form-card__label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .output-form-card__sub {
+      font-size  : .66rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .output-form-card__warn {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 5px;
+      font-size  : .65rem;
+      color      : #7a5a00;
+      background : var(--yellow-bg);
+      border     : 1px solid rgba(255,209,102,.3);
+      border-radius: var(--radius-sm);
+      padding    : 4px 7px;
+      margin-top : 2px;
+    }
+
+    /* ── Form implications ───────────────────────────────────────────────── */
+    .stage2__impl-region {
+      min-height: 0;
+    }
+
+    .impl-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .impl-item {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      padding    : 6px 10px;
+      background : var(--blue-bg);
+      border     : 1px solid rgba(33,150,243,.18);
+      border-radius: var(--radius-sm);
+    }
+
+    .impl-item__arrow {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      color      : var(--blue);
+      flex-shrink: 0;
+      margin-top : 1px;
+    }
+
+    .impl-item__text {
+      font-size  : .76rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    /* ── Optimization type cards ─────────────────────────────────────────── */
+    .stage2__opt-grid {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 8px;
+    }
+
+    .opt-card {
+      flex          : 1;
+      min-width     : 140px;
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 10px 14px;
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s;
+    }
+
+    .opt-card:hover        { border-color: var(--yellow); }
+
+    .opt-card--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .opt-card__label {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .opt-card__sublabel {
+      font-size : .67rem;
+      color     : var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ── Opt implication card ────────────────────────────────────────────── */
+    .stage2__opt-impl { min-height: 0; }
+
+    .opt-impl-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .opt-impl-card--max_min,
+    .opt-impl-card--min_max {
+      border-color: rgba(6,214,160,.35);
+      background  : var(--green-bg);
+    }
+
+    .opt-impl-card--lex_smallest,
+    .opt-impl-card--lex_largest {
+      border-color: rgba(192,84,252,.3);
+      background  : var(--pur-bg);
+    }
+
+    .opt-impl-card__impl {
+      font-size  : .8rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .opt-impl-card__insight {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 7px;
+      font-size  : .76rem;
+      color      : var(--ink);
+      background : var(--blue-bg);
+      border     : 1px solid rgba(33,150,243,.2);
+      border-radius: var(--radius-sm);
+      padding    : 7px 10px;
+      line-height: 1.5;
+    }
+
+    .insight-icon { flex-shrink: 0; }
+
+    .opt-impl-card__check {
+      display  : flex;
+      gap      : 7px;
+      font-size: .74rem;
+      color    : var(--muted);
+    }
+
+    .check-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      flex-shrink   : 0;
+    }
+
+    .opt-impl-card__elim {
+      display   : flex;
+      align-items: center;
+      gap       : 6px;
+      flex-wrap : wrap;
+    }
+
+    .elim-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--red);
+    }
+
+    .elim-badge {
+      font-family    : var(--font-mono);
+      font-size      : .68rem;
+      background     : rgba(230,57,70,.1);
+      color          : var(--red);
+      padding        : 2px 8px;
+      border-radius  : 4px;
+      text-decoration: line-through;
+    }
+
+    .opt-impl-card__opens {
+      display   : flex;
+      align-items: center;
+      gap       : 6px;
+      flex-wrap : wrap;
+    }
+
+    .opens-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : #028a5b;
+    }
+
+    .opens-badge {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      padding      : 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Solution depth cards ────────────────────────────────────────────── */
+    .stage2__depth-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap                  : 8px;
+    }
+
+    .depth-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      cursor        : pointer;
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+      transition    : border-color .15s, background .15s;
+    }
+
+    .depth-card:hover       { border-color: var(--yellow); }
+
+    .depth-card--selected {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .depth-card__label {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .depth-card__sublabel {
+      font-size  : .68rem;
+      color      : var(--muted);
+    }
+
+    .depth-card__example {
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      color        : var(--muted);
+      background   : var(--bg);
+      padding      : 3px 7px;
+      border-radius: 4px;
+      margin-top   : 2px;
+    }
+
+    .depth-card__warn {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 5px;
+      font-size  : .65rem;
+      color      : #7a5a00;
+      background : var(--yellow-bg);
+      border     : 1px solid rgba(255,209,102,.3);
+      border-radius: var(--radius-sm);
+      padding    : 4px 7px;
+      margin-top : 2px;
+    }
+
+    /* ── Rule cards ──────────────────────────────────────────────────────── */
+    .stage2__rules-section {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+    }
+
+    .rule-card {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 8px;
+      padding    : 9px 13px;
+      border-radius: var(--radius-sm);
+      border     : 1.5px solid;
+      font-size  : .78rem;
+      line-height: 1.5;
+    }
+
+    .rule-card--warning {
+      background  : var(--yellow-bg);
+      border-color: rgba(255,209,102,.4);
+      color       : #7a5a00;
+    }
+
+    .rule-card--insight {
+      background  : var(--green-bg);
+      border-color: rgba(6,214,160,.3);
+      color       : #024d37;
+    }
+
+    .rule-card--info {
+      background  : var(--blue-bg);
+      border-color: rgba(33,150,243,.2);
+      color       : #0d47a1;
+    }
+
+    .rule-card__icon { flex-shrink: 0; font-size: .9rem; }
+    .rule-card__text { flex: 1; }
+
+    /* ── Summary ─────────────────────────────────────────────────────────── */
+    .stage2__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 64px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .summary-opened {
+      margin-top: 12px;
+    }
+
+    .summary-opened__title {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 6px;
+    }
+
+    .summary-opened__list {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 6px;
+    }
+
+    .opened-badge {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      border       : 1px solid rgba(6,214,160,.25);
+      padding      : 3px 10px;
+      border-radius: 4px;
+    }
+
+    .summary-warnings {
+      margin-top    : 10px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .74rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-icon { flex-shrink: 0; font-size: .8rem; }
+    .watchout-text { line-height: 1.5; }
+
+    .insight-card {
+      display       : flex;
+      align-items   : flex-start;
+      gap           : 10px;
+      padding       : 10px 13px;
+      border-radius : var(--radius-md);
+      border        : 1.5px solid;
+      margin-top    : 8px;
+    }
+
+    .insight-card--key {
+      background  : var(--blue-bg);
+      border-color: rgba(33,150,243,.25);
+    }
+
+    .insight-card__icon { font-size: 1rem; flex-shrink: 0; }
+    .insight-card__text { font-size: .8rem; color: var(--ink); line-height: 1.5; }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage2">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      What you must produce constrains the approach as much as what you are given.
+    </div>
+    <div class="stage-intro__sub">
+      Output form, optimization type, and solution depth each eliminate different families.
+    </div>
+  </div>
+
+  <!-- OUTPUT FORM ---------------------------------------------------------- -->
+  <div class="stage2__section">
+
+    <div class="stage2__section-title">
+      <span>What form is the answer?</span>
+      <span class="stage2__section-sub">Pick one</span>
+    </div>
+
+    <div class="stage2__form-grid" id="form-grid">
+
+      <div class="output-form-card output-form-card--selected">
+        <div class="output-form-card__header">
+          <span class="output-form-card__icon">42</span>
+          <span class="output-form-card__label">Single number</span>
+        </div>
+        <div class="output-form-card__sub">One integer or float answer</div>
+      </div>
+
+      <div class="output-form-card">
+        <div class="output-form-card__header">
+          <span class="output-form-card__icon">✓/✗</span>
+          <span class="output-form-card__label">Yes / No</span>
+        </div>
+        <div class="output-form-card__sub">Existence check</div>
+        <div class="output-form-card__warn">
+          <span class="watchout-icon">⚠</span>
+          Do not compute full optimal value when yes/no is enough
+        </div>
+      </div>
+
+      <div class="output-form-card">
+        <div class="output-form-card__header">
+          <span class="output-form-card__icon">#</span>
+          <span class="output-form-card__label">Count</span>
+        </div>
+        <div class="output-form-card__sub">How many valid configurations</div>
+      </div>
+
+      <div class="output-form-card">
+        <div class="output-form-card__header">
+          <span class="output-form-card__icon">[l..r]</span>
+          <span class="output-form-card__label">Subarray / substring</span>
+        </div>
+        <div class="output-form-card__sub">Contiguous portion</div>
+      </div>
+
+      <div class="output-form-card">
+        <div class="output-form-card__header">
+          <span class="output-form-card__icon">◉→◉</span>
+          <span class="output-form-card__label">Path</span>
+        </div>
+        <div class="output-form-card__sub">Sequence of nodes</div>
+      </div>
+
+      <div class="output-form-card">
+        <div class="output-form-card__header">
+          <span class="output-form-card__icon">k-th</span>
+          <span class="output-form-card__label">K-th element</span>
+        </div>
+        <div class="output-form-card__sub">Order statistic</div>
+        <div class="output-form-card__warn">
+          <span class="watchout-icon">⚠</span>
+          Never sort fully — heap or QuickSelect
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Form implications -->
+    <div class="stage2__impl-region" id="form-impl-region">
+      <div class="impl-list">
+        <div class="impl-item">
+          <span class="impl-item__arrow">→</span>
+          <span class="impl-item__text">DP or Greedy — compute optimal value directly</span>
+        </div>
+        <div class="impl-item">
+          <span class="impl-item__arrow">→</span>
+          <span class="impl-item__text">No reconstruction needed unless problem asks for it</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OPTIMIZATION TYPE ---------------------------------------------------- -->
+  <div class="stage2__section" id="opt-section">
+
+    <div class="stage2__section-title">
+      <span>What kind of optimization?</span>
+      <span class="stage2__section-sub">Pick one</span>
+    </div>
+
+    <div class="stage2__opt-grid" id="opt-grid">
+
+      <div class="opt-card">
+        <div class="opt-card__label">No optimization</div>
+        <div class="opt-card__sublabel">Just compute or check</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-card__label">Maximize</div>
+        <div class="opt-card__sublabel">Largest valid value</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-card__label">Minimize</div>
+        <div class="opt-card__sublabel">Smallest valid value</div>
+      </div>
+
+      <div class="opt-card opt-card--selected">
+        <div class="opt-card__label">Maximize the minimum</div>
+        <div class="opt-card__sublabel">Best worst case</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-card__label">Minimize the maximum</div>
+        <div class="opt-card__sublabel">Smallest best case</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-card__label">Count</div>
+        <div class="opt-card__sublabel">How many ways</div>
+      </div>
+
+      <div class="opt-card">
+        <div class="opt-card__label">Lex smallest</div>
+        <div class="opt-card__sublabel">Dictionary order</div>
+      </div>
+
+    </div>
+
+    <!-- Opt implication -->
+    <div class="stage2__opt-impl" id="opt-impl-region">
+      <div class="opt-impl-card opt-impl-card--max_min">
+        <div class="opt-impl-card__impl">
+          Binary Search on Answer — monotonic feasibility.
+          If min X achievable, min X-1 also achievable.
+        </div>
+        <div class="opt-impl-card__insight">
+          <span class="insight-icon">💡</span>
+          Almost always Binary Search on Answer.
+          The feasibility check is the real problem.
+        </div>
+        <div class="opt-impl-card__check">
+          <span class="check-label">Check:</span>
+          Given answer X — is there a way to verify feasibility in O(n) or O(n log n)?
+        </div>
+        <div class="opt-impl-card__opens">
+          <span class="opens-label">Opens:</span>
+          <span class="opens-badge">Binary Search on Answer</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SOLUTION DEPTH ------------------------------------------------------- -->
+  <div class="stage2__section" id="depth-section">
+
+    <div class="stage2__section-title">
+      <span>How much of the solution must you output?</span>
+      <span class="stage2__section-sub">Pick one</span>
+    </div>
+
+    <div class="stage2__depth-grid" id="depth-grid">
+
+      <div class="depth-card depth-card--selected">
+        <div class="depth-card__label">Value only</div>
+        <div class="depth-card__sublabel">Just the answer number</div>
+        <div class="depth-card__example">Return 7 (the max sum)</div>
+      </div>
+
+      <div class="depth-card">
+        <div class="depth-card__label">Reconstruct actual solution</div>
+        <div class="depth-card__sublabel">Return indices or elements</div>
+        <div class="depth-card__example">Return [2, 3, 5]</div>
+        <div class="depth-card__warn">
+          <span class="watchout-icon">⚠</span>
+          Rolling array optimization no longer possible
+        </div>
+      </div>
+
+      <div class="depth-card">
+        <div class="depth-card__label">Count the ways</div>
+        <div class="depth-card__sublabel">Number of valid solutions</div>
+        <div class="depth-card__example">Return 3 (three valid paths)</div>
+      </div>
+
+      <div class="depth-card">
+        <div class="depth-card__label">All solutions explicitly</div>
+        <div class="depth-card__sublabel">Every valid configuration</div>
+        <div class="depth-card__example">Return [[1,2],[1,3],[2,3]]</div>
+        <div class="depth-card__warn">
+          <span class="watchout-icon">⚠</span>
+          Only feasible for n ≤ 20
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TRIGGERED RULES ------------------------------------------------------ -->
+  <div class="stage2__section stage2__rules-section" id="rules-section">
+
+    <div class="stage2__section-title">Output constraints triggered</div>
+
+    <div class="rule-card rule-card--insight">
+      <span class="rule-card__icon">💡</span>
+      <span class="rule-card__text">
+        Maximize minimum / Minimize maximum almost always requires
+        Binary Search on Answer
+      </span>
+    </div>
+
+    <div class="rule-card rule-card--info">
+      <span class="rule-card__icon">ℹ</span>
+      <span class="rule-card__text">
+        Value only — can use space-optimized rolling array DP.
+        No parent tracking needed.
+      </span>
+    </div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage2__summary" id="stage2-summary">
+
+    <div class="stage2__section-title">Output summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Output:</span>
+      <span class="summary-row__value">Single number</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Goal:</span>
+      <span class="summary-row__value">Maximize the minimum</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Depth:</span>
+      <span class="summary-row__value">Value only</span>
+    </div>
+
+    <div class="summary-opened">
+      <div class="summary-opened__title">Candidate families from output side:</div>
+      <div class="summary-opened__list">
+        <span class="opened-badge">Binary Search on Answer</span>
+      </div>
+    </div>
+
+    <div class="insight-card insight-card--key">
+      <div class="insight-card__icon">💡</div>
+      <div class="insight-card__text">
+        Maximize minimum / Minimize maximum almost always requires
+        Binary Search on Answer. Write feasibility check first.
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /stage2 -->
+
+</body>
+</html>

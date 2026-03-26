@@ -1,0 +1,443 @@
+{
+  "_meta": {
+    "purpose": "Secondary cross-check layer — validates or warns against structural analysis output",
+    "usage": "Never use as primary driver. Use AFTER Stage 3 structural analysis to confirm or raise flags.",
+    "confidenceImpact": "Match = +1 confidence. Mismatch = warning flag, not override."
+  },
+
+  "exactPhrases": [
+    {
+      "id": "kw_contiguous_subarray",
+      "phrase": "contiguous subarray",
+      "signals": ["Sliding Window", "Prefix Sum", "Kadane's Algorithm"],
+      "warns": ["Subsequence DP — contiguous means no skipping"],
+      "note": "Contiguous = no gaps. Subsequence DP is wrong here unless problem also asks for subsequence."
+    },
+    {
+      "id": "kw_subarray_sum",
+      "phrase": "subarray sum",
+      "signals": ["Prefix Sum", "Sliding Window (if fixed size)", "Kadane (if max sum)"],
+      "warns": [],
+      "note": "If sum equals target — Prefix Sum + HashMap. If max sum — Kadane."
+    },
+    {
+      "id": "kw_substring",
+      "phrase": "substring",
+      "signals": ["Sliding Window", "KMP / Z-Algorithm", "Suffix Array", "Hashing"],
+      "warns": ["Subsequence DP — substring is contiguous"],
+      "note": "Substring = contiguous characters. Sliding window is the first thing to try."
+    },
+    {
+      "id": "kw_subsequence",
+      "phrase": "subsequence",
+      "signals": ["DP (1D or 2D)", "Patience Sorting (LIS)", "Binary Search + DP (LIS optimized)"],
+      "warns": ["Sliding Window — subsequence allows gaps, window does not"],
+      "note": "Subsequence = can skip elements. Almost always DP. LIS specifically has O(n log n) solution."
+    },
+    {
+      "id": "kw_longest_increasing",
+      "phrase": "longest increasing subsequence",
+      "signals": ["DP O(n^2)", "Binary Search + patience sorting O(n log n)"],
+      "warns": [],
+      "note": "Classic LIS. At n=10^5 must use O(n log n) binary search approach."
+    },
+    {
+      "id": "kw_shortest_path",
+      "phrase": "shortest path",
+      "signals": [
+        "BFS — if unweighted",
+        "Dijkstra — if weighted, no negatives",
+        "Bellman-Ford — if negative weights",
+        "Floyd-Warshall — if all pairs"
+      ],
+      "warns": ["DFS — DFS does not find shortest path in general graphs"],
+      "note": "First question: weighted or not? Second: negative weights? Third: single source or all pairs?"
+    },
+    {
+      "id": "kw_shortest_path_unweighted",
+      "phrase": "minimum number of steps",
+      "signals": ["BFS"],
+      "warns": ["Dijkstra — overkill for unweighted, use BFS"],
+      "note": "Steps = edges = unweighted. BFS gives shortest path in O(V+E)."
+    },
+    {
+      "id": "kw_topological",
+      "phrase": "topological order",
+      "signals": ["Kahn's Algorithm (BFS)", "DFS post-order"],
+      "warns": [],
+      "note": "Implies DAG. If cycle detection needed alongside — use DFS 3-color."
+    },
+    {
+      "id": "kw_cycle_detection",
+      "phrase": "cycle detection",
+      "signals": ["DFS 3-color (directed)", "Union Find (undirected)", "Floyd's algorithm (linked list)"],
+      "warns": [],
+      "note": "For directed graphs use DFS coloring. For undirected use Union Find. For linked list use slow/fast pointer."
+    },
+    {
+      "id": "kw_next_greater",
+      "phrase": "next greater element",
+      "signals": ["Monotonic Stack (decreasing)"],
+      "warns": ["Brute Force O(n^2) — always has O(n) stack solution"],
+      "note": "Classic monotonic stack. Maintain decreasing stack, pop when current is greater."
+    },
+    {
+      "id": "kw_next_smaller",
+      "phrase": "next smaller element",
+      "signals": ["Monotonic Stack (increasing)"],
+      "warns": [],
+      "note": "Mirror of next greater. Maintain increasing stack."
+    },
+    {
+      "id": "kw_sliding_window_max",
+      "phrase": "maximum of each window",
+      "signals": ["Deque (Monotonic Queue)"],
+      "warns": ["Segment Tree — overkill, deque is O(n)"],
+      "note": "Sliding window max/min in O(n) using monotonic deque. Classic interview problem."
+    },
+    {
+      "id": "kw_knapsack",
+      "phrase": "knapsack",
+      "signals": ["DP — 0/1 Knapsack", "DP — Unbounded Knapsack"],
+      "warns": [],
+      "note": "0/1 = each item used once. Unbounded = items reusable. Check which variant explicitly."
+    },
+    {
+      "id": "kw_combination_sum",
+      "phrase": "combination sum",
+      "signals": ["Backtracking", "DP (if just count needed)"],
+      "warns": [],
+      "note": "If all combinations needed — Backtracking. If just count — DP counting variant."
+    },
+    {
+      "id": "kw_permutation",
+      "phrase": "permutation",
+      "signals": ["Backtracking", "Bitmask DP (if n<=20)"],
+      "warns": ["Pure DP without bitmask — cannot represent permutation state in polynomial space for general n"],
+      "note": "All permutations = Backtracking. Optimal permutation (TSP-type) = Bitmask DP if n<=20."
+    },
+    {
+      "id": "kw_partition",
+      "phrase": "partition",
+      "signals": ["DP (partition DP)", "Greedy (if equal partition)"],
+      "warns": [],
+      "note": "Partition into equal subsets — DP. Partition into k groups to minimize max — Binary Search on Answer."
+    },
+    {
+      "id": "kw_matrix_chain",
+      "phrase": "matrix chain",
+      "signals": ["Interval DP", "Knuth Optimization"],
+      "warns": [],
+      "note": "Classic interval DP. dp[i][j] = min cost to multiply matrices i through j."
+    },
+    {
+      "id": "kw_palindrome",
+      "phrase": "palindrome",
+      "signals": ["DP (expand around center)", "Manacher's Algorithm O(n)", "Two Pointer"],
+      "warns": [],
+      "note": "Longest palindromic substring — Manacher's O(n). Count palindromes — expand around center O(n^2) or Manacher."
+    },
+    {
+      "id": "kw_anagram",
+      "phrase": "anagram",
+      "signals": ["Sliding Window + frequency array", "Hashing"],
+      "warns": [],
+      "note": "Fixed window size = frequency comparison. Variable window = sliding window with counts."
+    },
+    {
+      "id": "kw_frequency",
+      "phrase": "frequency",
+      "signals": ["HashMap / frequency array", "Counting Sort"],
+      "warns": [],
+      "note": "If values bounded (0-26 chars) — direct array. If unbounded — HashMap."
+    },
+    {
+      "id": "kw_intervals_overlap",
+      "phrase": "overlapping intervals",
+      "signals": ["Sort by start + Greedy", "Line Sweep"],
+      "warns": [],
+      "note": "Merge intervals — sort by start, greedy merge. Count overlaps — line sweep or sort."
+    },
+    {
+      "id": "kw_meeting_rooms",
+      "phrase": "meeting rooms",
+      "signals": ["Sort by start time + Greedy", "Priority Queue (min-heap of end times)"],
+      "warns": [],
+      "note": "Minimum rooms = max overlapping at any point. Use events or priority queue."
+    },
+    {
+      "id": "kw_maximize_minimum",
+      "phrase": "maximize the minimum",
+      "signals": ["Binary Search on Answer"],
+      "warns": ["Direct DP — this is almost always binary search on answer"],
+      "note": "Monotonic property: if minimum X is achievable, minimum X-1 is also achievable. Binary search on X."
+    },
+    {
+      "id": "kw_minimize_maximum",
+      "phrase": "minimize the maximum",
+      "signals": ["Binary Search on Answer"],
+      "warns": [],
+      "note": "Mirror of maximize minimum. Binary search on the answer value."
+    },
+    {
+      "id": "kw_kth_largest",
+      "phrase": "kth largest",
+      "signals": ["Min-Heap of size k", "QuickSelect O(n) average", "Binary Search on Answer"],
+      "warns": ["Full sort — O(n log n) when O(n) or O(n log k) exists"],
+      "note": "Min-heap of size k = O(n log k). QuickSelect = O(n) average. Binary Search on value = O(n log(max_val))."
+    },
+    {
+      "id": "kw_kth_smallest",
+      "phrase": "kth smallest",
+      "signals": ["Max-Heap of size k", "QuickSelect", "Binary Search on Answer"],
+      "warns": [],
+      "note": "Mirror of kth largest."
+    },
+    {
+      "id": "kw_connected_components",
+      "phrase": "connected components",
+      "signals": ["BFS / DFS", "Union Find"],
+      "warns": [],
+      "note": "Static graph — DFS/BFS. Dynamic (edges added) — Union Find. Directed — Tarjan/Kosaraju for SCC."
+    },
+    {
+      "id": "kw_minimum_spanning_tree",
+      "phrase": "minimum spanning tree",
+      "signals": ["Kruskal (sort edges + Union Find)", "Prim (priority queue)"],
+      "warns": [],
+      "note": "Kruskal better for sparse. Prim better for dense. Both O(E log E)."
+    },
+    {
+      "id": "kw_strongly_connected",
+      "phrase": "strongly connected components",
+      "signals": ["Tarjan's Algorithm", "Kosaraju's Algorithm"],
+      "warns": [],
+      "note": "Both O(V+E). Tarjan is one pass. Kosaraju is two DFS passes."
+    },
+    {
+      "id": "kw_bipartite",
+      "phrase": "bipartite",
+      "signals": ["BFS 2-coloring", "DFS 2-coloring"],
+      "warns": [],
+      "note": "Check bipartiteness — BFS coloring. Bipartite matching — Hungarian or Hopcroft-Karp."
+    },
+    {
+      "id": "kw_flood_fill",
+      "phrase": "flood fill",
+      "signals": ["BFS", "DFS"],
+      "warns": ["DFS for large grids — stack overflow risk at n=10^6. Use BFS."],
+      "note": "Grid connectivity. BFS is safer for large grids due to stack depth."
+    },
+    {
+      "id": "kw_number_of_ways",
+      "phrase": "number of ways",
+      "signals": ["DP (counting variant)", "Combinatorics", "Backtracking (small n)"],
+      "warns": ["Backtracking for large n — will TLE"],
+      "note": "Count all valid configurations — DP. If modular arithmetic — add mod to DP transitions."
+    },
+    {
+      "id": "kw_lexicographically_smallest",
+      "phrase": "lexicographically smallest",
+      "signals": ["Greedy (build answer left to right)", "Monotonic Stack"],
+      "warns": ["Standard DP — cannot easily produce lex smallest"],
+      "note": "Always build greedily from left — at each position choose the smallest valid option."
+    },
+    {
+      "id": "kw_distinct",
+      "phrase": "distinct elements",
+      "signals": ["HashSet", "Sorting + deduplication", "Two Pointer after sort"],
+      "warns": [],
+      "note": "Tracking distinct elements — HashSet O(1). In sorted array — two pointer."
+    },
+    {
+      "id": "kw_range_query",
+      "phrase": "range query",
+      "signals": [
+        "Prefix Sum (static, sum queries)",
+        "Sparse Table (static, min/max queries, O(1))",
+        "Segment Tree (dynamic, updates + queries)",
+        "Fenwick Tree (dynamic, sum queries)"
+      ],
+      "warns": [],
+      "note": "Static vs dynamic is the key split. Static — Prefix Sum or Sparse Table. Dynamic — Segment Tree or Fenwick."
+    },
+    {
+      "id": "kw_range_update",
+      "phrase": "range update",
+      "signals": ["Segment Tree with Lazy Propagation", "Difference Array (offline)"],
+      "warns": ["Fenwick Tree basic — does not support range updates without modification"],
+      "note": "If updates and queries both — Lazy Segment Tree. If only updates then one final read — Difference Array."
+    },
+    {
+      "id": "kw_two_sum",
+      "phrase": "two sum",
+      "signals": ["HashMap O(n)", "Two Pointer on sorted array O(n)"],
+      "warns": ["Brute Force O(n^2)"],
+      "note": "Unsorted — HashMap. Sorted — Two Pointer. Three sum — fix one + two pointer."
+    },
+    {
+      "id": "kw_stock_prices",
+      "phrase": "stock prices",
+      "signals": ["DP (state machine)", "Greedy (if unlimited transactions)"],
+      "warns": [],
+      "note": "Classic DP with states: holding / not holding / cooldown. Transaction limit drives state count."
+    },
+    {
+      "id": "kw_coin_change",
+      "phrase": "coin change",
+      "signals": ["DP — Unbounded Knapsack variant"],
+      "warns": ["Greedy — fails for arbitrary coin denominations"],
+      "note": "Minimum coins = DP. Count ways = DP counting. Greedy only works for canonical coin systems."
+    },
+    {
+      "id": "kw_word_break",
+      "phrase": "word break",
+      "signals": ["DP", "Trie + DP"],
+      "warns": [],
+      "note": "dp[i] = can string[0..i] be segmented. Use Trie for efficient dictionary lookup."
+    },
+    {
+      "id": "kw_edit_distance",
+      "phrase": "edit distance",
+      "signals": ["2D DP (Levenshtein)"],
+      "warns": [],
+      "note": "Classic 2D DP. dp[i][j] = min edits to convert s1[0..i] to s2[0..j]."
+    },
+    {
+      "id": "kw_matrix_path",
+      "phrase": "minimum path sum",
+      "signals": ["2D DP", "Dijkstra (if variable move costs)"],
+      "warns": [],
+      "note": "Grid path with uniform step cost — 2D DP. Variable costs — Dijkstra."
+    },
+    {
+      "id": "kw_jump_game",
+      "phrase": "jump game",
+      "signals": ["Greedy (can reach end)", "DP (minimum jumps)"],
+      "warns": [],
+      "note": "Can you reach end — Greedy O(n). Minimum jumps — Greedy or BFS O(n)."
+    },
+    {
+      "id": "kw_serialize_deserialize",
+      "phrase": "serialize",
+      "signals": ["DFS / BFS tree traversal", "Level-order encoding"],
+      "warns": [],
+      "note": "Tree serialization — preorder DFS with null markers. Deserialize — reconstruct from same order."
+    }
+  ],
+
+  "misdirectionWarnings": [
+    {
+      "id": "mis_greedy_intervals",
+      "surface": "Looks like a simple greedy interval problem",
+      "actuallyMightBe": "DP or Network Flow",
+      "triggerPhrases": ["weighted intervals", "each interval has a value", "maximize total value"],
+      "checkQuestion": "Do intervals have weights/values? If yes — greedy by earliest end time FAILS. Use DP."
+    },
+    {
+      "id": "mis_bfs_weighted",
+      "surface": "Shortest path — looks like BFS",
+      "actuallyMightBe": "Dijkstra or 0-1 BFS",
+      "triggerPhrases": ["cost", "weight", "some edges free", "edge weight 0 or 1"],
+      "checkQuestion": "Are all edge weights equal? If no — BFS gives wrong answer. Use Dijkstra or 0-1 BFS."
+    },
+    {
+      "id": "mis_dp_greedy",
+      "surface": "Looks like greedy",
+      "actuallyMightBe": "DP",
+      "triggerPhrases": ["minimum cost", "maximum profit", "optimal assignment"],
+      "checkQuestion": "Can a locally optimal choice lead to globally suboptimal result? Try a small counter-example."
+    },
+    {
+      "id": "mis_sliding_window_dp",
+      "surface": "Contiguous subarray — looks like sliding window",
+      "actuallyMightBe": "DP",
+      "triggerPhrases": ["at most k distinct", "exactly k", "with constraint on sum"],
+      "checkQuestion": "Is the window validity condition monotonic? If not — sliding window breaks. Use DP or prefix sum."
+    },
+    {
+      "id": "mis_dfs_topo",
+      "surface": "Graph traversal — looks like DFS",
+      "actuallyMightBe": "Topological Sort DP",
+      "triggerPhrases": ["dependencies", "must complete before", "prerequisite"],
+      "checkQuestion": "Is there an ordering constraint? If yes — model as DAG and use topological DP."
+    },
+    {
+      "id": "mis_binary_search_value",
+      "surface": "Find a value — looks like binary search on array",
+      "actuallyMightBe": "Binary Search on Answer",
+      "triggerPhrases": ["minimum possible maximum", "maximum possible minimum", "feasible"],
+      "checkQuestion": "Are you searching for a value in an array OR searching for an answer value that satisfies a condition? These are different."
+    },
+    {
+      "id": "mis_tree_graph",
+      "surface": "Looks like a tree problem",
+      "actuallyMightBe": "General graph problem",
+      "triggerPhrases": ["may contain cycles", "not necessarily connected", "forest"],
+      "checkQuestion": "Is the graph guaranteed to be a tree (connected, n-1 edges, no cycles)? If not — cannot use tree algorithms."
+    }
+  ],
+
+  "contextualSignals": [
+    {
+      "id": "ctx_mod_arithmetic",
+      "signal": "answer modulo 10^9+7",
+      "implication": "Count of solutions is exponentially large. Must be DP counting variant.",
+      "note": "Whenever you see mod 10^9+7 — the answer is a count, not a direct value."
+    },
+    {
+      "id": "ctx_small_values",
+      "signal": "values in range 0 to 26 (or 0 to 9, or 0 to 1)",
+      "implication": "Direct array indexing instead of HashMap. Frequency arrays over HashMaps.",
+      "note": "Small bounded values — use array not map. 26 for lowercase letters, 10 for digits."
+    },
+    {
+      "id": "ctx_large_n_small_k",
+      "signal": "n is large but k is small (k <= 20)",
+      "implication": "Bitmask DP over k items is feasible. DP state can include subset of k.",
+      "note": "Two-level structure — outer loop over n, inner bitmask over k."
+    },
+    {
+      "id": "ctx_online_queries",
+      "signal": "queries arrive one by one, must answer before next",
+      "implication": "Cannot use offline algorithms. Eliminates Mo's Algorithm.",
+      "note": "Online constraint — use Segment Tree or Fenwick, not Mo's."
+    },
+    {
+      "id": "ctx_multiple_test_cases",
+      "signal": "T test cases at start of input",
+      "implication": "Preprocessing outside test case loop. Per-case complexity must be low.",
+      "note": "Total complexity = T * per_case_complexity. Precompute primes, factorials, etc. outside."
+    },
+    {
+      "id": "ctx_tree_rooted",
+      "signal": "rooted tree",
+      "implication": "DFS from root. dp[node] defined in terms of dp[children]. Post-order traversal.",
+      "note": "Standard tree DP pattern. Process children before parent."
+    },
+    {
+      "id": "ctx_print_path",
+      "signal": "print the actual path / sequence / solution",
+      "implication": "Must store parent pointers or backtracking info. Cannot just store optimal value.",
+      "note": "Reconstruction requires storing prev[] or parent[] array alongside dp[] array."
+    },
+    {
+      "id": "ctx_binary_string",
+      "signal": "binary string or 0/1 array",
+      "implication": "Bitset operations possible. XOR / AND / OR tricks applicable.",
+      "note": "Binary constraints open up bit manipulation approaches."
+    },
+    {
+      "id": "ctx_grid_movement",
+      "signal": "move up/down/left/right in grid",
+      "implication": "BFS for shortest path. DFS for reachability. DP if movement is one-directional.",
+      "note": "If movement is only right and down — DP. If all directions — BFS/DFS."
+    },
+    {
+      "id": "ctx_string_pattern",
+      "signal": "pattern matching in text",
+      "implication": "Single pattern — KMP or Z-algorithm. Multiple patterns — Aho-Corasick.",
+      "note": "Never use naive O(n*m) matching in competitive programming. Always KMP minimum."
+    }
+  ]
+}

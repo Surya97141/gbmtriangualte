@@ -1,0 +1,668 @@
+{
+  "_meta": {
+    "purpose": "Graph problem classifier — identify graph type, goal, and correct algorithm",
+    "usage": "Stage 3I — triggered when input anatomy reveals graph structure",
+    "howToUse": "First identify graph properties, then identify goal, then cross-reference for correct algorithm"
+  },
+
+  "graphProperties": [
+    {
+      "id": "gp_directed",
+      "name": "Directed Graph",
+      "recognize": [
+        "Edges have direction — A→B does not imply B→A",
+        "Problem uses words like 'from', 'to', 'one-way'",
+        "Prerequisites — course A must be taken before course B",
+        "Dependencies flow in one direction"
+      ],
+      "implications": [
+        "DFS cycle detection needs 3-color (not just visited boolean)",
+        "Topological sort is possible if DAG",
+        "SCC algorithms apply (Tarjan, Kosaraju)",
+        "In-degree and out-degree are distinct"
+      ],
+      "watchOut": "Do not use undirected Union Find for directed graph connectivity."
+    },
+    {
+      "id": "gp_undirected",
+      "name": "Undirected Graph",
+      "recognize": [
+        "Edges are bidirectional — A-B means both directions",
+        "Problem uses words like 'connected', 'between', 'neighbors'",
+        "Friendship graphs, road networks, grid adjacency"
+      ],
+      "implications": [
+        "Cycle detection with simple visited boolean + parent tracking",
+        "Union Find works directly",
+        "No SCC — use connected components instead",
+        "Bipartite check with 2-coloring"
+      ],
+      "watchOut": "Track parent in DFS to avoid false cycle detection from back-edge to parent."
+    },
+    {
+      "id": "gp_weighted",
+      "name": "Weighted Graph",
+      "recognize": [
+        "Edges have costs, distances, or times",
+        "Problem mentions travel time, cost, or distance",
+        "Not all paths are equal — want minimum cost path"
+      ],
+      "implications": [
+        "BFS no longer gives shortest path — use Dijkstra or Bellman-Ford",
+        "MST algorithms apply (Kruskal, Prim)",
+        "Weight sign matters — positive only vs negative weights"
+      ],
+      "watchOut": "Never use BFS for shortest path in weighted graph — gives wrong answer."
+    },
+    {
+      "id": "gp_unweighted",
+      "name": "Unweighted Graph",
+      "recognize": [
+        "All edges have equal cost (or cost = 1)",
+        "Minimum steps, hops, or moves",
+        "Grid movement with uniform cost"
+      ],
+      "implications": [
+        "BFS gives shortest path in O(V+E)",
+        "No need for priority queue",
+        "Level-order BFS = shortest distance"
+      ],
+      "watchOut": "If some edges cost 0 and others cost 1 — use 0-1 BFS with deque, not standard BFS."
+    },
+    {
+      "id": "gp_dag",
+      "name": "DAG (Directed Acyclic Graph)",
+      "recognize": [
+        "Directed AND no cycles guaranteed",
+        "Dependencies always flow forward",
+        "Problem guarantees valid ordering exists",
+        "Tree is a special case of DAG"
+      ],
+      "implications": [
+        "Topological sort always possible",
+        "DP in topological order gives optimal paths",
+        "Longest path in DAG solvable in O(V+E)",
+        "No need for Bellman-Ford — no negative cycles possible"
+      ],
+      "watchOut": "Verify no cycles before assuming DAG. If cycles possible — must detect first."
+    },
+    {
+      "id": "gp_sparse",
+      "name": "Sparse Graph",
+      "recognize": [
+        "E is close to V — E = O(V) or O(V log V)",
+        "Most nodes have low degree",
+        "Tree-like structure or grid with obstacles"
+      ],
+      "implications": [
+        "Adjacency list representation — O(V+E) space",
+        "Dijkstra with priority queue — O((V+E) log V)",
+        "Do not use adjacency matrix — wastes O(V^2) space"
+      ],
+      "watchOut": "Adjacency matrix for sparse graph wastes memory and slows cache performance."
+    },
+    {
+      "id": "gp_dense",
+      "name": "Dense Graph",
+      "recognize": [
+        "E is close to V^2 — most pairs of nodes connected",
+        "Complete or near-complete graph",
+        "V is small (V <= 1000) with many edges"
+      ],
+      "implications": [
+        "Adjacency matrix may be appropriate — O(1) edge lookup",
+        "Dijkstra with simple array — O(V^2) better than O((V+E) log V) when E = V^2",
+        "Floyd-Warshall feasible if V <= 500"
+      ],
+      "watchOut": "Dense graph with V=10^5 — adjacency matrix is 40GB. Use adjacency list regardless."
+    },
+    {
+      "id": "gp_negative_weights",
+      "name": "Negative Edge Weights",
+      "recognize": [
+        "Edge weights can be negative",
+        "Problem mentions penalties or negative costs",
+        "Currency exchange with possible losses"
+      ],
+      "implications": [
+        "Dijkstra FAILS with negative edges — eliminate it",
+        "Use Bellman-Ford for single source shortest path",
+        "Use Floyd-Warshall for all pairs",
+        "Check for negative cycles — Bellman-Ford detects them"
+      ],
+      "watchOut": "Negative cycle makes shortest path undefined (can loop infinitely for lower cost)."
+    },
+    {
+      "id": "gp_bipartite",
+      "name": "Bipartite Graph",
+      "recognize": [
+        "Nodes split into two sets — edges only between sets",
+        "2-colorable — no odd cycles",
+        "Matching problems — workers to jobs, students to schools",
+        "Conflict graph where conflicts only between different types"
+      ],
+      "implications": [
+        "Maximum matching via Hopcroft-Karp O(E sqrt(V))",
+        "Maximum independent set = V - maximum matching",
+        "Minimum vertex cover = maximum matching (König's theorem)",
+        "Check bipartiteness with BFS 2-coloring"
+      ],
+      "watchOut": "König's theorem only holds for bipartite graphs. Do not apply to general graphs."
+    }
+  ],
+
+  "graphGoals": [
+    {
+      "id": "gg_reachability",
+      "name": "Reachability — can I get from A to B?",
+      "recognize": [
+        "Is node B reachable from node A?",
+        "Are all nodes reachable from source?",
+        "Is graph connected?"
+      ],
+      "algorithms": [
+        {
+          "name": "BFS",
+          "complexity": "O(V+E)",
+          "when": "Unweighted, undirected or directed",
+          "notes": "Also gives shortest path as bonus"
+        },
+        {
+          "name": "DFS",
+          "complexity": "O(V+E)",
+          "when": "Reachability only, no path needed",
+          "notes": "Simpler to implement recursively"
+        },
+        {
+          "name": "Union Find",
+          "complexity": "O(α(V)) per query",
+          "when": "Undirected graph, many connectivity queries",
+          "notes": "Best for dynamic connectivity — edges added over time"
+        }
+      ],
+      "watchOut": "For directed graphs — reachability is not symmetric. A reaches B does not mean B reaches A."
+    },
+    {
+      "id": "gg_shortest_path_single",
+      "name": "Shortest Path — single source",
+      "recognize": [
+        "Minimum distance from one source to all nodes",
+        "Minimum distance from source to specific target",
+        "Minimum steps, cost, or time from start"
+      ],
+      "algorithms": [
+        {
+          "name": "BFS",
+          "complexity": "O(V+E)",
+          "when": "Unweighted graph only",
+          "notes": "Fastest for unweighted — never use Dijkstra for unweighted"
+        },
+        {
+          "name": "0-1 BFS",
+          "complexity": "O(V+E)",
+          "when": "Edge weights are only 0 or 1",
+          "notes": "Use deque — push to front for 0-weight, back for 1-weight"
+        },
+        {
+          "name": "Dijkstra with Priority Queue",
+          "complexity": "O((V+E) log V)",
+          "when": "Weighted graph, all non-negative weights, sparse",
+          "notes": "Standard choice for weighted shortest path"
+        },
+        {
+          "name": "Dijkstra with Array",
+          "complexity": "O(V^2)",
+          "when": "Dense graph — E close to V^2",
+          "notes": "Better than PQ when E = O(V^2)"
+        },
+        {
+          "name": "Bellman-Ford",
+          "complexity": "O(V*E)",
+          "when": "Graph has negative weight edges",
+          "notes": "Also detects negative cycles — if relaxation still possible after V-1 rounds"
+        },
+        {
+          "name": "SPFA",
+          "complexity": "O(V*E) worst, O(E) average",
+          "when": "Bellman-Ford with queue optimization",
+          "notes": "Faster in practice but same worst case. Hackable in competitive programming."
+        }
+      ],
+      "watchOut": "Dijkstra with negative edges gives wrong answer silently — no error, just incorrect result."
+    },
+    {
+      "id": "gg_shortest_path_all_pairs",
+      "name": "Shortest Path — all pairs",
+      "recognize": [
+        "Distance between every pair of nodes needed",
+        "Multiple source-destination queries",
+        "Small graph V <= 500"
+      ],
+      "algorithms": [
+        {
+          "name": "Floyd-Warshall",
+          "complexity": "O(V^3)",
+          "when": "V <= 500, handles negative edges (not negative cycles)",
+          "notes": "Simple 3-loop DP. dist[i][j] = min path from i to j."
+        },
+        {
+          "name": "Dijkstra from each node",
+          "complexity": "O(V * (V+E) log V)",
+          "when": "No negative edges, sparse graph",
+          "notes": "Better than Floyd-Warshall for sparse graphs"
+        },
+        {
+          "name": "Johnson's Algorithm",
+          "complexity": "O(V^2 log V + VE)",
+          "when": "Negative edges present, sparse graph",
+          "notes": "Reweights edges to remove negatives, then runs Dijkstra from each node"
+        }
+      ],
+      "watchOut": "Floyd-Warshall at V=1000 is 10^9 ops — too slow. Use at V <= 500 only."
+    },
+    {
+      "id": "gg_minimum_spanning_tree",
+      "name": "Minimum Spanning Tree",
+      "recognize": [
+        "Connect all nodes with minimum total edge cost",
+        "No cycles in result",
+        "N-1 edges for N nodes"
+      ],
+      "algorithms": [
+        {
+          "name": "Kruskal",
+          "complexity": "O(E log E)",
+          "when": "Sparse graph — sort edges, add if no cycle (Union Find)",
+          "notes": "Simpler to implement. Better for sparse graphs."
+        },
+        {
+          "name": "Prim with Priority Queue",
+          "complexity": "O((V+E) log V)",
+          "when": "Dense graph — grow tree from source",
+          "notes": "Better for dense graphs"
+        }
+      ],
+      "watchOut": "MST algorithms only work on undirected graphs. For directed graphs use minimum cost arborescence."
+    },
+    {
+      "id": "gg_topological_sort",
+      "name": "Topological Sort",
+      "recognize": [
+        "Need linear ordering respecting all dependencies",
+        "Course schedule — what order to take courses",
+        "Build order — what to compile first",
+        "Graph is guaranteed to be DAG or need to check"
+      ],
+      "algorithms": [
+        {
+          "name": "Kahn's Algorithm (BFS)",
+          "complexity": "O(V+E)",
+          "when": "Standard topological sort",
+          "notes": "Process nodes with in-degree 0. If not all nodes processed — cycle exists."
+        },
+        {
+          "name": "DFS post-order",
+          "complexity": "O(V+E)",
+          "when": "Recursive preference",
+          "notes": "Add node to result AFTER visiting all descendants. Reverse result at end."
+        }
+      ],
+      "watchOut": "If graph has cycle — topological sort is impossible. Kahn's detects this: processed count < V."
+    },
+    {
+      "id": "gg_cycle_detection",
+      "name": "Cycle Detection",
+      "recognize": [
+        "Does graph contain a cycle?",
+        "Can all tasks be completed (no circular dependency)?",
+        "Detect back edges in DFS"
+      ],
+      "algorithms": [
+        {
+          "name": "DFS 3-color",
+          "complexity": "O(V+E)",
+          "when": "Directed graph",
+          "notes": "White=unvisited, Gray=in-stack, Black=done. Gray→Gray edge = cycle."
+        },
+        {
+          "name": "DFS with parent tracking",
+          "complexity": "O(V+E)",
+          "when": "Undirected graph",
+          "notes": "Back edge to non-parent node = cycle."
+        },
+        {
+          "name": "Union Find",
+          "complexity": "O(E * α(V))",
+          "when": "Undirected graph, online edge addition",
+          "notes": "If union of two nodes already in same component — cycle found."
+        },
+        {
+          "name": "Floyd's Cycle Detection",
+          "complexity": "O(n)",
+          "when": "Linked list or functional graph (each node has one outgoing edge)",
+          "notes": "Slow and fast pointer. Meets inside cycle."
+        }
+      ],
+      "watchOut": "DFS 3-color is for directed graphs only. Using it on undirected gives false positives."
+    },
+    {
+      "id": "gg_connected_components",
+      "name": "Connected Components",
+      "recognize": [
+        "How many separate groups exist?",
+        "Which nodes belong to same component?",
+        "Dynamic — components merge as edges added"
+      ],
+      "algorithms": [
+        {
+          "name": "BFS / DFS",
+          "complexity": "O(V+E)",
+          "when": "Static graph — all edges known upfront",
+          "notes": "Count DFS/BFS calls from unvisited nodes"
+        },
+        {
+          "name": "Union Find",
+          "complexity": "O(E * α(V))",
+          "when": "Dynamic — edges added one by one",
+          "notes": "Best for online connectivity queries"
+        },
+        {
+          "name": "Tarjan / Kosaraju",
+          "complexity": "O(V+E)",
+          "when": "DIRECTED graph — Strongly Connected Components",
+          "notes": "SCC ≠ connected components. Different algorithms needed."
+        }
+      ],
+      "watchOut": "Connected components (undirected) and SCC (directed) are completely different problems."
+    },
+    {
+      "id": "gg_scc",
+      "name": "Strongly Connected Components (SCC)",
+      "recognize": [
+        "Directed graph — find groups where every node reaches every other",
+        "Condensation graph needed",
+        "2-SAT problem (reduces to SCC)"
+      ],
+      "algorithms": [
+        {
+          "name": "Tarjan's Algorithm",
+          "complexity": "O(V+E)",
+          "when": "One-pass DFS with stack",
+          "notes": "Outputs SCCs in reverse topological order of condensation DAG"
+        },
+        {
+          "name": "Kosaraju's Algorithm",
+          "complexity": "O(V+E)",
+          "when": "Two-pass DFS",
+          "notes": "Pass 1: DFS on original, record finish order. Pass 2: DFS on reversed graph in reverse finish order."
+        }
+      ],
+      "watchOut": "After SCC condensation — result is always a DAG. Can then apply DAG algorithms."
+    },
+    {
+      "id": "gg_bridges_articulation",
+      "name": "Bridges and Articulation Points",
+      "recognize": [
+        "Which edges if removed disconnect the graph?",
+        "Which nodes if removed disconnect the graph?",
+        "Critical connections in network"
+      ],
+      "algorithms": [
+        {
+          "name": "Tarjan's Bridge Finding",
+          "complexity": "O(V+E)",
+          "when": "Find all bridge edges",
+          "notes": "Edge (u,v) is bridge if low[v] > disc[u]"
+        },
+        {
+          "name": "Tarjan's Articulation Points",
+          "complexity": "O(V+E)",
+          "when": "Find all articulation point nodes",
+          "notes": "Node u is articulation point if it has child v with low[v] >= disc[u]"
+        }
+      ],
+      "watchOut": "Both use DFS with disc[] and low[] arrays. low[v] = minimum discovery time reachable from subtree of v."
+    },
+    {
+      "id": "gg_bipartite_matching",
+      "name": "Bipartite Matching",
+      "recognize": [
+        "Assign items from set A to items from set B",
+        "Each item can be matched to at most one other",
+        "Maximize number of matched pairs"
+      ],
+      "algorithms": [
+        {
+          "name": "Hungarian Algorithm (Augmenting Path)",
+          "complexity": "O(V*E)",
+          "when": "Maximum bipartite matching",
+          "notes": "Find augmenting paths with DFS. Each path increases matching by 1."
+        },
+        {
+          "name": "Hopcroft-Karp",
+          "complexity": "O(E * sqrt(V))",
+          "when": "Large bipartite graphs — faster than Hungarian",
+          "notes": "Find all shortest augmenting paths in each BFS phase"
+        }
+      ],
+      "watchOut": "Verify graph is bipartite before applying matching. Non-bipartite needs general matching (much harder)."
+    },
+    {
+      "id": "gg_shortest_path_grid",
+      "name": "Shortest Path in Grid",
+      "recognize": [
+        "Movement in 2D grid — up/down/left/right",
+        "Minimum steps to reach target cell",
+        "Some cells blocked or have different costs"
+      ],
+      "algorithms": [
+        {
+          "name": "BFS",
+          "complexity": "O(n*m)",
+          "when": "Uniform cost movement — all steps cost 1",
+          "notes": "Most common grid shortest path. Add (r,c) to queue, mark visited."
+        },
+        {
+          "name": "Dijkstra on grid",
+          "complexity": "O(n*m * log(n*m))",
+          "when": "Non-uniform cell costs",
+          "notes": "Treat each cell as a node with cost to enter it"
+        },
+        {
+          "name": "0-1 BFS on grid",
+          "complexity": "O(n*m)",
+          "when": "Movement costs are 0 or 1",
+          "notes": "Deque — free moves to front, cost-1 moves to back"
+        },
+        {
+          "name": "A* Search",
+          "complexity": "O(n*m * log(n*m)) in worst case",
+          "when": "Single target, heuristic available (Manhattan distance)",
+          "notes": "Faster than Dijkstra in practice for single target but same worst case"
+        }
+      ],
+      "watchOut": "BFS on grid with obstacles — always check bounds AND visited before pushing to queue."
+    },
+    {
+      "id": "gg_lca",
+      "name": "Lowest Common Ancestor (LCA)",
+      "recognize": [
+        "Given tree — find common ancestor of two nodes",
+        "Distance between two nodes in tree",
+        "Path between two nodes in tree"
+      ],
+      "algorithms": [
+        {
+          "name": "Naive DFS",
+          "complexity": "O(n) per query",
+          "when": "Few queries — q is small",
+          "notes": "Find path from root to both nodes, find divergence point"
+        },
+        {
+          "name": "Binary Lifting",
+          "complexity": "O(n log n) preprocessing, O(log n) per query",
+          "when": "Many LCA queries — q up to 10^5",
+          "notes": "Precompute 2^k ancestors for each node. Jump up in powers of 2."
+        },
+        {
+          "name": "Euler Tour + Sparse Table (RMQ)",
+          "complexity": "O(n log n) preprocessing, O(1) per query",
+          "when": "Extremely many queries needing O(1) response",
+          "notes": "Convert LCA to RMQ on Euler tour array"
+        }
+      ],
+      "watchOut": "Binary lifting requires rooted tree. Re-root if needed before preprocessing."
+    }
+  ],
+
+  "algorithmSelector": [
+    {
+      "conditions": {
+        "weighted": false,
+        "goal": "shortest_path",
+        "graphType": "general"
+      },
+      "algorithm": "BFS",
+      "complexity": "O(V+E)",
+      "reason": "Unweighted graph — BFS level order gives shortest path"
+    },
+    {
+      "conditions": {
+        "weighted": true,
+        "negativeWeights": false,
+        "goal": "shortest_path",
+        "density": "sparse"
+      },
+      "algorithm": "Dijkstra with Priority Queue",
+      "complexity": "O((V+E) log V)",
+      "reason": "Weighted, no negatives, sparse — standard Dijkstra"
+    },
+    {
+      "conditions": {
+        "weighted": true,
+        "negativeWeights": false,
+        "goal": "shortest_path",
+        "density": "dense"
+      },
+      "algorithm": "Dijkstra with Array",
+      "complexity": "O(V^2)",
+      "reason": "Dense graph — array Dijkstra beats PQ when E = O(V^2)"
+    },
+    {
+      "conditions": {
+        "weighted": true,
+        "negativeWeights": true,
+        "goal": "shortest_path",
+        "allPairs": false
+      },
+      "algorithm": "Bellman-Ford",
+      "complexity": "O(V*E)",
+      "reason": "Negative weights present — Dijkstra fails"
+    },
+    {
+      "conditions": {
+        "weighted": true,
+        "goal": "shortest_path",
+        "allPairs": true,
+        "maxV": 500
+      },
+      "algorithm": "Floyd-Warshall",
+      "complexity": "O(V^3)",
+      "reason": "All pairs needed, V small enough for O(V^3)"
+    },
+    {
+      "conditions": {
+        "directed": true,
+        "acyclic": true,
+        "goal": "topological_order"
+      },
+      "algorithm": "Kahn's Algorithm",
+      "complexity": "O(V+E)",
+      "reason": "DAG topological sort — process by in-degree"
+    },
+    {
+      "conditions": {
+        "directed": false,
+        "goal": "minimum_spanning_tree",
+        "density": "sparse"
+      },
+      "algorithm": "Kruskal",
+      "complexity": "O(E log E)",
+      "reason": "Sparse undirected — sort edges and Union Find"
+    },
+    {
+      "conditions": {
+        "directed": false,
+        "goal": "minimum_spanning_tree",
+        "density": "dense"
+      },
+      "algorithm": "Prim with Priority Queue",
+      "complexity": "O((V+E) log V)",
+      "reason": "Dense undirected — grow from source"
+    },
+    {
+      "conditions": {
+        "directed": true,
+        "goal": "strongly_connected_components"
+      },
+      "algorithm": "Tarjan or Kosaraju",
+      "complexity": "O(V+E)",
+      "reason": "SCC on directed graph"
+    },
+    {
+      "conditions": {
+        "directed": false,
+        "goal": "connected_components",
+        "dynamic": true
+      },
+      "algorithm": "Union Find",
+      "complexity": "O(α(V)) per operation",
+      "reason": "Dynamic connectivity — edges added over time"
+    }
+  ],
+
+  "commonMistakes": [
+    {
+      "id": "gm_bfs_weighted",
+      "mistake": "Using BFS on weighted graph for shortest path",
+      "consequence": "Wrong answer — BFS ignores edge weights",
+      "fix": "Use Dijkstra for non-negative weights, Bellman-Ford for negative weights"
+    },
+    {
+      "id": "gm_dijkstra_negative",
+      "mistake": "Using Dijkstra with negative edge weights",
+      "consequence": "Wrong answer — Dijkstra assumes once a node is finalized its distance is optimal",
+      "fix": "Use Bellman-Ford or handle negative weights with Johnson's reweighting"
+    },
+    {
+      "id": "gm_undirected_cycle",
+      "mistake": "DFS cycle detection in undirected graph without tracking parent",
+      "consequence": "False positive — edge to parent reported as cycle",
+      "fix": "Pass parent node to DFS. Only flag back edge if neighbor is not parent."
+    },
+    {
+      "id": "gm_directed_unionfind",
+      "mistake": "Using Union Find for directed graph connectivity",
+      "consequence": "Wrong answer — Union Find does not respect edge direction",
+      "fix": "Use DFS/BFS with directed edges for directed connectivity"
+    },
+    {
+      "id": "gm_floyd_large",
+      "mistake": "Using Floyd-Warshall for V = 10^4",
+      "consequence": "TLE — 10^12 operations",
+      "fix": "Floyd-Warshall only for V <= 500. Use repeated Dijkstra for larger V."
+    },
+    {
+      "id": "gm_grid_bounds",
+      "mistake": "Not checking grid bounds before pushing to BFS queue",
+      "consequence": "Array out of bounds or infinite loop",
+      "fix": "Always check 0 <= r < rows AND 0 <= c < cols before processing neighbor"
+    },
+    {
+      "id": "gm_topo_cycle",
+      "mistake": "Assuming topological sort succeeds without checking for cycles",
+      "consequence": "Incomplete sort returned as valid — wrong answer",
+      "fix": "After Kahn's algorithm — check if processed count == V. If not — cycle exists."
+    }
+  ]
+}

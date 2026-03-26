@@ -1,0 +1,697 @@
+<!-- stages/stage0/stage0.html -->
+<!-- Static HTML template for Stage 0 — Complexity Budget -->
+<!-- This file shows the intended DOM structure -->
+<!-- In production, stage0.js builds this dynamically via DomUtils -->
+<!-- Use this as reference when building / debugging stage0.js -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 0 — Complexity Budget</title>
+  <style>
+
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Tokens ─────────────────────────────────────────────────────────── */
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+      --shadow-sm  : 0 1px 4px rgba(0,0,0,.06);
+      --shadow-md  : 0 3px 12px rgba(0,0,0,.09);
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 780px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage0 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 24px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family : var(--font-mono);
+      font-size   : .82rem;
+      font-weight : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size : .78rem;
+      color     : #94a3b8;
+    }
+
+    /* ── Section titles ──────────────────────────────────────────────────── */
+    .stage0__section-title {
+      font-family   : var(--font-mono);
+      font-size     : .65rem;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 10px;
+    }
+
+    /* ── Input grid ──────────────────────────────────────────────────────── */
+    .stage0__input-grid {
+      display              : grid;
+      grid-template-columns: 1fr 1fr;
+      gap                  : 14px;
+    }
+
+    @media (max-width: 560px) {
+      .stage0__input-grid { grid-template-columns: 1fr; }
+    }
+
+    .input-field {
+      display        : flex;
+      flex-direction : column;
+      gap            : 5px;
+    }
+
+    .input-field__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .input-field__input,
+    .input-field__select {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-sm);
+      padding       : 9px 12px;
+      font-family   : var(--font-mono);
+      font-size     : .8rem;
+      color         : var(--ink);
+      outline       : none;
+      transition    : border-color .15s, box-shadow .15s;
+      width         : 100%;
+    }
+
+    .input-field__input:focus,
+    .input-field__select:focus {
+      border-color : var(--yellow);
+      box-shadow   : 0 0 0 3px rgba(255,209,102,.18);
+    }
+
+    .input-field__hint {
+      font-size : .65rem;
+      color     : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Constraint flags ────────────────────────────────────────────────── */
+    .stage0__flags {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 14px 16px;
+    }
+
+    .stage0__flags-title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 10px;
+    }
+
+    .stage0__flags-grid {
+      display              : grid;
+      grid-template-columns: 1fr 1fr;
+      gap                  : 8px;
+    }
+
+    @media (max-width: 560px) {
+      .stage0__flags-grid { grid-template-columns: 1fr; }
+    }
+
+    .flag-item {
+      display    : flex;
+      align-items: center;
+      gap        : 8px;
+      padding    : 7px 10px;
+      background : var(--bg);
+      border     : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor     : pointer;
+      transition : border-color .15s, background .15s;
+    }
+
+    .flag-item:has(.flag-checkbox:checked) {
+      border-color: var(--yellow);
+      background  : var(--yellow-bg);
+    }
+
+    .flag-checkbox {
+      width      : 15px;
+      height     : 15px;
+      cursor     : pointer;
+      accent-color: var(--yellow);
+      flex-shrink: 0;
+    }
+
+    .flag-item__label {
+      font-family: var(--font-sans);
+      font-size  : .78rem;
+      color      : var(--ink);
+      cursor     : pointer;
+    }
+
+    /* ── Feasibility table ───────────────────────────────────────────────── */
+    .stage0__table-wrap {
+      overflow-x    : auto;
+      border-radius : var(--radius-md);
+      border        : 1.5px solid var(--border);
+      background    : var(--surface);
+    }
+
+    .feasibility-table {
+      width          : 100%;
+      border-collapse: collapse;
+      font-family    : var(--font-mono);
+      font-size      : .75rem;
+    }
+
+    .feasibility-table thead tr {
+      background    : rgba(0,0,0,.04);
+      border-bottom : 1.5px solid var(--border);
+    }
+
+    .feasibility-table th {
+      padding       : 9px 14px;
+      text-align    : left;
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      font-weight   : 700;
+    }
+
+    .feasibility-table td {
+      padding       : 8px 14px;
+      border-bottom : 1px solid rgba(212,204,184,.4);
+    }
+
+    .feasibility-row--red {
+      opacity: .55;
+      text-decoration: line-through;
+    }
+
+    .feasibility-row--red td {
+      color: var(--muted);
+    }
+
+    .feasibility-row--yellow td { color: #7a5a00; }
+    .feasibility-row--green  td { color: var(--ink); }
+
+    .fc-label { font-weight: 700; }
+
+    .status-dot {
+      display      : inline-block;
+      width        : 8px;
+      height       : 8px;
+      border-radius: 50%;
+      margin-right : 5px;
+      vertical-align: middle;
+    }
+
+    .status-dot--green  { background: var(--green); }
+    .status-dot--yellow { background: var(--yellow); }
+    .status-dot--red    { background: var(--red); }
+
+    /* ── Memory table ────────────────────────────────────────────────────── */
+    .memory-table {
+      display        : flex;
+      flex-direction : column;
+      gap            : 5px;
+    }
+
+    .mem-item {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 7px 14px;
+      border-radius  : var(--radius-sm);
+      border         : 1.5px solid var(--border);
+      background     : var(--surface);
+      gap            : 10px;
+    }
+
+    .mem-item--green  { border-color: rgba(6,214,160,.3);  background: var(--green-bg);  }
+    .mem-item--yellow { border-color: rgba(255,209,102,.4); background: var(--yellow-bg); }
+    .mem-item--red    { border-color: rgba(230,57,70,.3);  background: var(--red-bg);    }
+
+    .mem-item__name {
+      font-family: var(--font-mono);
+      font-size  : .74rem;
+      font-weight: 700;
+      flex       : 1;
+    }
+
+    .mem-item__size {
+      font-family: var(--font-mono);
+      font-size  : .72rem;
+      color      : var(--muted);
+    }
+
+    .mem-item__verdict {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      font-weight   : 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      min-width     : 90px;
+      text-align    : right;
+    }
+
+    .mem-item__verdict--green  { color: #028a5b; }
+    .mem-item__verdict--yellow { color: #7a5a00; }
+    .mem-item__verdict--red    { color: var(--red); }
+
+    /* ── Elimination list ────────────────────────────────────────────────── */
+    .stage0__elim-wrap {
+      display        : flex;
+      flex-direction : column;
+      gap            : 6px;
+    }
+
+    .elim-item {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 10px;
+      padding    : 8px 12px;
+      background : var(--red-bg);
+      border     : 1.5px solid rgba(230,57,70,.2);
+      border-radius: var(--radius-sm);
+    }
+
+    .elim-item--rule {
+      background  : rgba(255,209,102,.06);
+      border-color: rgba(255,209,102,.25);
+    }
+
+    .elim-item__badge {
+      font-family  : var(--font-mono);
+      font-size    : .68rem;
+      font-weight  : 700;
+      background   : rgba(230,57,70,.12);
+      color        : var(--red);
+      padding      : 2px 8px;
+      border-radius: 4px;
+      white-space  : nowrap;
+      flex-shrink  : 0;
+    }
+
+    .elim-item__badge--rule {
+      background: rgba(255,209,102,.15);
+      color     : #7a5a00;
+    }
+
+    .elim-item__reason {
+      font-size  : .75rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    .elim-empty {
+      font-size  : .78rem;
+      color      : var(--muted);
+      font-style : italic;
+      padding    : 10px 0;
+    }
+
+    /* ── Insight cards ───────────────────────────────────────────────────── */
+    .stage0__insights {
+      display        : flex;
+      flex-direction : column;
+      gap            : 8px;
+    }
+
+    .insight-card {
+      display       : flex;
+      align-items   : flex-start;
+      gap           : 10px;
+      padding       : 11px 14px;
+      border-radius : var(--radius-md);
+      border        : 1.5px solid;
+    }
+
+    .insight-card--key {
+      background  : var(--blue-bg);
+      border-color: rgba(33,150,243,.25);
+    }
+
+    .insight-card--warn {
+      background  : var(--yellow-bg);
+      border-color: rgba(255,209,102,.35);
+    }
+
+    .insight-card__icon {
+      font-size  : 1.1rem;
+      flex-shrink: 0;
+      margin-top : 1px;
+    }
+
+    .insight-card__text {
+      font-size  : .82rem;
+      line-height: 1.6;
+      color      : var(--ink);
+    }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .table-placeholder {
+      padding   : 20px;
+      text-align: center;
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+    }
+
+    /* ── Section spacing ─────────────────────────────────────────────────── */
+    .stage0__section {
+      display        : flex;
+      flex-direction : column;
+    }
+
+    .stage0__inputs {
+      display        : flex;
+      flex-direction : column;
+      gap            : 14px;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     STAGE 0 — COMPLEXITY BUDGET
+     This is the REFERENCE template — stage0.js builds this dynamically.
+     Edit stage0.js to change behavior. Edit this file only for layout reference.
+══════════════════════════════════════════════════════════════════════════ -->
+
+<div class="stage0">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Rule: Calculate ACTUAL operation count — not just Big-O notation.
+    </div>
+    <div class="stage-intro__sub">
+      Enter your constraints. Infeasible complexity classes are eliminated immediately.
+    </div>
+  </div>
+
+  <!-- INPUTS --------------------------------------------------------------- -->
+  <div class="stage0__inputs">
+
+    <div class="stage0__input-grid">
+
+      <!-- N -->
+      <div class="input-field">
+        <label class="input-field__label" for="s0-n">
+          N — primary input size
+        </label>
+        <input
+          id          = "s0-n"
+          class       = "input-field__input"
+          type        = "text"
+          placeholder = "e.g. 100000"
+          value       = ""
+        >
+        <div class="input-field__hint">
+          The main constraint. Supports shorthand: 1e5, 10^5, 100k
+        </div>
+      </div>
+
+      <!-- Q -->
+      <div class="input-field">
+        <label class="input-field__label" for="s0-q">
+          Q — number of queries (if any)
+        </label>
+        <input
+          id          = "s0-q"
+          class       = "input-field__input"
+          type        = "text"
+          placeholder = "e.g. 100000  or  leave blank"
+          value       = ""
+        >
+        <div class="input-field__hint">
+          If problem has Q separate queries on top of N elements
+        </div>
+      </div>
+
+      <!-- Time limit -->
+      <div class="input-field">
+        <label class="input-field__label" for="s0-time">
+          Time limit
+        </label>
+        <select id="s0-time" class="input-field__select">
+          <option value="0.5">0.5 s — very strict</option>
+          <option value="1" selected>1 s — standard</option>
+          <option value="2">2 s — relaxed</option>
+          <option value="5">5 s — generous</option>
+        </select>
+      </div>
+
+      <!-- Memory limit -->
+      <div class="input-field">
+        <label class="input-field__label" for="s0-mem">
+          Memory limit
+        </label>
+        <select id="s0-mem" class="input-field__select">
+          <option value="16">16 MB</option>
+          <option value="32">32 MB</option>
+          <option value="64">64 MB</option>
+          <option value="128">128 MB</option>
+          <option value="256" selected>256 MB — standard</option>
+          <option value="512">512 MB</option>
+        </select>
+      </div>
+
+    </div><!-- /input-grid -->
+
+    <!-- Constraint flags -->
+    <div class="stage0__flags">
+      <div class="stage0__flags-title">
+        Additional constraints — check all that apply
+      </div>
+      <div class="stage0__flags-grid">
+
+        <div class="flag-item">
+          <input type="checkbox" id="flag-updates-queries" class="flag-checkbox">
+          <label class="flag-item__label" for="flag-updates-queries">
+            Has both updates AND queries
+          </label>
+        </div>
+
+        <div class="flag-item">
+          <input type="checkbox" id="flag-online" class="flag-checkbox">
+          <label class="flag-item__label" for="flag-online">
+            Queries must be answered online
+          </label>
+        </div>
+
+        <div class="flag-item">
+          <input type="checkbox" id="flag-negative-edges" class="flag-checkbox">
+          <label class="flag-item__label" for="flag-negative-edges">
+            Graph has negative edge weights
+          </label>
+        </div>
+
+        <div class="flag-item">
+          <input type="checkbox" id="flag-single-query" class="flag-checkbox">
+          <label class="flag-item__label" for="flag-single-query">
+            Only one query (q = 1)
+          </label>
+        </div>
+
+      </div>
+    </div><!-- /flags -->
+
+  </div><!-- /inputs -->
+
+  <!-- FEASIBILITY TABLE ---------------------------------------------------- -->
+  <div class="stage0__section" id="feasibility-section">
+    <div class="stage0__section-title">Feasibility at your N</div>
+    <div class="stage0__table-wrap" id="feasibility-table">
+
+      <!-- Populated state — shown after N is entered -->
+      <table class="feasibility-table">
+        <thead>
+          <tr>
+            <th>Complexity</th>
+            <th>Operations</th>
+            <th>Est. Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Green row example -->
+          <tr class="feasibility-row feasibility-row--green">
+            <td class="fc-label">O(n log n)</td>
+            <td class="fc-ops">1.7M</td>
+            <td class="fc-time">17ms</td>
+            <td class="fc-status">
+              <span class="status-dot status-dot--green"></span>Safe
+            </td>
+          </tr>
+
+          <!-- Yellow row example -->
+          <tr class="feasibility-row feasibility-row--yellow">
+            <td class="fc-label">O(n√n)</td>
+            <td class="fc-ops">31.6M</td>
+            <td class="fc-time">316ms</td>
+            <td class="fc-status">
+              <span class="status-dot status-dot--yellow"></span>Borderline
+            </td>
+          </tr>
+
+          <!-- Red row example -->
+          <tr class="feasibility-row feasibility-row--red">
+            <td class="fc-label">O(n²)</td>
+            <td class="fc-ops">10B</td>
+            <td class="fc-time">100s</td>
+            <td class="fc-status">
+              <span class="status-dot status-dot--red"></span>TLE
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+    </div><!-- /feasibility-table -->
+  </div>
+
+  <!-- MEMORY TABLE --------------------------------------------------------- -->
+  <div class="stage0__section" id="memory-section">
+    <div class="stage0__section-title">Memory at your N</div>
+    <div class="stage0__mem-wrap" id="memory-table">
+      <div class="memory-table">
+
+        <div class="mem-item mem-item--green">
+          <span class="mem-item__name">int array</span>
+          <span class="mem-item__size">0.4 MB</span>
+          <span class="mem-item__verdict mem-item__verdict--green">fits</span>
+        </div>
+
+        <div class="mem-item mem-item--green">
+          <span class="mem-item__name">Segment Tree</span>
+          <span class="mem-item__size">1.6 MB</span>
+          <span class="mem-item__verdict mem-item__verdict--green">fits</span>
+        </div>
+
+        <div class="mem-item mem-item--yellow">
+          <span class="mem-item__name">Sparse Table</span>
+          <span class="mem-item__size">6.7 MB</span>
+          <span class="mem-item__verdict mem-item__verdict--yellow">fits</span>
+        </div>
+
+        <div class="mem-item mem-item--red">
+          <span class="mem-item__name">Adjacency Matrix</span>
+          <span class="mem-item__size">40 GB</span>
+          <span class="mem-item__verdict mem-item__verdict--red">exceeds limit</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ELIMINATION LIST ----------------------------------------------------- -->
+  <div class="stage0__section" id="elimination-section">
+    <div class="stage0__section-title">Eliminated approaches</div>
+    <div class="stage0__elim-wrap" id="elimination-list">
+
+      <!-- Complexity-based elimination -->
+      <div class="elim-item elim-item--complexity">
+        <span class="elim-item__badge">O(n²)</span>
+        <span class="elim-item__reason">
+          Too slow at n=100,000 — 10B ops far exceeds 100M budget
+        </span>
+      </div>
+
+      <!-- Rule-based elimination -->
+      <div class="elim-item elim-item--rule">
+        <span class="elim-item__badge elim-item__badge--rule">
+          Mo's Algorithm
+        </span>
+        <span class="elim-item__reason">
+          Queries must be answered online — Mo's requires offline sorting
+        </span>
+      </div>
+
+      <!-- Dijkstra elimination -->
+      <div class="elim-item elim-item--rule">
+        <span class="elim-item__badge elim-item__badge--rule">Dijkstra</span>
+        <span class="elim-item__reason">
+          Graph has negative edge weights — Dijkstra gives wrong answer
+        </span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INSIGHT CARDS -------------------------------------------------------- -->
+  <div class="stage0__section stage0__insights" id="insight-section">
+
+    <div class="insight-card insight-card--key">
+      <div class="insight-card__icon">💡</div>
+      <div class="insight-card__text">
+        Most common constraint. O(n log n) is the target.
+        O(n log n) = 1.7M ops — very safe at 1s limit.
+      </div>
+    </div>
+
+    <div class="insight-card insight-card--warn">
+      <div class="insight-card__icon">⚠</div>
+      <div class="insight-card__text">
+        O(n²) = 10B is hard TLE. Never attempt O(n²) at n=100,000.
+        Even O(n log n) with large constant can be tight.
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /stage0 -->
+
+</body>
+</html>

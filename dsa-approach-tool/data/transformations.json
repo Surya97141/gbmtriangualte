@@ -1,0 +1,602 @@
+{
+  "_meta": {
+    "purpose": "All known problem transformations — reframe the problem into a known solvable form",
+    "usage": "Stage 3.5 — after structural analysis, before committing to approach",
+    "howToUse": "For each transformation, ask: does my problem fit the 'recognize' conditions? If yes — apply the transformation and re-run structural analysis on the transformed problem."
+  },
+
+  "transformations": [
+    {
+      "id": "tr_element_to_node",
+      "name": "Element → Graph Node",
+      "category": "graph_modeling",
+      "recognize": [
+        "Elements have relationships or ordering constraints between them",
+        "Problem asks about reachability between elements",
+        "There is a condition like: element A must come before element B",
+        "Elements can transition from one to another based on a rule"
+      ],
+      "howToApply": [
+        "Create one node per element",
+        "Add directed edge A→B if A can precede B or A transitions to B",
+        "Problem becomes: shortest/longest path, reachability, topological order"
+      ],
+      "examples": [
+        {
+          "original": "Longest Increasing Subsequence",
+          "transformed": "Longest path in DAG where edge i→j exists if i<j and a[i]<a[j]",
+          "gain": "Makes structure explicit — can apply DAG DP"
+        },
+        {
+          "original": "Course schedule — can you finish all courses given prerequisites",
+          "transformed": "DAG reachability / cycle detection",
+          "gain": "Immediately reduces to topological sort"
+        },
+        {
+          "original": "Word ladder — transform one word to another changing one letter at a time",
+          "transformed": "Graph where nodes are words, edges connect words differing by one letter",
+          "gain": "Shortest path in unweighted graph → BFS"
+        }
+      ],
+      "complexityImpact": "Usually same or better — makes implicit structure explicit",
+      "verifyBefore": "Confirm edges are well-defined and finite in number"
+    },
+    {
+      "id": "tr_state_to_position",
+      "name": "Problem State → Position in Graph (BFS on States)",
+      "category": "graph_modeling",
+      "recognize": [
+        "Problem has a clear current state and valid transitions",
+        "Asking for minimum number of operations or moves",
+        "State space is finite and manageable",
+        "From any state you can enumerate next states"
+      ],
+      "howToApply": [
+        "Define state as a node (encode all relevant information)",
+        "Define transitions as edges",
+        "Run BFS for minimum steps, DFS for reachability",
+        "Use visited set to avoid revisiting states"
+      ],
+      "examples": [
+        {
+          "original": "Minimum moves to solve sliding puzzle (8-puzzle)",
+          "transformed": "BFS where each board configuration is a node",
+          "gain": "Guarantees minimum moves"
+        },
+        {
+          "original": "Minimum operations to reach target number using +1, -1, *2",
+          "transformed": "BFS on integers as nodes, operations as edges",
+          "gain": "Clean shortest path formulation"
+        },
+        {
+          "original": "Water pouring puzzle — minimum pours to get exact amount",
+          "transformed": "BFS on (jug1_amount, jug2_amount) pairs as state",
+          "gain": "State space is at most capacity1 * capacity2"
+        }
+      ],
+      "complexityImpact": "State space size determines complexity — verify it is manageable before applying",
+      "verifyBefore": "State space must be finite. Estimate max distinct states."
+    },
+    {
+      "id": "tr_sequence_to_dag",
+      "name": "Sequence Optimization → DAG Longest/Shortest Path",
+      "category": "graph_modeling",
+      "recognize": [
+        "Processing elements in some order",
+        "Decision at each element depends on previous decisions",
+        "Looking for optimal sequence or subsequence",
+        "Dependencies flow in one direction only"
+      ],
+      "howToApply": [
+        "Create node for each element",
+        "Add edge i→j with weight if element j can follow element i",
+        "Longest path = best subsequence",
+        "Use topological order DP"
+      ],
+      "examples": [
+        {
+          "original": "Maximum sum increasing subsequence",
+          "transformed": "Longest weighted path in DAG",
+          "gain": "O(n^2) DP becomes structurally clear"
+        },
+        {
+          "original": "Weighted job scheduling — pick non-overlapping jobs to maximize profit",
+          "transformed": "DAG where job j follows job i if i ends before j starts",
+          "gain": "Longest path with binary search for predecessor"
+        }
+      ],
+      "complexityImpact": "O(V+E) for DAG traversal — same as DP but more explicit",
+      "verifyBefore": "Confirm no cycles exist — dependencies must be one-directional"
+    },
+    {
+      "id": "tr_optimization_to_bsearch",
+      "name": "Optimization on Continuous Range → Binary Search on Answer",
+      "category": "search_transformation",
+      "recognize": [
+        "Asking for minimum or maximum of some value",
+        "If answer is X then answer X+1 is also valid (monotonic)",
+        "Can write a feasibility check: given X, is it achievable?",
+        "Feasibility check is easier than direct optimization"
+      ],
+      "howToApply": [
+        "Define the answer space (min possible to max possible)",
+        "Write isFeasible(X) function",
+        "Verify monotonicity: feasible(X) implies feasible(X+1) or vice versa",
+        "Binary search on answer space, call isFeasible each step"
+      ],
+      "examples": [
+        {
+          "original": "Minimize the maximum sum when splitting array into k subarrays",
+          "transformed": "Binary search on answer X — is it feasible to split with max sum <= X?",
+          "gain": "O(n log(sum)) instead of complex direct optimization"
+        },
+        {
+          "original": "Minimum days to make m bouquets from n flowers",
+          "transformed": "Binary search on days — given d days, can you make m bouquets?",
+          "gain": "Feasibility check is O(n), total O(n log(max_days))"
+        },
+        {
+          "original": "Koko eating bananas — minimum speed to finish in H hours",
+          "transformed": "Binary search on speed — given speed k, can she finish in H hours?",
+          "gain": "Clean O(n log(max_pile)) solution"
+        },
+        {
+          "original": "Capacity to ship packages within D days",
+          "transformed": "Binary search on weight capacity",
+          "gain": "Direct optimization is hard, feasibility check is O(n)"
+        }
+      ],
+      "complexityImpact": "Adds log factor but makes feasibility check the only problem to solve",
+      "verifyBefore": "MUST verify monotonicity with two concrete examples before coding"
+    },
+    {
+      "id": "tr_2d_to_1d",
+      "name": "2D Problem → 1D Problem (Fix One Dimension)",
+      "category": "dimensional_reduction",
+      "recognize": [
+        "Problem is on a 2D grid or matrix",
+        "Looking for optimal submatrix or row range",
+        "One dimension can be iterated over",
+        "Column-wise or row-wise aggregation makes sense"
+      ],
+      "howToApply": [
+        "Fix the top row r1 and bottom row r2 (iterate over all O(n^2) pairs)",
+        "Compress columns: for each column c, sum = matrix[r1][c] + ... + matrix[r2][c]",
+        "Now have a 1D array of column sums — apply 1D algorithm",
+        "Total: O(n^2) pairs * O(m) 1D algorithm = O(n^2 * m)"
+      ],
+      "examples": [
+        {
+          "original": "Maximum sum submatrix",
+          "transformed": "Fix top/bottom row, compress to 1D, apply Kadane's",
+          "gain": "O(n^2 * m) instead of O(n^3 * m) brute force"
+        },
+        {
+          "original": "Count submatrices with sum equal to target",
+          "transformed": "Fix top/bottom row, compress to 1D, apply prefix sum + HashMap",
+          "gain": "O(n^2 * m) clean solution"
+        }
+      ],
+      "complexityImpact": "Reduces 2D problem to O(n^2) applications of a 1D algorithm",
+      "verifyBefore": "Confirm 1D algorithm exists for the compressed version"
+    },
+    {
+      "id": "tr_circular_to_linear",
+      "name": "Circular Array → Linear Array (Double It)",
+      "category": "structural_transformation",
+      "recognize": [
+        "Array is circular — last element connects to first",
+        "Looking for subarray or window spanning the wrap-around point",
+        "Problem says circular or arrangement in a circle"
+      ],
+      "howToApply": [
+        "Concatenate array with itself: arr + arr",
+        "Apply linear algorithm on doubled array with window size <= n",
+        "Answer is the best result found in any window of size n"
+      ],
+      "examples": [
+        {
+          "original": "Maximum sum subarray in circular array",
+          "transformed": "Double the array, apply Kadane's with length constraint <= n",
+          "gain": "Handles wrap-around without special cases"
+        },
+        {
+          "original": "Minimum in circular sorted array",
+          "transformed": "Double + sliding window OR direct binary search",
+          "gain": "Avoids complex wrap-around logic"
+        }
+      ],
+      "complexityImpact": "Same asymptotic complexity, constant factor of 2",
+      "verifyBefore": "Ensure window size constraint is enforced — otherwise you process subarrays longer than n"
+    },
+    {
+      "id": "tr_range_to_difference",
+      "name": "Range Updates → Difference Array",
+      "category": "prefix_transformation",
+      "recognize": [
+        "Multiple range update operations: add X to all elements in [l, r]",
+        "Only need final values after all updates (no queries between updates)",
+        "Updates are offline — all given upfront"
+      ],
+      "howToApply": [
+        "Create difference array D of size n+1, initialized to 0",
+        "For update add X to [l, r]: D[l] += X, D[r+1] -= X",
+        "After all updates, compute prefix sum of D to get final array"
+      ],
+      "examples": [
+        {
+          "original": "Given q range increment operations, find final array",
+          "transformed": "Difference array — O(q + n) instead of O(q * n)",
+          "gain": "Each operation becomes O(1) instead of O(n)"
+        },
+        {
+          "original": "Flight booking — add seats to range of flights",
+          "transformed": "Difference array on flight indices",
+          "gain": "Classic difference array application"
+        }
+      ],
+      "complexityImpact": "O(q * n) → O(q + n) — massive improvement for large q",
+      "verifyBefore": "No queries between updates — difference array is offline only"
+    },
+    {
+      "id": "tr_matrix_recurrence",
+      "name": "Linear Recurrence → Matrix Exponentiation",
+      "category": "algebraic_transformation",
+      "recognize": [
+        "Recurrence relation: f(n) depends on f(n-1), f(n-2), ..., f(n-k)",
+        "Need to compute f(n) for very large n (n up to 10^18)",
+        "k is small (k <= 6 or so)",
+        "Recurrence has constant coefficients"
+      ],
+      "howToApply": [
+        "Express recurrence as matrix multiplication: [f(n), f(n-1), ...] = M * [f(n-1), f(n-2), ...]",
+        "Compute M^n using fast matrix exponentiation (O(k^3 log n))",
+        "Multiply initial state vector by M^n"
+      ],
+      "examples": [
+        {
+          "original": "Compute Fibonacci(10^18)",
+          "transformed": "[[1,1],[1,0]]^n matrix exponentiation",
+          "gain": "O(log n) instead of O(n)"
+        },
+        {
+          "original": "Number of ways to tile 2xN board",
+          "transformed": "Matrix exponentiation on tiling recurrence",
+          "gain": "Handles n up to 10^18"
+        },
+        {
+          "original": "Count paths of length exactly k in a graph",
+          "transformed": "Adjacency matrix raised to power k",
+          "gain": "(A^k)[i][j] = number of paths of length k from i to j"
+        }
+      ],
+      "complexityImpact": "O(n) or O(n*k) → O(k^3 log n) — essential when n is huge",
+      "verifyBefore": "Recurrence must be linear with constant coefficients. k must be small."
+    },
+    {
+      "id": "tr_string_to_suffix",
+      "name": "String Pattern Problem → Suffix Array / Suffix Automaton",
+      "category": "string_transformation",
+      "recognize": [
+        "Multiple pattern matching in a text",
+        "Longest common substring between strings",
+        "Counting distinct substrings",
+        "Finding repeated substrings"
+      ],
+      "howToApply": [
+        "Build Suffix Array + LCP array in O(n log n)",
+        "Or build Suffix Automaton in O(n)",
+        "Use LCP array for substring queries",
+        "Use Suffix Automaton for counting distinct substrings"
+      ],
+      "examples": [
+        {
+          "original": "Longest common substring of two strings",
+          "transformed": "Concatenate with separator, build suffix array, find max LCP between suffixes from different strings",
+          "gain": "O(n log n) instead of O(n^2) DP"
+        },
+        {
+          "original": "Count distinct substrings",
+          "transformed": "Suffix Automaton — number of distinct substrings = sum of (len[v] - len[link[v]]) over all states",
+          "gain": "O(n) time and space"
+        }
+      ],
+      "complexityImpact": "O(n^2) DP → O(n log n) or O(n)",
+      "verifyBefore": "Only worth it for n > 10^4. For smaller strings, DP is simpler."
+    },
+    {
+      "id": "tr_counting_to_complement",
+      "name": "Count Directly → Count Complement (Total − Invalid)",
+      "category": "counting_transformation",
+      "recognize": [
+        "Counting valid configurations is hard",
+        "Counting invalid configurations is easier",
+        "Total configurations is easy to compute",
+        "Valid = Total - Invalid"
+      ],
+      "howToApply": [
+        "Compute total number of configurations (often combinatorial formula)",
+        "Compute number of invalid configurations",
+        "Answer = Total - Invalid"
+      ],
+      "examples": [
+        {
+          "original": "Count subarrays where max - min <= k",
+          "transformed": "Total subarrays - subarrays where max - min > k",
+          "gain": "Sometimes easier to count bad cases"
+        },
+        {
+          "original": "Count strings with at least one vowel",
+          "transformed": "Total strings - strings with no vowels",
+          "gain": "No vowel constraint is multiplicative — easy formula"
+        },
+        {
+          "original": "Count pairs where gcd != 1",
+          "transformed": "Total pairs - coprime pairs (Euler's totient / Mobius)",
+          "gain": "Coprime counting has number theory tools"
+        }
+      ],
+      "complexityImpact": "Problem-dependent — sometimes dramatically simpler",
+      "verifyBefore": "Confirm total is easy to compute. Confirm invalid is easier than valid."
+    },
+    {
+      "id": "tr_implicit_graph_grid",
+      "name": "Grid → Implicit Graph (No Explicit Storage)",
+      "category": "graph_modeling",
+      "recognize": [
+        "Movement in a grid — up/down/left/right",
+        "Adjacency is defined by position, not stored explicitly",
+        "Grid cells are nodes, movement is edges"
+      ],
+      "howToApply": [
+        "Do not build adjacency list — too much memory",
+        "Generate neighbors on the fly: (r±1, c) and (r, c±1)",
+        "Apply BFS/DFS directly on (row, col) pairs",
+        "Use visited[row][col] boolean array"
+      ],
+      "examples": [
+        {
+          "original": "Shortest path in grid avoiding obstacles",
+          "transformed": "BFS on (row, col) pairs — neighbors generated on the fly",
+          "gain": "O(n*m) time and space without explicit graph storage"
+        },
+        {
+          "original": "Number of islands",
+          "transformed": "DFS/BFS from each unvisited land cell",
+          "gain": "Grid IS the graph — no separate representation needed"
+        }
+      ],
+      "complexityImpact": "Same complexity — eliminates unnecessary storage",
+      "verifyBefore": "Ensure grid boundaries are handled correctly in neighbor generation"
+    },
+    {
+      "id": "tr_tree_to_array",
+      "name": "Tree Problem → Array Problem (Euler Tour / DFS Order)",
+      "category": "tree_transformation",
+      "recognize": [
+        "Range queries on tree paths or subtrees",
+        "Need to apply segment tree or BIT on tree",
+        "Subtree queries: sum/min/max of all nodes in subtree",
+        "Path queries between any two nodes"
+      ],
+      "howToApply": [
+        "Run DFS and assign entry/exit times to each node",
+        "Subtree of node v = contiguous range [entry[v], exit[v]] in DFS order",
+        "Build Segment Tree or BIT on flattened DFS order array",
+        "Subtree query becomes range query on flat array"
+      ],
+      "examples": [
+        {
+          "original": "Sum of values in subtree of node v after point updates",
+          "transformed": "Euler tour flattens subtree to range — use Fenwick Tree",
+          "gain": "O(log n) per query/update instead of O(n) DFS each time"
+        },
+        {
+          "original": "Range updates on paths (Heavy-Light Decomposition)",
+          "transformed": "Decompose tree into chains, apply segment tree per chain",
+          "gain": "O(log^2 n) per path query"
+        }
+      ],
+      "complexityImpact": "Tree queries O(n) → O(log n) with flattening",
+      "verifyBefore": "Euler tour works for subtree queries. Path queries need HLD or LCA."
+    },
+    {
+      "id": "tr_coordinate_compression",
+      "name": "Large Value Space → Compressed Coordinates",
+      "category": "compression_transformation",
+      "recognize": [
+        "Values are large (up to 10^9) but count is small (n = 10^5)",
+        "Need array indexed by value but value space is too large",
+        "Values only matter relative to each other, not absolutely"
+      ],
+      "howToApply": [
+        "Collect all distinct values into sorted array",
+        "Replace each value with its rank (index in sorted array)",
+        "Ranks are in range [0, n-1] — now safe to use as array indices",
+        "All relative comparisons are preserved"
+      ],
+      "examples": [
+        {
+          "original": "Count inversions where values up to 10^9",
+          "transformed": "Compress values to [0, n-1], use Fenwick Tree for inversion count",
+          "gain": "Fenwick Tree size is n not 10^9"
+        },
+        {
+          "original": "Segment tree on value axis for range queries",
+          "transformed": "Compress values first, build segment tree of size n",
+          "gain": "Memory O(n) instead of O(max_value)"
+        }
+      ],
+      "complexityImpact": "Reduces value space from 10^9 to n — enables array-based structures",
+      "verifyBefore": "Only works when relative order matters, not absolute values"
+    },
+    {
+      "id": "tr_xor_tricks",
+      "name": "Pair/Subset Property → XOR / Bit Manipulation",
+      "category": "algebraic_transformation",
+      "recognize": [
+        "Problem involves pairs with equal or complementary values",
+        "Looking for subsets with specific sum properties",
+        "Binary representation of values matters",
+        "Problem involves toggling or flipping bits"
+      ],
+      "howToApply": [
+        "XOR of equal elements = 0 (find single non-paired element)",
+        "XOR prefix sums for subarray XOR queries",
+        "Bit manipulation to enumerate subsets",
+        "Use Trie on binary representation for max XOR pair"
+      ],
+      "examples": [
+        {
+          "original": "Find element appearing odd number of times",
+          "transformed": "XOR all elements — pairs cancel, odd one remains",
+          "gain": "O(n) time, O(1) space"
+        },
+        {
+          "original": "Maximum XOR of two elements in array",
+          "transformed": "Binary Trie — greedily choose opposite bit at each level",
+          "gain": "O(n * 32) instead of O(n^2)"
+        }
+      ],
+      "complexityImpact": "Often reduces O(n^2) to O(n) or O(n log(max_val))",
+      "verifyBefore": "Identify exactly what XOR property is being exploited"
+    },
+    {
+      "id": "tr_two_pointer_sort",
+      "name": "Pair Finding → Sort + Two Pointer",
+      "category": "search_transformation",
+      "recognize": [
+        "Finding pairs or triplets satisfying a condition",
+        "Condition is monotonic after sorting",
+        "Order of elements does not matter for the answer"
+      ],
+      "howToApply": [
+        "Sort the array",
+        "Use two pointers from both ends",
+        "Move left pointer right if sum too small",
+        "Move right pointer left if sum too large"
+      ],
+      "examples": [
+        {
+          "original": "Two sum in sorted array",
+          "transformed": "Two pointers from both ends",
+          "gain": "O(n) instead of O(n^2)"
+        },
+        {
+          "original": "Three sum equal to zero",
+          "transformed": "Fix one element, two pointer on remainder",
+          "gain": "O(n^2) instead of O(n^3)"
+        },
+        {
+          "original": "Container with most water",
+          "transformed": "Two pointers — always move the shorter wall inward",
+          "gain": "O(n) greedy two pointer"
+        }
+      ],
+      "complexityImpact": "Removes one loop — O(n^k) → O(n^(k-1) log n)",
+      "verifyBefore": "Sorting must not break the problem. Order must be irrelevant to answer."
+    }
+  ],
+
+  "reframeQuestions": [
+    {
+      "id": "rq_node_model",
+      "question": "What if each element is a node — what would the edges be?",
+      "purpose": "Reveals hidden graph structure",
+      "followUp": "If edges are well-defined and finite — model as graph and re-analyze"
+    },
+    {
+      "id": "rq_state_model",
+      "question": "What is the complete state at any point in the algorithm? Can it be encoded compactly?",
+      "purpose": "Reveals BFS-on-states or DP structure",
+      "followUp": "If state space is finite and manageable — BFS or DP on states"
+    },
+    {
+      "id": "rq_monotonicity",
+      "question": "If the answer is X, is X+1 (or X-1) always also valid?",
+      "purpose": "Reveals binary search on answer opportunity",
+      "followUp": "If yes — write feasibility check and binary search"
+    },
+    {
+      "id": "rq_complement",
+      "question": "Is counting the invalid cases easier than counting valid cases?",
+      "purpose": "Reveals complement counting opportunity",
+      "followUp": "If yes — compute total - invalid"
+    },
+    {
+      "id": "rq_strip_story",
+      "question": "If you remove the story and look at only the mathematical structure — what does it look like?",
+      "purpose": "Removes misleading framing",
+      "followUp": "State the problem in pure mathematical terms — often reveals the real structure"
+    },
+    {
+      "id": "rq_dimension_fix",
+      "question": "Can you fix one dimension and solve a simpler problem on the remaining dimensions?",
+      "purpose": "Reveals 2D → 1D reduction",
+      "followUp": "If yes — iterate over all values of the fixed dimension"
+    },
+    {
+      "id": "rq_known_problem",
+      "question": "Does this problem, when restated mathematically, match a known problem exactly?",
+      "purpose": "Pattern matching to canonical problems",
+      "followUp": "If yes — apply the known solution directly"
+    },
+    {
+      "id": "rq_offline",
+      "question": "Do queries need to be answered online or can they be sorted and processed together?",
+      "purpose": "Reveals offline algorithm opportunity",
+      "followUp": "If offline — sort queries, use Mo's or sweep line"
+    }
+  ],
+
+  "disguiseChecks": [
+    {
+      "id": "dc_graph_in_array",
+      "name": "Graph hidden in array problem",
+      "lookLike": "Array manipulation or sorting",
+      "reallyIs": "Graph problem",
+      "telltaleSign": "Elements have dependencies or ordering constraints between each other",
+      "checkQuestion": "Does element i affect which elements can come after it?"
+    },
+    {
+      "id": "dc_dp_in_greedy",
+      "name": "DP hidden in greedy problem",
+      "lookLike": "Simple greedy selection",
+      "reallyIs": "DP with optimal substructure",
+      "telltaleSign": "Greedy fails on a weighted variant or when elements have different values",
+      "checkQuestion": "What happens if intervals or items have different weights/values?"
+    },
+    {
+      "id": "dc_bsearch_in_optimization",
+      "name": "Binary search hidden in optimization",
+      "lookLike": "Direct minimization or maximization",
+      "reallyIs": "Binary search on answer with feasibility check",
+      "telltaleSign": "Minimize the maximum or maximize the minimum phrasing",
+      "checkQuestion": "Can you check if a given answer value is feasible in O(n) or O(n log n)?"
+    },
+    {
+      "id": "dc_tree_in_array",
+      "name": "Tree hidden in array",
+      "lookLike": "Array with parent pointers or index relationships",
+      "reallyIs": "Tree DP problem",
+      "telltaleSign": "Array where a[i] points to a parent index — this IS a tree",
+      "checkQuestion": "Does the array define a parent-child relationship? If yes — reconstruct tree and apply tree DP."
+    },
+    {
+      "id": "dc_dag_in_sequence",
+      "name": "DAG hidden in sequence problem",
+      "lookLike": "Processing elements in order",
+      "reallyIs": "Topological DP on DAG",
+      "telltaleSign": "Processing order matters, some elements must precede others",
+      "checkQuestion": "Are there dependencies that force a specific processing order?"
+    },
+    {
+      "id": "dc_string_in_number",
+      "name": "String/digit problem disguised as number problem",
+      "lookLike": "Arithmetic on large numbers",
+      "reallyIs": "Digit DP or string manipulation",
+      "telltaleSign": "n up to 10^18, asking for count of numbers satisfying a digit property",
+      "checkQuestion": "Does the property depend on the digits of the number rather than its magnitude?"
+    }
+  ]
+}

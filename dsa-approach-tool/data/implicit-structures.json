@@ -1,0 +1,450 @@
+{
+  "_meta": {
+    "purpose": "Hidden structures not explicit in the problem statement — recognize and model them",
+    "usage": "Stage 2.5 and Stage 3.5 — before committing to approach, check if problem hides one of these",
+    "howToUse": "Read recognize conditions for each. If 2+ conditions match your problem — that structure is likely present."
+  },
+
+  "implicitStructures": [
+    {
+      "id": "is_dag",
+      "name": "Hidden DAG",
+      "shortDescription": "Dependencies flow one way — no cycles",
+      "recognize": [
+        "Problem mentions prerequisites or dependencies",
+        "Some elements must be processed before others",
+        "There is a natural ordering constraint between elements",
+        "Problem asks if all tasks can be completed",
+        "Problem asks for ordering of elements satisfying constraints"
+      ],
+      "howToModel": [
+        "Create node per element",
+        "Add directed edge A→B if A must come before B",
+        "Check for cycles — if cycle exists, problem may be unsolvable",
+        "Apply topological sort to get valid ordering",
+        "Apply DP in topological order for optimization"
+      ],
+      "templatesThatFollow": [
+        "Topological Sort (Kahn's BFS or DFS post-order)",
+        "DAG DP (longest/shortest path)",
+        "Cycle detection (DFS 3-color)"
+      ],
+      "examples": [
+        "Course prerequisites — can you take all courses?",
+        "Build order — in what order to compile files?",
+        "Task scheduling with dependencies",
+        "Alien dictionary — infer character ordering"
+      ],
+      "watchOut": "If graph has cycles — standard DAG algorithms fail. Must detect and handle cycles first."
+    },
+    {
+      "id": "is_implicit_graph",
+      "name": "Hidden Graph from Constraints",
+      "shortDescription": "Graph defined by a rule not explicit edge list",
+      "recognize": [
+        "Problem says 'can reach from i to j if condition holds'",
+        "Elements are connected if they share a property",
+        "Transition between states is defined by an operation",
+        "Grid movement problems — cells are nodes, moves are edges"
+      ],
+      "howToModel": [
+        "Do NOT build explicit adjacency list if graph is too large",
+        "Generate neighbors on the fly during BFS/DFS",
+        "Define getNeighbors(node) function that computes adjacent nodes",
+        "Use visited set to avoid reprocessing"
+      ],
+      "templatesThatFollow": [
+        "BFS (shortest path / minimum steps)",
+        "DFS (reachability / connected components)",
+        "Union Find (dynamic connectivity)"
+      ],
+      "examples": [
+        "Grid navigation — cells connected by movement rules",
+        "Word ladder — words connected if differ by one letter",
+        "Jumps in array — index i connects to i + a[i] and i - a[i]",
+        "Number transformation — x connects to x+1, x-1, 2x"
+      ],
+      "watchOut": "Generating neighbors on the fly requires careful bounds checking. State space must be finite."
+    },
+    {
+      "id": "is_bipartite",
+      "name": "Hidden Bipartite Structure",
+      "shortDescription": "Elements naturally split into two groups with edges only between groups",
+      "recognize": [
+        "Problem involves assigning elements to one of two groups",
+        "Elements of same type never directly interact",
+        "Problem involves matching workers to jobs, students to schools",
+        "Conflict graph — two elements conflict means they cannot be in same group",
+        "Graph is 2-colorable"
+      ],
+      "howToModel": [
+        "Try 2-coloring the graph with BFS",
+        "If 2-colorable — bipartite confirmed",
+        "Left set and right set defined by coloring",
+        "Apply bipartite matching if needed"
+      ],
+      "templatesThatFollow": [
+        "BFS 2-coloring check",
+        "Bipartite Matching (Hungarian / Hopcroft-Karp)",
+        "Maximum Independent Set (= n - maximum matching for bipartite)"
+      ],
+      "examples": [
+        "Is it possible to divide people into two groups with no internal conflict?",
+        "Assign tasks to workers — each task needs specific worker type",
+        "Check if graph can be colored with 2 colors"
+      ],
+      "watchOut": "Bipartite matching is O(V * E). For large graphs verify this fits in time budget."
+    },
+    {
+      "id": "is_tree_from_array",
+      "name": "Hidden Tree from Parent Array",
+      "shortDescription": "Array where a[i] = parent of node i defines a tree",
+      "recognize": [
+        "Array where each element points to another index",
+        "Problem says 'node i has parent a[i]'",
+        "Pointer structure — each node has exactly one outgoing pointer",
+        "Functional graph where each node has out-degree 1"
+      ],
+      "howToModel": [
+        "Build adjacency list from parent array",
+        "Root is the node with no parent or self-loop",
+        "Run DFS/BFS from root",
+        "Apply tree DP bottom-up"
+      ],
+      "templatesThatFollow": [
+        "Tree DP (post-order DFS)",
+        "LCA (Binary Lifting)",
+        "Euler Tour (for subtree queries)"
+      ],
+      "examples": [
+        "Given parent array, find diameter of tree",
+        "Sum of distances to all other nodes",
+        "Find LCA of two nodes"
+      ],
+      "watchOut": "If a[i] can point to i itself — that is the root. If multiple self-loops — it is a forest not a tree."
+    },
+    {
+      "id": "is_monotonic_stack_structure",
+      "name": "Hidden Monotonic Stack Structure",
+      "shortDescription": "For each element, answer depends on nearest larger/smaller element",
+      "recognize": [
+        "For each element, need to find nearest element greater than it",
+        "For each element, need to find nearest element smaller than it",
+        "Problem involves histograms, stock prices, buildings",
+        "Need previous or next element satisfying a comparison condition"
+      ],
+      "howToModel": [
+        "Maintain stack of indices",
+        "For next greater — use decreasing stack",
+        "For next smaller — use increasing stack",
+        "Pop when current element satisfies the condition relative to stack top"
+      ],
+      "templatesThatFollow": [
+        "Monotonic Stack O(n)",
+        "Monotonic Deque (for sliding window min/max)"
+      ],
+      "examples": [
+        "Largest rectangle in histogram",
+        "Daily temperatures — days until warmer",
+        "Stock span problem",
+        "Trapping rain water"
+      ],
+      "watchOut": "Monotonic stack gives O(n) where brute force is O(n^2). Always prefer it for next greater/smaller."
+    },
+    {
+      "id": "is_interval_structure",
+      "name": "Hidden Interval Structure from Events",
+      "shortDescription": "Start and end times define intervals — use sweep line",
+      "recognize": [
+        "Elements have start and end times or positions",
+        "Problem asks about overlaps, coverage, or scheduling",
+        "Events happen at specific times — arrival and departure",
+        "Problem involves ranges on a number line"
+      ],
+      "howToModel": [
+        "Create event list — (time, type) pairs where type is start or end",
+        "Sort events by time",
+        "Sweep through events maintaining active count",
+        "Maximum active count = maximum overlap"
+      ],
+      "templatesThatFollow": [
+        "Sorting + Greedy (interval scheduling)",
+        "Line Sweep (coverage, overlap counting)",
+        "Priority Queue (minimum platforms / rooms needed)",
+        "Difference Array (range increment, final values)"
+      ],
+      "examples": [
+        "Minimum meeting rooms needed",
+        "Maximum number of overlapping intervals",
+        "Merge all overlapping intervals",
+        "Find if a person is free at time T"
+      ],
+      "watchOut": "When two events have same timestamp — end events before start events to avoid counting overlap incorrectly."
+    },
+    {
+      "id": "is_prefix_sum_structure",
+      "name": "Hidden Prefix Sum Structure",
+      "shortDescription": "Subarray property reduces to difference of prefix values",
+      "recognize": [
+        "Problem asks about sum of contiguous subarray",
+        "Looking for subarray with sum equal to target",
+        "Range sum queries on static array",
+        "Problem involves cumulative values"
+      ],
+      "howToModel": [
+        "Build prefix sum array: pre[i] = a[0] + a[1] + ... + a[i-1]",
+        "Sum of subarray [l, r] = pre[r+1] - pre[l]",
+        "For subarray sum = target: pre[r+1] - pre[l] = target → pre[l] = pre[r+1] - target",
+        "Use HashMap to find pre[l] in O(1)"
+      ],
+      "templatesThatFollow": [
+        "Prefix Sum array O(n) build O(1) query",
+        "Prefix Sum + HashMap (subarray sum equals target)",
+        "2D Prefix Sum (matrix range sum)"
+      ],
+      "examples": [
+        "Subarray sum equals k — count all such subarrays",
+        "Longest subarray with sum at most k",
+        "Range sum query on matrix"
+      ],
+      "watchOut": "Prefix sum only works for sum queries. For min/max queries use Sparse Table or Segment Tree."
+    },
+    {
+      "id": "is_dp_on_string",
+      "name": "Hidden DP on String Structure",
+      "shortDescription": "String problem where subproblems are prefixes or substrings",
+      "recognize": [
+        "Problem involves optimal way to split or parse a string",
+        "Problem asks for minimum edits to transform one string to another",
+        "Looking for longest common subsequence or substring",
+        "Problem involves matching patterns in string"
+      ],
+      "howToModel": [
+        "For two strings — dp[i][j] typically involves prefixes s1[0..i] and s2[0..j]",
+        "For one string — dp[i] or dp[i][j] for prefix or substring",
+        "Transitions look at current character match or mismatch",
+        "Base cases are empty string or single character"
+      ],
+      "templatesThatFollow": [
+        "Edit Distance DP O(n*m)",
+        "LCS DP O(n*m)",
+        "String matching DP",
+        "Palindrome DP"
+      ],
+      "examples": [
+        "Edit distance between two strings",
+        "Longest common subsequence",
+        "Word break — can string be split into dictionary words",
+        "Regular expression matching"
+      ],
+      "watchOut": "2D DP on strings at n=m=10^4 needs 400MB. Check memory. Consider space optimization."
+    },
+    {
+      "id": "is_tree_dp",
+      "name": "Hidden Tree DP Structure",
+      "shortDescription": "Optimal answer for subtree computable from children's answers",
+      "recognize": [
+        "Input is a tree (explicitly or as parent array)",
+        "Problem asks for property of each node based on its subtree",
+        "Optimal global answer requires combining subtree answers",
+        "Problem involves paths through the tree"
+      ],
+      "howToModel": [
+        "Root the tree at node 0 or given root",
+        "DFS post-order — process all children before current node",
+        "dp[node] = f(dp[child1], dp[child2], ...) for some function f",
+        "For path problems — track best path going up through each node"
+      ],
+      "templatesThatFollow": [
+        "Tree DP post-order DFS",
+        "Rerooting technique (for problems where root changes)",
+        "Tree diameter (two DFS passes)"
+      ],
+      "examples": [
+        "Maximum path sum in binary tree",
+        "Diameter of tree",
+        "Minimum vertex cover of tree",
+        "Maximum independent set on tree"
+      ],
+      "watchOut": "Recursive DFS on tree with n=10^5 may stack overflow. Use iterative DFS with explicit stack."
+    },
+    {
+      "id": "is_digit_dp",
+      "name": "Hidden Digit DP Structure",
+      "shortDescription": "Counting numbers in range satisfying a digit-level property",
+      "recognize": [
+        "Count numbers from 1 to N satisfying some property",
+        "Property depends on individual digits not magnitude",
+        "N can be very large (up to 10^18)",
+        "Property involves digit sum, digit count, specific digit patterns"
+      ],
+      "howToModel": [
+        "Process number digit by digit from most significant",
+        "State: (position, tight_constraint, accumulated_property)",
+        "tight = true means digits so far equal to N's prefix — cannot exceed",
+        "tight = false means free to use any digit 0-9",
+        "Memoize on (position, tight, property_state)"
+      ],
+      "templatesThatFollow": [
+        "Digit DP with memoization",
+        "Top-down DP on digit positions"
+      ],
+      "examples": [
+        "Count numbers up to N with digit sum equal to k",
+        "Count numbers with no two adjacent same digits",
+        "Count lucky numbers (only 4s and 7s) up to N",
+        "Count numbers divisible by k with specific digit constraints"
+      ],
+      "watchOut": "tight constraint must be tracked carefully. Off-by-one on transitions causes wrong answers."
+    },
+    {
+      "id": "is_functional_graph",
+      "name": "Hidden Functional Graph (Rho structure)",
+      "shortDescription": "Each node has exactly one outgoing edge — forms rho (ρ) shape",
+      "recognize": [
+        "Each element maps to exactly one other element",
+        "Array where a[i] defines next state from i",
+        "Iterating a function f(f(f(...f(x)...)))",
+        "Problem involves finding cycles in this structure"
+      ],
+      "howToModel": [
+        "Each node has out-degree exactly 1",
+        "Structure consists of several rho shapes — a tail leading into a cycle",
+        "Floyd's cycle detection or coloring to find cycles",
+        "Binary lifting for fast k-step queries"
+      ],
+      "templatesThatFollow": [
+        "Floyd's Cycle Detection",
+        "DFS coloring for cycle finding",
+        "Binary Lifting for k-th successor"
+      ],
+      "examples": [
+        "Find cycle in sequence defined by next[i] = f(i)",
+        "Happy number problem — does iteration reach 1 or cycle?",
+        "Array permutation cycles"
+      ],
+      "watchOut": "Do not confuse with general directed graph. Functional graph has special rho structure."
+    },
+    {
+      "id": "is_sliding_window",
+      "name": "Hidden Sliding Window Structure",
+      "shortDescription": "Optimal contiguous subarray where window validity is monotonic",
+      "recognize": [
+        "Looking for optimal contiguous subarray",
+        "When you extend window it only gets worse in one direction",
+        "Shrinking from left can restore validity",
+        "Constraint on sum, count of distinct elements, or max-min difference"
+      ],
+      "howToModel": [
+        "Two pointers — left and right",
+        "Expand right pointer one step at a time",
+        "When window becomes invalid — shrink from left until valid again",
+        "Track optimal answer at each valid window state"
+      ],
+      "templatesThatFollow": [
+        "Sliding Window O(n)",
+        "Sliding Window with HashMap (distinct elements)",
+        "Sliding Window with Monotonic Deque (min/max in window)"
+      ],
+      "examples": [
+        "Longest substring without repeating characters",
+        "Minimum window containing all characters of pattern",
+        "Maximum sum subarray of size k",
+        "Longest subarray with at most k distinct elements"
+      ],
+      "watchOut": "Sliding window ONLY works when window validity is monotonic. If adding element can make valid then invalid then valid again — sliding window breaks."
+    },
+    {
+      "id": "is_union_find_structure",
+      "name": "Hidden Union Find Structure",
+      "shortDescription": "Dynamic grouping — merge groups, query same group",
+      "recognize": [
+        "Elements are dynamically grouped as edges are added",
+        "Problem asks if two elements are in same connected component",
+        "Edges are added one by one — need connectivity after each",
+        "Problem involves merging sets or groups"
+      ],
+      "howToModel": [
+        "Initialize each element as its own component",
+        "For each edge (u, v) — union(u, v)",
+        "For query same component — find(u) == find(v)",
+        "Use path compression and union by rank for O(α(n)) per operation"
+      ],
+      "templatesThatFollow": [
+        "Union Find with path compression",
+        "Kruskal's MST (sort edges + Union Find)",
+        "Offline dynamic connectivity"
+      ],
+      "examples": [
+        "Number of connected components after adding edges",
+        "Detect cycle in undirected graph",
+        "Kruskal's minimum spanning tree",
+        "Friend circles — are A and B in same group?"
+      ],
+      "watchOut": "Union Find handles undirected dynamic connectivity. For directed graphs use SCC algorithms."
+    }
+  ],
+
+  "detectionQuestions": [
+    {
+      "id": "dq_dependencies",
+      "question": "Does any element depend on or constrain another element?",
+      "ifYes": "Hidden DAG — model dependencies as directed edges",
+      "targetStructure": "is_dag"
+    },
+    {
+      "id": "dq_two_groups",
+      "question": "Can all elements be cleanly divided into two non-interacting groups?",
+      "ifYes": "Hidden Bipartite — check 2-colorability",
+      "targetStructure": "is_bipartite"
+    },
+    {
+      "id": "dq_parent_pointer",
+      "question": "Does each element point to exactly one other element as parent?",
+      "ifYes": "Hidden Tree — reconstruct and apply tree DP",
+      "targetStructure": "is_tree_from_array"
+    },
+    {
+      "id": "dq_start_end_times",
+      "question": "Do elements have start and end times or positions?",
+      "ifYes": "Hidden Interval structure — use sweep line or sorting + greedy",
+      "targetStructure": "is_interval_structure"
+    },
+    {
+      "id": "dq_subarray_sum",
+      "question": "Does the problem reduce to sum of a contiguous range?",
+      "ifYes": "Hidden Prefix Sum — build prefix array",
+      "targetStructure": "is_prefix_sum_structure"
+    },
+    {
+      "id": "dq_next_greater",
+      "question": "For each element, do you need to find the nearest element satisfying a comparison?",
+      "ifYes": "Hidden Monotonic Stack structure",
+      "targetStructure": "is_monotonic_stack_structure"
+    },
+    {
+      "id": "dq_large_n_digits",
+      "question": "Is N up to 10^18 and property depends on individual digits?",
+      "ifYes": "Hidden Digit DP — process digit by digit with tight constraint",
+      "targetStructure": "is_digit_dp"
+    },
+    {
+      "id": "dq_each_maps_one",
+      "question": "Does each element map to exactly one other element?",
+      "ifYes": "Hidden Functional Graph — rho structure with cycles",
+      "targetStructure": "is_functional_graph"
+    },
+    {
+      "id": "dq_dynamic_groups",
+      "question": "Are groups being merged dynamically as you process edges?",
+      "ifYes": "Hidden Union Find structure",
+      "targetStructure": "is_union_find_structure"
+    },
+    {
+      "id": "dq_contiguous_monotonic",
+      "question": "Looking for optimal contiguous subarray where validity shrinks monotonically?",
+      "ifYes": "Hidden Sliding Window structure",
+      "targetStructure": "is_sliding_window"
+    }
+  ]
+}

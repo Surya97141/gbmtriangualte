@@ -1,0 +1,1155 @@
+<!-- stages/stage3-5/stage3-5.html -->
+<!-- Reference template for Stage 3.5 — Reframing Check -->
+<!-- stage3-5.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 3.5 — Reframing Check</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --yellow     : #ffd166;
+      --yellow-bg  : rgba(255,209,102,.10);
+      --red        : #e63946;
+      --red-bg     : rgba(230,57,70,.07);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --pur        : #c084fc;
+      --pur-bg     : rgba(192,84,252,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --radius-lg  : 14px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family : var(--font-sans);
+      background  : var(--bg);
+      color       : var(--ink);
+      padding     : 24px;
+      max-width   : 800px;
+      margin      : 0 auto;
+    }
+
+    /* ── Stage wrapper ───────────────────────────────────────────────────── */
+    .stage3-5 {
+      display        : flex;
+      flex-direction : column;
+      gap            : 28px;
+    }
+
+    /* ── Intro ───────────────────────────────────────────────────────────── */
+    .stage-intro {
+      background    : var(--ink);
+      color         : #e2e8f0;
+      border-radius : var(--radius-md);
+      padding       : 14px 18px;
+      border-left   : 4px solid var(--yellow);
+    }
+
+    .stage-intro__rule {
+      font-family  : var(--font-mono);
+      font-size    : .82rem;
+      font-weight  : 700;
+      margin-bottom: 4px;
+    }
+
+    .stage-intro__sub {
+      font-size: .78rem;
+      color    : #94a3b8;
+    }
+
+    /* ── Section ─────────────────────────────────────────────────────────── */
+    .stage3-5__section {
+      display        : flex;
+      flex-direction : column;
+      gap            : 12px;
+    }
+
+    .stage3-5__section-title {
+      display    : flex;
+      align-items: baseline;
+      gap        : 10px;
+      font-size  : .92rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .stage3-5__section-sub {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .stage3-5__section-note {
+      font-size    : .76rem;
+      color        : var(--muted);
+      line-height  : 1.6;
+      padding      : 8px 12px;
+      background   : var(--surface);
+      border       : 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Answer buttons ──────────────────────────────────────────────────── */
+    .answer-btn {
+      padding      : 5px 14px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : var(--bg);
+      font-family  : var(--font-mono);
+      font-size    : .7rem;
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s;
+      color        : var(--ink);
+    }
+
+    .answer-btn:hover { border-color: var(--yellow); }
+
+    .answer-btn--yes.answer-btn--selected {
+      background  : var(--green-bg);
+      border-color: var(--green);
+      color       : #024d37;
+    }
+
+    .answer-btn--no.answer-btn--selected {
+      background  : rgba(138,128,112,.1);
+      border-color: var(--muted);
+      color       : var(--muted);
+    }
+
+    /* ── Example label ───────────────────────────────────────────────────── */
+    .example-label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       DISGUISE CHECKS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .disguise-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+    }
+
+    .disguise-row {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 12px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+      transition    : border-color .2s, background .2s;
+    }
+
+    .disguise-row--answered { border-color: rgba(33,150,243,.25); }
+
+    .disguise-row--triggered {
+      border-color: rgba(230,57,70,.4);
+      background  : var(--red-bg);
+    }
+
+    .disguise-row__header {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .disguise-row__labels {
+      display    : flex;
+      align-items: center;
+      gap        : 8px;
+      flex-wrap  : wrap;
+    }
+
+    .disguise-row__looks {
+      font-family  : var(--font-mono);
+      font-size    : .72rem;
+      font-weight  : 700;
+      background   : var(--yellow-bg);
+      color        : #7a5a00;
+      padding      : 2px 8px;
+      border-radius: 4px;
+    }
+
+    .disguise-row__arrow {
+      font-family: var(--font-mono);
+      font-size  : .8rem;
+      color      : var(--muted);
+    }
+
+    .disguise-row__actually {
+      font-family  : var(--font-mono);
+      font-size    : .72rem;
+      font-weight  : 700;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      padding      : 2px 8px;
+      border-radius: 4px;
+    }
+
+    .disguise-row__signal {
+      font-size  : .75rem;
+      color      : var(--muted);
+      line-height: 1.5;
+    }
+
+    .disguise-row__test {
+      font-size  : .76rem;
+      color      : var(--ink);
+      line-height: 1.5;
+      padding    : 6px 10px;
+      background : var(--bg);
+      border-radius: var(--radius-sm);
+    }
+
+    .test-label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 4px;
+    }
+
+    .disguise-row__answers {
+      display: flex;
+      gap    : 7px;
+    }
+
+    .disguise-row__example {
+      font-size    : .73rem;
+      color        : var(--ink);
+      background   : var(--blue-bg);
+      border       : 1px solid rgba(33,150,243,.18);
+      border-radius: var(--radius-sm);
+      padding      : 6px 10px;
+      line-height  : 1.5;
+    }
+
+    .disguise-row__warning {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .73rem;
+      color      : var(--red);
+      background : rgba(230,57,70,.06);
+      border     : 1px solid rgba(230,57,70,.2);
+      border-radius: var(--radius-sm);
+      padding    : 6px 10px;
+      line-height: 1.5;
+    }
+
+    .watchout-icon { flex-shrink: 0; }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       REFRAME QUESTIONS
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .reframe-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+    }
+
+    .reframe-row {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 11px 14px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+      transition    : border-color .2s;
+    }
+
+    .reframe-row--answered { border-color: rgba(33,150,243,.25); }
+
+    .reframe-row__question {
+      font-size  : .84rem;
+      font-weight: 500;
+      color      : var(--ink);
+      line-height: 1.4;
+    }
+
+    .reframe-row__purpose {
+      font-size  : .71rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    .reframe-row__answers {
+      display: flex;
+      gap    : 7px;
+    }
+
+    .reframe-row__example {
+      font-size    : .72rem;
+      color        : var(--ink);
+      background   : var(--blue-bg);
+      border       : 1px solid rgba(33,150,243,.18);
+      border-radius: var(--radius-sm);
+      padding      : 6px 10px;
+      line-height  : 1.5;
+    }
+
+    /* ── Transform hints ─────────────────────────────────────────────────── */
+    .stage3-5__transform-hints {
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .transform-hints-title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .transform-hint-card {
+      display    : flex;
+      align-items: center;
+      gap        : 10px;
+      padding    : 9px 12px;
+      background : var(--pur-bg);
+      border     : 1.5px solid rgba(192,84,252,.25);
+      border-radius: var(--radius-sm);
+    }
+
+    .transform-hint-card__icon    { font-size: .9rem; flex-shrink: 0; }
+
+    .transform-hint-card__content { flex: 1; }
+
+    .transform-hint-card__label {
+      font-size  : .78rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .transform-hint-card__tagline {
+      font-size : .68rem;
+      color     : var(--muted);
+      margin-top: 2px;
+    }
+
+    .transform-hint-card__apply {
+      padding      : 4px 10px;
+      border       : 1.5px solid var(--pur);
+      border-radius: var(--radius-sm);
+      background   : transparent;
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      color        : var(--pur);
+      cursor       : pointer;
+      white-space  : nowrap;
+      transition   : background .15s;
+    }
+
+    .transform-hint-card__apply:hover {
+      background: var(--pur-bg);
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       TRANSFORMATION PICKER
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage3-5__suggested-title {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 4px;
+    }
+
+    .transform-grid {
+      display              : grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap                  : 7px;
+    }
+
+    .transform-card {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-md);
+      padding       : 10px 13px;
+      cursor        : pointer;
+      transition    : border-color .15s, background .15s, transform .1s;
+    }
+
+    .transform-card:hover        { border-color: var(--pur); transform: translateY(-1px); }
+
+    .transform-card--selected {
+      border-color: var(--pur);
+      background  : var(--pur-bg);
+    }
+
+    .transform-card--suggested {
+      border-color: rgba(192,84,252,.3);
+    }
+
+    .transform-card__label {
+      font-size  : .8rem;
+      font-weight: 500;
+      color      : var(--ink);
+      margin-bottom: 3px;
+    }
+
+    .transform-card__tagline {
+      font-size  : .67rem;
+      color      : var(--muted);
+      line-height: 1.4;
+    }
+
+    /* ── Collapsible ─────────────────────────────────────────────────────── */
+    .collapsible {
+      border        : 1px solid var(--border);
+      border-radius : var(--radius-sm);
+      overflow      : hidden;
+    }
+
+    .collapsible__header {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 8px 12px;
+      background     : var(--bg);
+      cursor         : pointer;
+      font-family    : var(--font-mono);
+      font-size      : .62rem;
+      letter-spacing : 1.5px;
+      text-transform : uppercase;
+      color          : var(--muted);
+    }
+
+    .collapsible__header:hover { background: rgba(212,204,184,.3); }
+    .collapsible__body         { padding: 10px; }
+
+    /* ── Transform detail ────────────────────────────────────────────────── */
+    .stage3-5__transform-detail { min-height: 0; }
+
+    .transform-detail-card {
+      background    : var(--surface);
+      border        : 1.5px solid rgba(192,84,252,.3);
+      border-radius : var(--radius-md);
+      padding       : 14px 16px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 10px;
+    }
+
+    .transform-detail-card__name {
+      font-size  : .92rem;
+      font-weight: 700;
+      color      : var(--pur);
+    }
+
+    .transform-detail-card__before-after {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      padding       : 10px 12px;
+      background    : var(--bg);
+      border-radius : var(--radius-sm);
+    }
+
+    .ba-before,
+    .ba-after {
+      font-size  : .76rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .ba-label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      color         : var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-right  : 5px;
+    }
+
+    .ba-arrow {
+      font-family: var(--font-mono);
+      font-size  : .9rem;
+      color      : var(--pur);
+      text-align : center;
+      padding    : 2px 0;
+    }
+
+    .transform-detail-card__opens {
+      display    : flex;
+      align-items: center;
+      gap        : 7px;
+      flex-wrap  : wrap;
+    }
+
+    .opens-label {
+      font-family   : var(--font-mono);
+      font-size     : .6rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : #028a5b;
+      flex-shrink   : 0;
+    }
+
+    .opens-list {
+      display  : flex;
+      flex-wrap: wrap;
+      gap      : 5px;
+    }
+
+    .opened-badge {
+      font-family  : var(--font-mono);
+      font-size    : .65rem;
+      background   : var(--green-bg);
+      color        : #028a5b;
+      border       : 1px solid rgba(6,214,160,.25);
+      padding      : 2px 8px;
+      border-radius: 4px;
+    }
+
+    .transform-detail-card__examples {
+      display       : flex;
+      flex-direction: column;
+      gap           : 7px;
+    }
+
+    .transform-example {
+      background    : var(--bg);
+      border-radius : var(--radius-sm);
+      padding       : 8px 10px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+    }
+
+    .transform-example__problem {
+      font-size  : .78rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .transform-example__algorithm,
+    .transform-example__complexity {
+      font-size  : .72rem;
+      color      : var(--muted);
+    }
+
+    .detail-mono {
+      font-family: var(--font-mono);
+      font-size  : .7rem;
+      background : rgba(212,204,184,.3);
+      padding    : 1px 5px;
+      border-radius: 3px;
+      color      : var(--ink);
+    }
+
+    .transform-detail-card__warn {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .73rem;
+      color      : #7a5a00;
+      background : var(--yellow-bg);
+      border     : 1px solid rgba(255,209,102,.3);
+      border-radius: var(--radius-sm);
+      padding    : 6px 10px;
+    }
+
+    /* ── No transform button ─────────────────────────────────────────────── */
+    .no-transform-btn {
+      padding      : 9px 16px;
+      border       : 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      background   : transparent;
+      font-family  : var(--font-sans);
+      font-size    : .78rem;
+      color        : var(--muted);
+      cursor       : pointer;
+      transition   : border-color .15s, background .15s, color .15s;
+      text-align   : center;
+    }
+
+    .no-transform-btn:hover {
+      border-color: var(--green);
+      color       : #028a5b;
+      background  : var(--green-bg);
+    }
+
+    .no-transform-btn--selected {
+      border-color: var(--green);
+      border-style: solid;
+      background  : var(--green-bg);
+      color       : #028a5b;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       VERIFICATION CHECKLIST
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage3-5__verify-section { min-height: 0; }
+
+    .verify-list {
+      display       : flex;
+      flex-direction: column;
+      gap           : 6px;
+    }
+
+    .verify-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 12px;
+      padding    : 10px 13px;
+      background : var(--surface);
+      border     : 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      transition : border-color .15s, background .15s;
+    }
+
+    .verify-row--checked {
+      border-color: rgba(6,214,160,.4);
+      background  : var(--green-bg);
+    }
+
+    .verify-row__checkbox {
+      flex-shrink: 0;
+      margin-top : 2px;
+    }
+
+    .verify-checkbox {
+      width       : 16px;
+      height      : 16px;
+      cursor      : pointer;
+      accent-color: var(--green);
+    }
+
+    .verify-row__content {
+      display       : flex;
+      flex-direction: column;
+      gap           : 2px;
+      flex          : 1;
+    }
+
+    .verify-row__num {
+      font-family   : var(--font-mono);
+      font-size     : .58rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color         : var(--muted);
+    }
+
+    .verify-row__text {
+      font-size  : .78rem;
+      color      : var(--ink);
+      line-height: 1.5;
+    }
+
+    .verify-progress {
+      font-family: var(--font-mono);
+      font-size  : .65rem;
+      color      : var(--muted);
+      text-align : right;
+      margin-top : 4px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════════
+       SUMMARY
+    ════════════════════════════════════════════════════════════════════════ */
+
+    .stage3-5__summary {
+      background    : var(--surface);
+      border        : 1.5px solid var(--border);
+      border-radius : var(--radius-lg);
+      padding       : 16px 18px;
+    }
+
+    .summary-row {
+      display      : flex;
+      align-items  : baseline;
+      gap          : 10px;
+      padding      : 5px 0;
+      border-bottom: 1px solid rgba(212,204,184,.35);
+    }
+
+    .summary-row:last-of-type { border-bottom: none; }
+
+    .summary-row__label {
+      font-family   : var(--font-mono);
+      font-size     : .62rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      min-width     : 80px;
+      flex-shrink   : 0;
+    }
+
+    .summary-row__value {
+      font-size  : .82rem;
+      font-weight: 500;
+      color      : var(--ink);
+    }
+
+    .summary-warnings {
+      margin-top    : 10px;
+      display       : flex;
+      flex-direction: column;
+      gap           : 5px;
+    }
+
+    .watchout-row {
+      display    : flex;
+      align-items: flex-start;
+      gap        : 6px;
+      font-size  : .74rem;
+      color      : #7a5a00;
+    }
+
+    .watchout-text { line-height: 1.5; }
+
+    /* ── Placeholder ─────────────────────────────────────────────────────── */
+    .summary-placeholder {
+      font-size : .78rem;
+      color     : var(--muted);
+      font-style: italic;
+      text-align: center;
+      padding   : 14px 0;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="stage3-5">
+
+  <!-- INTRO ---------------------------------------------------------------- -->
+  <div class="stage-intro">
+    <div class="stage-intro__rule">
+      Check: is this problem disguised as something else?
+    </div>
+    <div class="stage-intro__sub">
+      A reframe or transformation may reveal a much simpler approach. Check before coding.
+    </div>
+  </div>
+
+  <!-- DISGUISE CHECKS ------------------------------------------------------ -->
+  <div class="stage3-5__section" id="disguise-section">
+
+    <div class="stage3-5__section-title">
+      <span>Disguise checks</span>
+      <span class="stage3-5__section-sub">Does this look like X but actually is Y?</span>
+    </div>
+
+    <div class="stage3-5__section-note">
+      These are the most common misidentifications. A "yes this is a disguise" answer
+      means your Stage 3 direction may be wrong — worth reconsidering before Stage 4.
+    </div>
+
+    <div class="disguise-list">
+
+      <!-- Not triggered -->
+      <div class="disguise-row disguise-row--answered">
+        <div class="disguise-row__header">
+          <div class="disguise-row__labels">
+            <span class="disguise-row__looks">Dynamic Programming</span>
+            <span class="disguise-row__arrow">→</span>
+            <span class="disguise-row__actually">Binary Search on Answer</span>
+          </div>
+          <div class="disguise-row__signal">
+            Output is minimize maximum or maximize minimum
+          </div>
+        </div>
+        <div class="disguise-row__test">
+          <span class="test-label">Test:</span>
+          Can you write isFeasible(X) greedily in O(n)? If yes — Binary Search not DP.
+        </div>
+        <div class="disguise-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes — this is a disguise</button>
+          <button class="answer-btn answer-btn--no answer-btn--selected">✗ No — direction is correct</button>
+        </div>
+        <div class="disguise-row__example hidden">
+          <span class="example-label">Example:</span>
+          Split array into k parts minimizing max sum → Binary search on max sum
+        </div>
+        <div class="disguise-row__warning hidden">
+          <span class="watchout-icon">⚠</span>
+          Reconsider your Stage 3 direction — this may be Binary Search on Answer not DP
+        </div>
+      </div>
+
+      <!-- Triggered -->
+      <div class="disguise-row disguise-row--triggered disguise-row--answered">
+        <div class="disguise-row__header">
+          <div class="disguise-row__labels">
+            <span class="disguise-row__looks">Greedy</span>
+            <span class="disguise-row__arrow">→</span>
+            <span class="disguise-row__actually">Dynamic Programming</span>
+          </div>
+          <div class="disguise-row__signal">
+            Local optimal choice fails for specific input configurations
+          </div>
+        </div>
+        <div class="disguise-row__test">
+          <span class="test-label">Test:</span>
+          Find 3-5 element counter-example where greedy picks suboptimally.
+        </div>
+        <div class="disguise-row__answers">
+          <button class="answer-btn answer-btn--yes answer-btn--selected">✓ Yes — this is a disguise</button>
+          <button class="answer-btn answer-btn--no">✗ No — direction is correct</button>
+        </div>
+        <div class="disguise-row__example">
+          <span class="example-label">Example:</span>
+          Coin change with coins [1,3,4] — greedy fails for amount 6 (picks 4+1+1, not 3+3)
+        </div>
+        <div class="disguise-row__warning">
+          <span class="watchout-icon">⚠</span>
+          Reconsider your Stage 3 direction — this may be DP not Greedy
+        </div>
+      </div>
+
+      <!-- Unanswered -->
+      <div class="disguise-row">
+        <div class="disguise-row__header">
+          <div class="disguise-row__labels">
+            <span class="disguise-row__looks">Array problem</span>
+            <span class="disguise-row__arrow">→</span>
+            <span class="disguise-row__actually">Hidden tree or graph</span>
+          </div>
+          <div class="disguise-row__signal">
+            Array where a[i] = parent of i — implicit tree structure
+          </div>
+        </div>
+        <div class="disguise-row__test">
+          <span class="test-label">Test:</span>
+          Does each element point to exactly one other? → Functional graph or tree.
+        </div>
+        <div class="disguise-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes — this is a disguise</button>
+          <button class="answer-btn answer-btn--no">✗ No — direction is correct</button>
+        </div>
+        <div class="disguise-row__example hidden">
+          <span class="example-label">Example:</span>
+          a[i] = parent of node i → build tree, apply tree DP
+        </div>
+        <div class="disguise-row__warning hidden">
+          <span class="watchout-icon">⚠</span>
+          Reconsider — this may be a hidden tree not a plain array
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- REFRAME QUESTIONS ---------------------------------------------------- -->
+  <div class="stage3-5__section" id="reframe-section">
+
+    <div class="stage3-5__section-title">
+      <span>Forced perspective shifts</span>
+      <span class="stage3-5__section-sub">Answer each — a "yes" may reveal a transformation</span>
+    </div>
+
+    <div class="reframe-list">
+
+      <!-- Answered yes -->
+      <div class="reframe-row reframe-row--answered">
+        <div class="reframe-row__q">
+          <div class="reframe-row__question">
+            Instead of computing the answer directly — what if you binary searched for it?
+          </div>
+          <div class="reframe-row__purpose">
+            Reveals Binary Search on Answer when direct optimization is hard.
+          </div>
+        </div>
+        <div class="reframe-row__answers">
+          <button class="answer-btn answer-btn--yes answer-btn--selected">✓ Yes</button>
+          <button class="answer-btn answer-btn--no">✗ No</button>
+        </div>
+        <div class="reframe-row__example">
+          <span class="example-label">Example:</span>
+          Minimum capacity to ship packages → binary search on capacity, check feasibility greedily
+        </div>
+      </div>
+
+      <!-- Answered no -->
+      <div class="reframe-row reframe-row--answered">
+        <div class="reframe-row__q">
+          <div class="reframe-row__question">
+            What if each element is a node — what would the edges be?
+          </div>
+          <div class="reframe-row__purpose">
+            Reveals hidden graph structure in array or string problems.
+          </div>
+        </div>
+        <div class="reframe-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes</button>
+          <button class="answer-btn answer-btn--no answer-btn--selected">✗ No</button>
+        </div>
+        <div class="reframe-row__example hidden">
+          <span class="example-label">Example:</span>
+          Word ladder — each word is a node, BFS shortest path
+        </div>
+      </div>
+
+      <!-- Unanswered -->
+      <div class="reframe-row">
+        <div class="reframe-row__q">
+          <div class="reframe-row__question">
+            Is counting or finding the complement easier than the valid cases?
+          </div>
+          <div class="reframe-row__purpose">
+            Complement counting — Total minus Invalid.
+          </div>
+        </div>
+        <div class="reframe-row__answers">
+          <button class="answer-btn answer-btn--yes">✓ Yes</button>
+          <button class="answer-btn answer-btn--no">✗ No</button>
+        </div>
+        <div class="reframe-row__example hidden">
+          <span class="example-label">Example:</span>
+          Strings with ≥1 vowel → Total minus no-vowel strings
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Transform hints appear here after "yes" answers -->
+    <div class="stage3-5__transform-hints" id="reframe-transform-hints">
+      <div class="transform-hints-title">Transformation signals detected — consider applying:</div>
+      <div class="transform-hint-card">
+        <span class="transform-hint-card__icon">🔄</span>
+        <div class="transform-hint-card__content">
+          <div class="transform-hint-card__label">Optimization → Binary Search on Answer</div>
+          <div class="transform-hint-card__tagline">
+            Instead of finding optimal directly, binary search for it
+          </div>
+        </div>
+        <button class="transform-hint-card__apply">Apply →</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TRANSFORMATION PICKER ------------------------------------------------ -->
+  <div class="stage3-5__section" id="transform-section">
+
+    <div class="stage3-5__section-title">
+      <span>Apply a transformation</span>
+      <span class="stage3-5__section-sub">Optional — only if a reframe question triggered one</span>
+    </div>
+
+    <!-- Suggested -->
+    <div class="stage3-5__suggested-title">Suggested based on your input/output:</div>
+    <div class="transform-grid">
+
+      <div class="transform-card transform-card--selected transform-card--suggested">
+        <div class="transform-card__label">Optimization → Binary Search on Answer</div>
+        <div class="transform-card__tagline">Instead of finding optimal directly, binary search for it</div>
+      </div>
+
+      <div class="transform-card transform-card--suggested">
+        <div class="transform-card__label">Nested loops → Sort + Two Pointer</div>
+        <div class="transform-card__tagline">O(n²) pair enumeration → O(n log n)</div>
+      </div>
+
+    </div>
+
+    <!-- All transformations collapsible -->
+    <div class="collapsible">
+      <div class="collapsible__header">
+        <span>All transformations</span>
+        <span class="collapsible__arrow">▼</span>
+      </div>
+      <div class="collapsible__body" style="display:none;">
+        <div class="transform-grid">
+          <div class="transform-card">
+            <div class="transform-card__label">Element → Node</div>
+            <div class="transform-card__tagline">Each element becomes a graph node</div>
+          </div>
+          <div class="transform-card">
+            <div class="transform-card__label">2D → 1D reduction</div>
+            <div class="transform-card__tagline">Fix one dimension, solve simpler 1D problem</div>
+          </div>
+          <div class="transform-card">
+            <div class="transform-card__label">Counting → Complement</div>
+            <div class="transform-card__tagline">Count invalid cases and subtract from total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transform detail -->
+    <div class="stage3-5__transform-detail" id="transform-detail">
+      <div class="transform-detail-card">
+        <div class="transform-detail-card__name">Optimization → Binary Search on Answer</div>
+        <div class="transform-detail-card__before-after">
+          <div class="ba-before">
+            <span class="ba-label">Before:</span>
+            Find the optimal value directly — hard
+          </div>
+          <div class="ba-arrow">↓</div>
+          <div class="ba-after">
+            <span class="ba-label">After:</span>
+            Binary search on answer space, verify feasibility at each midpoint
+          </div>
+        </div>
+        <div class="transform-detail-card__opens">
+          <span class="opens-label">Opens:</span>
+          <div class="opens-list">
+            <span class="opened-badge">Binary Search on Answer</span>
+            <span class="opened-badge">Parametric search</span>
+          </div>
+        </div>
+        <div class="transform-detail-card__examples">
+          <div class="transform-example">
+            <div class="transform-example__problem">Koko Eating Bananas — minimum speed</div>
+            <div class="transform-example__algorithm">
+              <span class="example-label">Algorithm:</span>
+              <span class="detail-mono">Binary search × O(n) feasibility check</span>
+            </div>
+            <div class="transform-example__complexity">
+              <span class="example-label">Complexity:</span>
+              <span class="detail-mono">O(n log(max_pile))</span>
+            </div>
+          </div>
+        </div>
+        <div class="transform-detail-card__warn">
+          <span class="watchout-icon">⚠</span>
+          isFeasible must be monotone — verify with 2 concrete examples before coding
+        </div>
+      </div>
+    </div>
+
+    <!-- No transformation button -->
+    <button class="no-transform-btn" id="no-transform-btn">
+      No transformation needed — proceed with current approach
+    </button>
+
+  </div>
+
+  <!-- VERIFICATION CHECKLIST ----------------------------------------------- -->
+  <div class="stage3-5__section stage3-5__verify-section" id="verify-section">
+
+    <div class="stage3-5__section-title">
+      <span>Verify the transformation</span>
+      <span class="stage3-5__section-sub">Check each step before committing</span>
+    </div>
+
+    <div class="verify-list">
+
+      <div class="verify-row verify-row--checked">
+        <div class="verify-row__checkbox">
+          <input type="checkbox" class="verify-checkbox" checked>
+        </div>
+        <div class="verify-row__content">
+          <div class="verify-row__num">Step 1</div>
+          <div class="verify-row__text">
+            Define: what range can the answer take? [lo, hi]
+          </div>
+        </div>
+      </div>
+
+      <div class="verify-row verify-row--checked">
+        <div class="verify-row__checkbox">
+          <input type="checkbox" class="verify-checkbox" checked>
+        </div>
+        <div class="verify-row__content">
+          <div class="verify-row__num">Step 2</div>
+          <div class="verify-row__text">
+            Write isFeasible(X) — can we achieve X or better?
+          </div>
+        </div>
+      </div>
+
+      <div class="verify-row">
+        <div class="verify-row__checkbox">
+          <input type="checkbox" class="verify-checkbox">
+        </div>
+        <div class="verify-row__content">
+          <div class="verify-row__num">Step 3</div>
+          <div class="verify-row__text">
+            Verify monotonicity: if X is feasible, is X+1 also feasible?
+          </div>
+        </div>
+      </div>
+
+      <div class="verify-row">
+        <div class="verify-row__checkbox">
+          <input type="checkbox" class="verify-checkbox">
+        </div>
+        <div class="verify-row__content">
+          <div class="verify-row__num">Step 4</div>
+          <div class="verify-row__text">
+            Verify isFeasible runs in O(n) or O(n log n) — not O(n²)
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="verify-progress">2 / 4 steps verified</div>
+
+  </div>
+
+  <!-- SUMMARY -------------------------------------------------------------- -->
+  <div class="stage3-5__summary" id="stage3-5-summary">
+
+    <div class="stage3-5__section-title">Reframing summary</div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Disguise:</span>
+      <span class="summary-row__value">5 / 8 checked</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Reframe:</span>
+      <span class="summary-row__value">6 / 8 questions answered</span>
+    </div>
+
+    <div class="summary-row">
+      <span class="summary-row__label">Transform:</span>
+      <span class="summary-row__value">Optimization → Binary Search on Answer</span>
+    </div>
+
+    <div class="summary-warnings">
+      <div class="watchout-row">
+        <span class="watchout-icon">⚠</span>
+        <span class="watchout-text">
+          Possible disguise: this may be DP not Greedy — verify counter-example in Stage 5
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /stage3-5 -->
+
+</body>
+</html>
