@@ -7,7 +7,6 @@
   <meta name="theme-color" content="#020408">
   <title>DSA Approach Tool</title>
 
-  <!-- ── CSS ────────────────────────────────────────────────────────────── -->
   <link rel="stylesheet" href="/assets/css/theme.css">
   <link rel="stylesheet" href="/assets/css/base.css">
   <link rel="stylesheet" href="/assets/css/components.css">
@@ -15,35 +14,29 @@
   <link rel="stylesheet" href="/assets/css/stages.css">
 
   <style>
-  /* ── Inline critical styles (boot screen + shell) ────────────────────── */
-
-  /* ── Boot screen ─────────────────────────────────────────────────────── */
   #boot-screen {
-    position  : fixed;
-    inset     : 0;
-    background: var(--void);
-    z-index   : 10000;
-    display   : flex;
-    flex-direction: column;
-    align-items   : center;
-    justify-content: center;
-    gap       : 40px;
-    transition: opacity .6s ease, visibility .6s ease;
-  }
-
-  #boot-screen.boot-done {
-    opacity   : 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  .boot__logo {
+    position       : fixed;
+    inset          : 0;
+    background     : var(--void);
+    z-index        : 10000;
     display        : flex;
     flex-direction : column;
     align-items    : center;
-    gap            : 12px;
+    justify-content: center;
+    gap            : 40px;
+    transition     : opacity .6s ease, visibility .6s ease;
   }
-
+  #boot-screen.boot-done {
+    opacity        : 0;
+    visibility     : hidden;
+    pointer-events : none;
+  }
+  .boot__logo {
+    display       : flex;
+    flex-direction: column;
+    align-items   : center;
+    gap           : 12px;
+  }
   .boot__logo-mark {
     width          : 64px;
     height         : 64px;
@@ -60,7 +53,6 @@
     box-shadow     : var(--glow-cyan);
     letter-spacing : 1px;
   }
-
   .boot__logo-name {
     font-family   : var(--font-display);
     font-size     : 1.4rem;
@@ -69,7 +61,6 @@
     letter-spacing: 4px;
     text-transform: uppercase;
   }
-
   .boot__logo-sub {
     font-family   : var(--font-mono);
     font-size     : .65rem;
@@ -77,8 +68,6 @@
     letter-spacing: 3px;
     text-transform: uppercase;
   }
-
-  /* Boot terminal lines */
   .boot__terminal {
     font-family: var(--font-mono);
     font-size  : .7rem;
@@ -88,29 +77,24 @@
     width      : 360px;
     max-width  : 90vw;
   }
-
   .boot__line {
-    display : block;
-    opacity : 0;
+    display  : block;
+    opacity  : 0;
     animation: fade-in .3s ease forwards;
   }
-
-  .boot__line--cyan  { color: var(--cyan);  }
-  .boot__line--pass  { color: var(--pass);  }
+  .boot__line--cyan  { color: var(--cyan); }
+  .boot__line--pass  { color: var(--pass); }
   .boot__line--muted { color: var(--text-muted); }
-
   .boot__cursor {
-    display    : inline-block;
-    width      : 8px;
-    height     : 13px;
-    background : var(--cyan);
-    animation  : cursor-blink .7s step-end infinite;
-    margin-left: 2px;
+    display       : inline-block;
+    width         : 8px;
+    height        : 13px;
+    background    : var(--cyan);
+    animation     : cursor-blink .7s step-end infinite;
+    margin-left   : 2px;
     vertical-align: text-bottom;
-    opacity    : 0;
+    opacity       : 0;
   }
-
-  /* Boot progress */
   .boot__progress {
     width        : 240px;
     height       : 2px;
@@ -118,7 +102,6 @@
     border-radius: var(--r-full);
     overflow     : hidden;
   }
-
   .boot__progress-fill {
     height       : 100%;
     background   : var(--cyan);
@@ -128,175 +111,131 @@
     box-shadow   : 0 0 8px rgba(0,212,255,.6);
   }
 
-  /* ── App shell ───────────────────────────────────────────────────────── */
+  /* App shell */
   #app { visibility: hidden; opacity: 0; transition: opacity .4s ease; }
   #app.app-ready { visibility: visible; opacity: 1; }
 
-  /* Ambient background glow */
   .ambient-glow {
-    position: fixed;
-    border-radius: 50%;
-    filter  : blur(80px);
+    position      : fixed;
+    border-radius : 50%;
+    filter        : blur(80px);
     pointer-events: none;
-    z-index : -1;
+    z-index       : -1;
   }
-
   .ambient-glow--tl {
-    width    : 400px;
-    height   : 400px;
+    width     : 400px; height: 400px;
     background: radial-gradient(circle, rgba(0,212,255,.04) 0%, transparent 70%);
-    top      : -100px;
-    left     : -100px;
+    top: -100px; left: -100px;
   }
-
   .ambient-glow--br {
-    width    : 600px;
-    height   : 600px;
+    width     : 600px; height: 600px;
     background: radial-gradient(circle, rgba(68,136,255,.03) 0%, transparent 70%);
-    bottom   : -200px;
-    right    : -200px;
+    bottom: -200px; right: -200px;
   }
 
-  /* ── Sidebar scan line decoration ────────────────────────────────────── */
   .sidebar__scan {
-    position  : absolute;
-    left      : 0;
-    right     : 0;
-    height    : 1px;
-    background: linear-gradient(90deg, transparent, rgba(0,212,255,.3), transparent);
-    animation : scan-sweep 4s linear infinite;
+    position      : absolute;
+    left          : 0; right: 0;
+    height        : 1px;
+    background    : linear-gradient(90deg, transparent, rgba(0,212,255,.3), transparent);
+    animation     : scan-sweep 4s linear infinite;
     pointer-events: none;
-    opacity   : .4;
+    opacity       : .4;
   }
 
-  /* ── Stage content transition ────────────────────────────────────────── */
-  #stage-content {
-    animation: slide-in-up .25s ease;
-  }
+  /* Stage content animation — keyed to stage-container not stage-content */
+  #stage-container { animation: slide-in-up .25s ease; }
 
-  /* ── Empty state ─────────────────────────────────────────────────────── */
   .empty-state {
-    display       : flex;
-    flex-direction: column;
-    align-items   : center;
+    display        : flex;
+    flex-direction : column;
+    align-items    : center;
     justify-content: center;
-    gap           : 20px;
-    padding       : 80px 40px;
-    text-align    : center;
-    opacity       : .6;
+    gap            : 20px;
+    padding        : 80px 40px;
+    text-align     : center;
+    opacity        : .6;
   }
+  .empty-state__icon  { font-family: var(--font-mono); font-size: 2rem;  color: var(--text-muted); }
+  .empty-state__title { font-family: var(--font-display); font-size: 1rem; color: var(--text-secondary); }
+  .empty-state__sub   { font-family: var(--font-mono); font-size: .72rem; color: var(--text-muted); max-width: 300px; line-height: 1.6; }
 
-  .empty-state__icon {
-    font-family: var(--font-mono);
-    font-size  : 2rem;
-    color      : var(--text-muted);
-  }
-
-  .empty-state__title {
-    font-family: var(--font-display);
-    font-size  : 1rem;
-    color      : var(--text-secondary);
-  }
-
-  .empty-state__sub {
-    font-family: var(--font-mono);
-    font-size  : .72rem;
-    color      : var(--text-muted);
-    max-width  : 300px;
-    line-height: 1.6;
-  }
-
-  /* ── Mobile menu button ──────────────────────────────────────────────── */
   .mobile-menu-btn {
-    display    : none;
-    width      : 36px;
-    height     : 36px;
-    align-items: center;
+    display        : none;
+    width          : 36px; height: 36px;
+    align-items    : center;
     justify-content: center;
-    border     : 1px solid var(--border-default);
-    border-radius: var(--r-sm);
-    background : var(--surface-1);
-    cursor     : pointer;
-    transition : all var(--transition-fast);
-    flex-shrink: 0;
+    border         : 1px solid var(--border-default);
+    border-radius  : var(--r-sm);
+    background     : var(--surface-1);
+    cursor         : pointer;
+    transition     : all var(--transition-fast);
+    flex-shrink    : 0;
   }
-
   .mobile-menu-btn:hover { border-color: var(--cyan-border); }
+  @media (max-width: 768px) { .mobile-menu-btn { display: flex; } }
 
-  @media (max-width: 768px) {
-    .mobile-menu-btn { display: flex; }
-  }
-
-  /* ── Topbar extras ───────────────────────────────────────────────────── */
   .topbar__stage-name {
-    font-family: var(--font-mono);
-    font-size  : .7rem;
-    color      : var(--text-secondary);
+    font-family   : var(--font-mono);
+    font-size     : .7rem;
+    color         : var(--text-secondary);
     letter-spacing: .5px;
   }
-
   .topbar__stage-num {
-    font-family: var(--font-mono);
-    font-size  : .62rem;
-    color      : var(--text-muted);
+    font-family   : var(--font-mono);
+    font-size     : .62rem;
+    color         : var(--text-muted);
     letter-spacing: 1px;
   }
 
-  /* ── Recovery mode banner ────────────────────────────────────────────── */
   .recovery-banner {
-    background   : rgba(255,68,102,.08);
-    border-bottom: 1px solid var(--fail-border);
-    padding      : var(--space-2) var(--space-5);
-    font-family  : var(--font-mono);
-    font-size    : .65rem;
-    color        : var(--fail);
+    background    : rgba(255,68,102,.08);
+    border-bottom : 1px solid var(--fail-border);
+    padding       : var(--space-2) var(--space-5);
+    font-family   : var(--font-mono);
+    font-size     : .65rem;
+    color         : var(--fail);
     letter-spacing: 1px;
     text-transform: uppercase;
-    display      : flex;
-    align-items  : center;
-    gap          : var(--space-3);
+    display       : flex;
+    align-items   : center;
+    gap           : var(--space-3);
   }
-
   .recovery-banner__dot {
-    width        : 6px;
-    height       : 6px;
+    width        : 6px; height: 6px;
     border-radius: 50%;
     background   : var(--fail);
     animation    : glow-pulse 1s infinite;
     flex-shrink  : 0;
   }
+
+  /* Hidden utility — needed before base.css loads */
+  .hidden { display: none !important; }
   </style>
 </head>
 
 <body class="grid-bg">
 
-  <!-- ── BOOT SCREEN ───────────────────────────────────────────────────── -->
+  <!-- BOOT SCREEN -->
   <div id="boot-screen" aria-hidden="true">
-
     <div class="boot__logo">
       <div class="boot__logo-mark">DSA</div>
       <div class="boot__logo-name">Approach Tool</div>
       <div class="boot__logo-sub">Structural Thinking Scaffold</div>
     </div>
-
-    <div class="boot__terminal" id="boot-terminal">
-      <!-- Lines injected by boot sequence -->
-    </div>
-
-    <div class="boot__progress" id="boot-progress-track">
+    <div class="boot__terminal" id="boot-terminal"></div>
+    <div class="boot__progress">
       <div class="boot__progress-fill" id="boot-progress-fill"></div>
     </div>
-
   </div>
 
-  <!-- ── APP SHELL ─────────────────────────────────────────────────────── -->
+  <!-- APP SHELL -->
   <div id="app" class="app-shell" aria-hidden="true">
 
-    <!-- Ambient glow elements -->
     <div class="ambient-glow ambient-glow--tl" aria-hidden="true"></div>
     <div class="ambient-glow ambient-glow--br" aria-hidden="true"></div>
 
-    <!-- ── Topbar ──────────────────────────────────────────────────────── -->
+    <!-- Topbar -->
     <header class="topbar" role="banner">
 
       <button class="mobile-menu-btn" id="mobile-menu-btn"
@@ -317,10 +256,8 @@
 
       <div class="topbar__divider" aria-hidden="true"></div>
 
-      <!-- Stage progress -->
       <div class="topbar__center">
-        <div class="topbar__stage-progress" role="progressbar"
-             aria-label="Stage progress" aria-valuenow="0" aria-valuemax="100">
+        <div class="topbar__stage-progress">
           <span class="topbar__stage-num" id="topbar-stage-num">STAGE 0</span>
           <div class="topbar__stage-track" aria-hidden="true">
             <div class="topbar__stage-fill" id="topbar-stage-fill" style="width:0%"></div>
@@ -329,17 +266,21 @@
         </div>
       </div>
 
+      <!-- Hidden anchors that renderer.js needs — kept out of visual flow -->
+      <div id="stage-header"   style="display:none" aria-hidden="true"></div>
+      <div id="progress-bar"   style="display:none" aria-hidden="true"></div>
+
       <div class="topbar__right">
         <span class="topbar__confidence" id="topbar-confidence" aria-live="polite"></span>
         <button class="btn btn--ghost btn--sm" id="topbar-reset-btn"
-                title="Reset session" aria-label="Reset current session">
+                aria-label="Reset current session">
           ↺ Reset
         </button>
       </div>
 
     </header>
 
-    <!-- ── Sidebar ─────────────────────────────────────────────────────── -->
+    <!-- Sidebar -->
     <nav class="sidebar" id="sidebar" role="navigation" aria-label="Stage navigation">
 
       <div class="sidebar__scan" aria-hidden="true"></div>
@@ -348,9 +289,6 @@
 
         <div class="stage-map__section-label">Analysis Pipeline</div>
 
-        <!-- Stage items injected by router.js -->
-        <!-- Static fallback for no-JS / first paint -->
-
         <div class="stage-map__item stage-map__item--active" data-stage="stage0" role="listitem">
           <div class="stage-map__dot">0</div>
           <div class="stage-map__label">
@@ -358,7 +296,6 @@
             <span class="stage-map__sub">Time + Memory</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage1" role="listitem">
@@ -368,7 +305,6 @@
             <span class="stage-map__sub">Type + Signals</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage2" role="listitem">
@@ -378,7 +314,6 @@
             <span class="stage-map__sub">Form + Depth</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage2_5" role="listitem">
@@ -388,7 +323,6 @@
             <span class="stage-map__sub">Subproblem Check</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage3" role="listitem">
@@ -398,7 +332,6 @@
             <span class="stage-map__sub">7 Core Questions</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage3_5" role="listitem">
@@ -408,7 +341,6 @@
             <span class="stage-map__sub">Disguise + Transform</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage4" role="listitem">
@@ -418,7 +350,6 @@
             <span class="stage-map__sub">N×Q · N×K · Hidden</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage4_5" role="listitem">
@@ -428,7 +359,6 @@
             <span class="stage-map__sub">Complexity Re-check</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage5" role="listitem">
@@ -438,7 +368,6 @@
             <span class="stage-map__sub">Greedy · DP · Graph</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage6" role="listitem">
@@ -448,7 +377,6 @@
             <span class="stage-map__sub">Critical · High · Medium</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage6_5" role="listitem">
@@ -458,7 +386,6 @@
             <span class="stage-map__sub">Gate Check</span>
           </div>
         </div>
-
         <div class="stage-map__connector"></div>
 
         <div class="stage-map__item stage-map__item--locked" data-stage="stage7" role="listitem">
@@ -481,25 +408,24 @@
 
       </div>
 
-      <!-- Sidebar footer -->
       <div class="sidebar__footer">
         <div class="sidebar__score" id="sidebar-score"></div>
       </div>
 
     </nav>
 
-    <!-- ── Main content ────────────────────────────────────────────────── -->
+    <!-- Main content -->
     <main class="main-content" role="main" id="main-content">
 
-      <!-- Recovery banner (hidden unless in recovery mode) -->
       <div class="recovery-banner hidden" id="recovery-banner" role="alert">
         <div class="recovery-banner__dot"></div>
         RECOVERY MODE ACTIVE
       </div>
 
-      <!-- Stage content area -->
-      <div class="stage-content" id="stage-content">
-        <!-- Rendered by renderer.js -->
+      <!-- ═══════════════════════════════════════════════════════════════
+           THIS IS THE CRITICAL ID — renderer.js looks for #stage-container
+      ════════════════════════════════════════════════════════════════ -->
+      <div class="stage-content" id="stage-container">
         <div class="empty-state" id="empty-state">
           <div class="empty-state__icon">⬡</div>
           <div class="empty-state__title">Initializing pipeline...</div>
@@ -507,7 +433,6 @@
         </div>
       </div>
 
-      <!-- Stage navigation -->
       <nav class="stage-nav" id="stage-nav" role="navigation" aria-label="Stage navigation">
         <span class="stage-nav__info" id="stage-nav-info" aria-live="polite"></span>
         <div class="stage-nav__btns">
@@ -526,45 +451,34 @@
 
   </div><!-- /#app -->
 
-  <!-- ── Toast container ──────────────────────────────────────────────── -->
   <div class="toast-container" id="toast-container"
        role="region" aria-label="Notifications" aria-live="polite"></div>
 
-  <!-- ════════════════════════════════════════════════════════════════════
-       SCRIPTS — Core (order matters)
-  ════════════════════════════════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════════════════
+       SCRIPTS
+  ══════════════════════════════════════════════════════════════════ -->
 
-  <!-- Utils -->
   <script src="/utils/math-utils.js"></script>
   <script src="/utils/dom-utils.js"></script>
   <script src="/utils/session-utils.js"></script>
   <script src="/utils/confidence-utils.js"></script>
 
-  <!-- Core -->
   <script src="/core/state.js"></script>
   <script src="/core/router.js"></script>
   <script src="/core/renderer.js"></script>
 
-  <!-- Data -->
-  <!-- (Loaded as modules — imported by stages that need them) -->
-
-  <!-- Stage 0 -->
   <script src="/stages/stage0/complexity-table.js"></script>
   <script src="/stages/stage0/stage0.js"></script>
 
-  <!-- Stage 1 -->
   <script src="/stages/stage1/input-types.js"></script>
   <script src="/stages/stage1/stage1.js"></script>
 
-  <!-- Stage 2 -->
   <script src="/stages/stage2/output-types.js"></script>
   <script src="/stages/stage2/stage2.js"></script>
 
-  <!-- Stage 2.5 -->
   <script src="/stages/stage2-5/decomposition-checks.js"></script>
   <script src="/stages/stage2-5/stage2-5.js"></script>
 
-  <!-- Stage 3 -->
   <script src="/stages/stage3/properties/order-sensitivity.js"></script>
   <script src="/stages/stage3/properties/subproblem-overlap.js"></script>
   <script src="/stages/stage3/properties/feasibility-boundary.js"></script>
@@ -581,24 +495,20 @@
   <script src="/stages/stage3/graph-deepdive/graph-goals.js"></script>
   <script src="/stages/stage3/stage3.js"></script>
 
-  <!-- Stage 3.5 -->
   <script src="/stages/stage3-5/transformations/transformation-list.js"></script>
   <script src="/stages/stage3-5/transformations/reframe-questions.js"></script>
   <script src="/stages/stage3-5/transformations/disguise-checks.js"></script>
   <script src="/stages/stage3-5/stage3-5.js"></script>
 
-  <!-- Stage 4 -->
   <script src="/stages/stage4/constraint-interactions.js"></script>
   <script src="/stages/stage4/stage4.js"></script>
 
-  <!-- Stage 4.5 -->
   <script src="/stages/stage4-5/variants/binary-search-variants.js"></script>
   <script src="/stages/stage4-5/variants/dp-variants.js"></script>
   <script src="/stages/stage4-5/variants/graph-variants.js"></script>
   <script src="/stages/stage4-5/variants/complexity-recheck.js"></script>
   <script src="/stages/stage4-5/stage4-5.js"></script>
 
-  <!-- Stage 5 -->
   <script src="/stages/stage5/verifiers/greedy-verifier.js"></script>
   <script src="/stages/stage5/verifiers/monotonicity-verifier.js"></script>
   <script src="/stages/stage5/verifiers/dp-state-verifier.js"></script>
@@ -606,7 +516,6 @@
   <script src="/stages/stage5/verifiers/keyword-crosscheck.js"></script>
   <script src="/stages/stage5/stage5.js"></script>
 
-  <!-- Stage 6 -->
   <script src="/stages/stage6/edge-cases/universal-cases.js"></script>
   <script src="/stages/stage6/edge-cases/array-cases.js"></script>
   <script src="/stages/stage6/edge-cases/string-cases.js"></script>
@@ -616,11 +525,9 @@
   <script src="/stages/stage6/edge-cases/numeric-cases.js"></script>
   <script src="/stages/stage6/stage6.js"></script>
 
-  <!-- Stage 6.5 -->
   <script src="/stages/stage6-5/confidence-scorer.js"></script>
   <script src="/stages/stage6-5/stage6-5.js"></script>
 
-  <!-- Stage 7 -->
   <script src="/stages/stage7/output/direction-builder.js"></script>
   <script src="/stages/stage7/output/failure-conditions.js"></script>
   <script src="/stages/stage7/output/next-action.js"></script>
@@ -628,78 +535,84 @@
   <script src="/stages/stage7/output/tradeoff-resolver.js"></script>
   <script src="/stages/stage7/stage7.js"></script>
 
-  <!-- Recovery -->
   <script src="/recovery/recovery-paths/wa-path.js"></script>
   <script src="/recovery/recovery-paths/tle-path.js"></script>
   <script src="/recovery/recovery-paths/logic-unclear-path.js"></script>
   <script src="/recovery/recovery-paths/reframe-path.js"></script>
   <script src="/recovery/recovery.js"></script>
 
-  <!-- Engine — must load last -->
+  <!-- Engine MUST be last -->
   <script src="/core/engine.js"></script>
 
-  <!-- ── Boot sequence + App init ──────────────────────────────────────── -->
-  <script>
+<script>
+  // ── Safe wrappers ───────────────────────────────────────────────────────
+
+  function routerJumpTo(stageId) {
+    if (typeof Router === 'undefined') return;
+    if (typeof Router.jumpTo === 'function') Router.jumpTo(stageId);
+  }
+
+  function callEngine(method, ...args) {
+    if (typeof Engine === 'undefined') return;
+    if (typeof Engine[method] === 'function') Engine[method](...args);
+    else console.warn('[Shell] Engine.' + method + ' not found. Keys:', Object.keys(Engine));
+  }
+
+  // ── Boot sequence ────────────────────────────────────────────────────────
   (function() {
-
-    // ── Boot sequence ─────────────────────────────────────────────────────
-
     const BOOT_LINES = [
-      { text: '> INITIALIZING DSA APPROACH TOOL v1.0', cls: 'boot__line--cyan', delay: 0 },
-      { text: '> Loading structural analysis engine...', cls: 'boot__line--muted', delay: 180 },
-      { text: '> Complexity bounds loaded [89 patterns]', cls: 'boot__line--pass', delay: 360 },
-      { text: '> Verifier modules online [5 verifiers]', cls: 'boot__line--pass', delay: 520 },
-      { text: '> Edge case library loaded [62 cases]', cls: 'boot__line--pass', delay: 680 },
-      { text: '> Session state restored', cls: 'boot__line--muted', delay: 820 },
-      { text: '> SYSTEM READY', cls: 'boot__line--cyan', delay: 980 },
+      { text: '> INITIALIZING DSA APPROACH TOOL v1.0',   cls: 'boot__line--cyan',  delay: 0   },
+      { text: '> Loading structural analysis engine...',  cls: 'boot__line--muted', delay: 180 },
+      { text: '> Complexity bounds loaded [89 patterns]', cls: 'boot__line--pass',  delay: 360 },
+      { text: '> Verifier modules online [5 verifiers]',  cls: 'boot__line--pass',  delay: 520 },
+      { text: '> Edge case library loaded [62 cases]',    cls: 'boot__line--pass',  delay: 680 },
+      { text: '> Session state restored',                 cls: 'boot__line--muted', delay: 820 },
+      { text: '> SYSTEM READY',                           cls: 'boot__line--cyan',  delay: 980 },
     ];
 
-    const terminal    = document.getElementById('boot-terminal');
-    const progressFill= document.getElementById('boot-progress-fill');
-    const bootScreen  = document.getElementById('boot-screen');
-    const app         = document.getElementById('app');
+    const terminal     = document.getElementById('boot-terminal');
+    const progressFill = document.getElementById('boot-progress-fill');
+    const bootScreen   = document.getElementById('boot-screen');
+    const app          = document.getElementById('app');
 
-    // Render boot lines
     BOOT_LINES.forEach((line, idx) => {
       setTimeout(() => {
         const el = document.createElement('span');
-        el.className = `boot__line ${line.cls}`;
+        el.className   = `boot__line ${line.cls}`;
         el.textContent = line.text;
         el.style.animationDelay = '0ms';
         terminal.appendChild(el);
-
-        // Update progress
-        const pct = Math.round(((idx + 1) / BOOT_LINES.length) * 100);
-        progressFill.style.width = pct + '%';
+        progressFill.style.width =
+          Math.round(((idx + 1) / BOOT_LINES.length) * 100) + '%';
       }, line.delay);
     });
 
-    // Add cursor after last line
     setTimeout(() => {
       const cursor = document.createElement('span');
-      cursor.className = 'boot__cursor';
+      cursor.className    = 'boot__cursor';
       cursor.style.opacity = '1';
       terminal.appendChild(cursor);
     }, 1050);
 
-    // Transition to app
     setTimeout(() => {
       bootScreen.classList.add('boot-done');
       app.classList.add('app-ready');
       app.removeAttribute('aria-hidden');
       bootScreen.setAttribute('aria-hidden', 'true');
 
-      // Initialize engine
-      if (typeof Engine !== 'undefined') {
-        Engine.init();
+      // Step 1 — init Renderer first (it sets up containers)
+      if (typeof Renderer !== 'undefined' &&
+          typeof Renderer.init === 'function') {
+        Renderer.init();
       }
-    }, 1600);
 
+      // Step 2 — then init Engine (which calls Renderer.renderStage)
+      callEngine('init');
+
+    }, 1600);
   })();
 
-  // ── Shell UI logic ────────────────────────────────────────────────────
-
-  // Mobile sidebar toggle
+  // ── Mobile sidebar toggle ─────────────────────────────────────────────
   const mobileMenuBtn = document.getElementById('mobile-menu-btn');
   const sidebar       = document.getElementById('sidebar');
 
@@ -708,8 +621,6 @@
       const isOpen = sidebar.classList.toggle('sidebar--open');
       mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
     });
-
-    // Close sidebar on outside click
     document.addEventListener('click', (e) => {
       if (
         sidebar.classList.contains('sidebar--open') &&
@@ -722,78 +633,89 @@
     });
   }
 
-  // Stage map click navigation
+  // ── Stage map click — use Router.jumpTo ───────────────────────────────
   document.addEventListener('click', (e) => {
     const item = e.target.closest('.stage-map__item');
-    if (!item || item.classList.contains('stage-map__item--locked')) return;
+    if (!item) return;
+    if (item.classList.contains('stage-map__item--locked')) return;
     const stageId = item.dataset.stage;
-    if (stageId && typeof Router !== 'undefined') {
-      Router.navigate(stageId);
-    }
+    if (stageId) routerJumpTo(stageId);
   });
 
-  // Reset button
-  const resetBtn = document.getElementById('topbar-reset-btn');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', () => {
-      const confirmed = window.confirm(
-        'Reset this session? All progress will be cleared.'
-      );
-      if (confirmed && typeof Engine !== 'undefined') {
+  // ── Reset button ──────────────────────────────────────────────────────
+  document.getElementById('topbar-reset-btn')
+    ?.addEventListener('click', () => {
+      if (!window.confirm('Reset this session? All progress will be cleared.')) return;
+      if (typeof Engine !== 'undefined' && typeof Engine.reset === 'function') {
         Engine.reset();
+      } else {
+        try { localStorage.clear(); } catch(e) {}
+        location.reload();
       }
     });
-  }
 
-  // ── Renderer hooks — update topbar + sidebar on stage change ─────────
+  // ── Next / Back buttons ───────────────────────────────────────────────
+  document.getElementById('btn-next')
+    ?.addEventListener('click', () => callEngine('next'));
+
+  document.getElementById('btn-prev')
+    ?.addEventListener('click', () => {
+      // Router has goBack and prev — try both
+      if (typeof Router !== 'undefined') {
+        if (typeof Router.prev    === 'function') Router.prev();
+        else if (typeof Router.goBack === 'function') Router.goBack();
+      }
+    });
+
+  // ── Renderer event hooks ──────────────────────────────────────────────
 
   document.addEventListener('dsa:stage-change', (e) => {
     const { stageId, stageIndex, totalStages, stageName } = e.detail ?? {};
 
-    // Topbar
-    const stageNum  = document.getElementById('topbar-stage-num');
-    const stageFill = document.getElementById('topbar-stage-fill');
+    const stageNumEl  = document.getElementById('topbar-stage-num');
+    const stageFillEl = document.getElementById('topbar-stage-fill');
     const stageNameEl = document.getElementById('topbar-stage-name');
 
-    if (stageNum)    stageNum.textContent    = `STAGE ${stageId?.replace('stage','')?.toUpperCase() ?? ''}`;
-    if (stageNameEl) stageNameEl.textContent  = stageName ?? '';
-    if (stageFill) {
-      const pct = totalStages ? Math.round((stageIndex / totalStages) * 100) : 0;
-      stageFill.style.width = pct + '%';
-    }
+    if (stageNumEl)
+      stageNumEl.textContent = 'STAGE ' +
+        (stageId ?? '').replace('stage','').replace('_','.').toUpperCase();
+    if (stageNameEl)
+      stageNameEl.textContent = stageName ?? '';
+    if (stageFillEl && totalStages)
+      stageFillEl.style.width =
+        Math.round((stageIndex / totalStages) * 100) + '%';
 
-    // Sidebar — update active item
+    // Sidebar active state
     document.querySelectorAll('.stage-map__item').forEach(item => {
-      const id       = item.dataset.stage;
-      const isActive = id === stageId;
-      item.classList.toggle('stage-map__item--active', isActive);
+      item.classList.toggle(
+        'stage-map__item--active',
+        item.dataset.stage === stageId
+      );
     });
 
-    // Animate content area
-    const content = document.getElementById('stage-content');
-    if (content) {
-      content.style.animation = 'none';
-      requestAnimationFrame(() => {
-        content.style.animation = '';
-      });
+    // Re-trigger content slide-in animation
+    const container = document.getElementById('stage-container');
+    if (container) {
+      container.style.animation = 'none';
+      requestAnimationFrame(() => { container.style.animation = ''; });
     }
   });
 
-  // Update confidence score in topbar
   document.addEventListener('dsa:score-update', (e) => {
     const { score, band } = e.detail ?? {};
     const el = document.getElementById('topbar-confidence');
-    if (el && score !== undefined) {
-      el.textContent = `CONFIDENCE: ${score}/100`;
-      el.style.color = band === 'high' ? 'var(--pass)'
-                     : band === 'medium' ? 'var(--warn)'
-                     : 'var(--fail)';
-    }
+    if (!el || score === undefined) return;
+    el.textContent = `CONFIDENCE: ${score}/100`;
+    el.style.color = band === 'high'   ? 'var(--pass)'
+                   : band === 'medium' ? 'var(--warn)'
+                   : 'var(--fail)';
   });
 
-  // Mark stages as done in sidebar
   document.addEventListener('dsa:stage-complete', (e) => {
     const { stageId } = e.detail ?? {};
+    if (!stageId) return;
+
+    // Mark done in sidebar
     const item = document.querySelector(`[data-stage="${stageId}"]`);
     if (item) {
       item.classList.add('stage-map__item--done');
@@ -802,22 +724,21 @@
       if (dot) dot.textContent = '✓';
     }
 
-    // Unlock next stage
-    const items = document.querySelectorAll('.stage-map__item');
-    items.forEach((item, idx) => {
-      if (item.dataset.stage === stageId && items[idx + 2]) {
-        // +2 because connector is between
-        items[idx + 2].classList.remove('stage-map__item--locked');
-      }
-    });
+    // Unlock next stage (stage-map__items only, skipping connectors)
+    const allItems = Array.from(
+      document.querySelectorAll('.stage-map__item')
+    );
+    const idx = allItems.findIndex(i => i.dataset.stage === stageId);
+    if (idx !== -1 && allItems[idx + 1]) {
+      allItems[idx + 1].classList.remove('stage-map__item--locked');
+    }
   });
 
-  // Recovery mode
-  document.addEventListener('dsa:recovery-mode', (e) => {
-    const banner = document.getElementById('recovery-banner');
-    if (banner) banner.classList.remove('hidden');
+  document.addEventListener('dsa:recovery-mode', () => {
+    document.getElementById('recovery-banner')
+      ?.classList.remove('hidden');
   });
-  </script>
+</script>
 
 </body>
 </html>
