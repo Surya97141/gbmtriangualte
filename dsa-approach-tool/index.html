@@ -143,7 +143,6 @@
     opacity       : .4;
   }
 
-  /* Stage content animation — keyed to stage-container not stage-content */
   #stage-container { animation: slide-in-up .25s ease; }
 
   .empty-state {
@@ -156,7 +155,7 @@
     text-align     : center;
     opacity        : .6;
   }
-  .empty-state__icon  { font-family: var(--font-mono); font-size: 2rem;  color: var(--text-muted); }
+  .empty-state__icon  { font-family: var(--font-mono); font-size: 2rem; color: var(--text-muted); }
   .empty-state__title { font-family: var(--font-display); font-size: 1rem; color: var(--text-secondary); }
   .empty-state__sub   { font-family: var(--font-mono); font-size: .72rem; color: var(--text-muted); max-width: 300px; line-height: 1.6; }
 
@@ -209,14 +208,23 @@
     flex-shrink  : 0;
   }
 
-  /* Hidden utility — needed before base.css loads */
+  /* Button shake animation for incomplete stage */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-4px); }
+    40%      { transform: translateX(4px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(4px); }
+  }
+  .shake { animation: shake .4s ease; }
+
   .hidden { display: none !important; }
   </style>
 </head>
 
 <body class="grid-bg">
 
-  <!-- BOOT SCREEN -->
+  <!-- ── BOOT SCREEN ───────────────────────────────────────────────────── -->
   <div id="boot-screen" aria-hidden="true">
     <div class="boot__logo">
       <div class="boot__logo-mark">DSA</div>
@@ -229,7 +237,7 @@
     </div>
   </div>
 
-  <!-- APP SHELL -->
+  <!-- ── APP SHELL ─────────────────────────────────────────────────────── -->
   <div id="app" class="app-shell" aria-hidden="true">
 
     <div class="ambient-glow ambient-glow--tl" aria-hidden="true"></div>
@@ -266,9 +274,20 @@
         </div>
       </div>
 
-      <!-- Hidden anchors that renderer.js needs — kept out of visual flow -->
-      <div id="stage-header"   style="display:none" aria-hidden="true"></div>
-      <div id="progress-bar"   style="display:none" aria-hidden="true"></div>
+      <!--
+        These hidden divs satisfy renderer.js _ensureContainers() checks.
+        renderer.js looks for: #stage-header, #progress-bar
+        They are not visible — renderer uses them for state tracking only.
+      -->
+      <div id="stage-header" style="display:none" aria-hidden="true"></div>
+      <div id="progress-bar" style="display:none" aria-hidden="true"></div>
+
+      <!--
+        These hidden spans satisfy renderer.js _updateHeader() lookups.
+        renderer.js looks for: #stage-number, #stage-title
+      -->
+      <span id="stage-number" style="display:none" aria-hidden="true"></span>
+      <span id="stage-title"  style="display:none" aria-hidden="true"></span>
 
       <div class="topbar__right">
         <span class="topbar__confidence" id="topbar-confidence" aria-live="polite"></span>
@@ -422,9 +441,7 @@
         RECOVERY MODE ACTIVE
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════════════
-           THIS IS THE CRITICAL ID — renderer.js looks for #stage-container
-      ════════════════════════════════════════════════════════════════ -->
+      <!-- renderer.js looks for #stage-container — this ID is critical -->
       <div class="stage-content" id="stage-container">
         <div class="empty-state" id="empty-state">
           <div class="empty-state__icon">⬡</div>
@@ -436,7 +453,12 @@
       <nav class="stage-nav" id="stage-nav" role="navigation" aria-label="Stage navigation">
         <span class="stage-nav__info" id="stage-nav-info" aria-live="polite"></span>
         <div class="stage-nav__btns">
-          <button class="btn btn--ghost" id="btn-prev"
+          <!--
+            CRITICAL: renderer.js binds to id="btn-back" (not btn-prev).
+            renderer.js _bindNavButtons() looks for NAV_BACK_ID = 'btn-back'
+            and NAV_NEXT_ID = 'btn-next'. Do not rename these.
+          -->
+          <button class="btn btn--ghost" id="btn-back"
                   aria-label="Previous stage" disabled>
             ← Back
           </button>
@@ -455,7 +477,7 @@
        role="region" aria-label="Notifications" aria-live="polite"></div>
 
   <!-- ══════════════════════════════════════════════════════════════════
-       SCRIPTS
+       SCRIPTS — order matters
   ══════════════════════════════════════════════════════════════════ -->
 
   <script src="/utils/math-utils.js"></script>
@@ -541,25 +563,27 @@
   <script src="/recovery/recovery-paths/reframe-path.js"></script>
   <script src="/recovery/recovery.js"></script>
 
-  <!-- Engine MUST be last -->
+  <!-- Engine MUST be last — no auto-boot inside engine.js -->
   <script src="/core/engine.js"></script>
 
-<script>
-  // ── Safe wrappers ───────────────────────────────────────────────────────
+  <script>
+  // ══════════════════════════════════════════════════════════════════════
+  // SHELL SCRIPT
+  // Responsibilities:
+  //   1. Boot sequence animation
+  //   2. Call Engine.init() after boot (NOT before)
+  //   3. Mobile sidebar toggle
+  //   4. Sidebar map click → Router.jumpTo
+  //   5. Reset button
+  //   6. Listen for dsa: events and update topbar/sidebar UI
+  //
+  // NOT responsible for:
+  //   - btn-back / btn-next wiring (renderer.js does this via _bindNavButtons)
+  //   - dsa:navigate-next / dsa:navigate-back (engine.js listens for these)
+  // ══════════════════════════════════════════════════════════════════════
 
-  function routerJumpTo(stageId) {
-    if (typeof Router === 'undefined') return;
-    if (typeof Router.jumpTo === 'function') Router.jumpTo(stageId);
-  }
-
-  function callEngine(method, ...args) {
-    if (typeof Engine === 'undefined') return;
-    if (typeof Engine[method] === 'function') Engine[method](...args);
-    else console.warn('[Shell] Engine.' + method + ' not found. Keys:', Object.keys(Engine));
-  }
-
-  // ── Boot sequence ────────────────────────────────────────────────────────
-  (function() {
+  // ── Boot sequence ─────────────────────────────────────────────────────
+  (function bootSequence() {
     const BOOT_LINES = [
       { text: '> INITIALIZING DSA APPROACH TOOL v1.0',   cls: 'boot__line--cyan',  delay: 0   },
       { text: '> Loading structural analysis engine...',  cls: 'boot__line--muted', delay: 180 },
@@ -578,8 +602,8 @@
     BOOT_LINES.forEach((line, idx) => {
       setTimeout(() => {
         const el = document.createElement('span');
-        el.className   = `boot__line ${line.cls}`;
-        el.textContent = line.text;
+        el.className        = `boot__line ${line.cls}`;
+        el.textContent      = line.text;
         el.style.animationDelay = '0ms';
         terminal.appendChild(el);
         progressFill.style.width =
@@ -587,113 +611,106 @@
       }, line.delay);
     });
 
+    // Blinking cursor after last line
     setTimeout(() => {
       const cursor = document.createElement('span');
-      cursor.className    = 'boot__cursor';
+      cursor.className     = 'boot__cursor';
       cursor.style.opacity = '1';
       terminal.appendChild(cursor);
     }, 1050);
 
+    // Transition to app then init engine
     setTimeout(() => {
       bootScreen.classList.add('boot-done');
       app.classList.add('app-ready');
       app.removeAttribute('aria-hidden');
       bootScreen.setAttribute('aria-hidden', 'true');
 
-      // Step 1 — init Renderer first (it sets up containers)
-      if (typeof Renderer !== 'undefined' &&
-          typeof Renderer.init === 'function') {
-        Renderer.init();
+      // Engine.init() handles everything:
+      //   State.init → Renderer.init → _bindEvents → Router → renderStage(stage0)
+      if (typeof Engine !== 'undefined' && typeof Engine.init === 'function') {
+        Engine.init();
+      } else {
+        console.error('[Shell] Engine not loaded — check script order and errors above');
       }
-
-      // Step 2 — then init Engine (which calls Renderer.renderStage)
-      callEngine('init');
-
     }, 1600);
   })();
 
   // ── Mobile sidebar toggle ─────────────────────────────────────────────
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-  const sidebar       = document.getElementById('sidebar');
+  (function setupSidebar() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    if (!menuBtn || !sidebar) return;
 
-  if (mobileMenuBtn && sidebar) {
-    mobileMenuBtn.addEventListener('click', () => {
+    menuBtn.addEventListener('click', () => {
       const isOpen = sidebar.classList.toggle('sidebar--open');
-      mobileMenuBtn.setAttribute('aria-expanded', String(isOpen));
+      menuBtn.setAttribute('aria-expanded', String(isOpen));
     });
+
+    // Close on outside click
     document.addEventListener('click', (e) => {
       if (
         sidebar.classList.contains('sidebar--open') &&
         !sidebar.contains(e.target) &&
-        !mobileMenuBtn.contains(e.target)
+        !menuBtn.contains(e.target)
       ) {
         sidebar.classList.remove('sidebar--open');
-        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+        menuBtn.setAttribute('aria-expanded', 'false');
       }
     });
-  }
+  })();
 
-  // ── Stage map click — use Router.jumpTo ───────────────────────────────
+  // ── Sidebar stage map navigation ──────────────────────────────────────
   document.addEventListener('click', (e) => {
     const item = e.target.closest('.stage-map__item');
     if (!item) return;
     if (item.classList.contains('stage-map__item--locked')) return;
     const stageId = item.dataset.stage;
-    if (stageId) routerJumpTo(stageId);
+    if (!stageId) return;
+
+    // Engine._jumpTo dispatches via Router.jumpTo internally
+    // We fire the event that engine.js already listens for
+    document.dispatchEvent(new CustomEvent('dsa:jump-to', {
+      detail: { stageId }
+    }));
   });
 
   // ── Reset button ──────────────────────────────────────────────────────
   document.getElementById('topbar-reset-btn')
     ?.addEventListener('click', () => {
       if (!window.confirm('Reset this session? All progress will be cleared.')) return;
-      if (typeof Engine !== 'undefined' && typeof Engine.reset === 'function') {
-        Engine.reset();
-      } else {
-        try { localStorage.clear(); } catch(e) {}
-        location.reload();
-      }
+      document.dispatchEvent(new CustomEvent('dsa:reset'));
     });
 
-  // ── Next / Back buttons ───────────────────────────────────────────────
-  document.getElementById('btn-next')
-    ?.addEventListener('click', () => callEngine('next'));
+  // ── dsa: event hooks — update shell UI ───────────────────────────────
 
-  document.getElementById('btn-prev')
-    ?.addEventListener('click', () => {
-      // Router has goBack and prev — try both
-      if (typeof Router !== 'undefined') {
-        if (typeof Router.prev    === 'function') Router.prev();
-        else if (typeof Router.goBack === 'function') Router.goBack();
-      }
-    });
-
-  // ── Renderer event hooks ──────────────────────────────────────────────
-
+  // Stage changed — update topbar + sidebar active state
   document.addEventListener('dsa:stage-change', (e) => {
     const { stageId, stageIndex, totalStages, stageName } = e.detail ?? {};
 
+    // Topbar stage label
     const stageNumEl  = document.getElementById('topbar-stage-num');
     const stageFillEl = document.getElementById('topbar-stage-fill');
     const stageNameEl = document.getElementById('topbar-stage-name');
 
-    if (stageNumEl)
-      stageNumEl.textContent = 'STAGE ' +
-        (stageId ?? '').replace('stage','').replace('_','.').toUpperCase();
-    if (stageNameEl)
+    if (stageNumEl) {
+      stageNumEl.textContent =
+        'STAGE ' + (stageId ?? '').replace('stage', '').replace('_', '.').toUpperCase();
+    }
+    if (stageNameEl) {
       stageNameEl.textContent = stageName ?? '';
-    if (stageFillEl && totalStages)
+    }
+    if (stageFillEl && totalStages) {
       stageFillEl.style.width =
         Math.round((stageIndex / totalStages) * 100) + '%';
+    }
 
-    // Sidebar active state
+    // Sidebar — mark active
     document.querySelectorAll('.stage-map__item').forEach(item => {
-      item.classList.toggle(
-        'stage-map__item--active',
-        item.dataset.stage === stageId
-      );
+      item.classList.toggle('stage-map__item--active', item.dataset.stage === stageId);
     });
 
-    // Re-trigger content slide-in animation
+    // Re-trigger content slide-in
     const container = document.getElementById('stage-container');
     if (container) {
       container.style.animation = 'none';
@@ -701,21 +718,23 @@
     }
   });
 
+  // Confidence updated — show in topbar
   document.addEventListener('dsa:score-update', (e) => {
     const { score, band } = e.detail ?? {};
     const el = document.getElementById('topbar-confidence');
     if (!el || score === undefined) return;
     el.textContent = `CONFIDENCE: ${score}/100`;
-    el.style.color = band === 'high'   ? 'var(--pass)'
-                   : band === 'medium' ? 'var(--warn)'
-                   : 'var(--fail)';
+    el.style.color =
+      band === 'high'   ? 'var(--pass)' :
+      band === 'medium' ? 'var(--warn)' :
+                          'var(--fail)';
   });
 
+  // Stage completed — mark done + unlock next in sidebar
   document.addEventListener('dsa:stage-complete', (e) => {
     const { stageId } = e.detail ?? {};
     if (!stageId) return;
 
-    // Mark done in sidebar
     const item = document.querySelector(`[data-stage="${stageId}"]`);
     if (item) {
       item.classList.add('stage-map__item--done');
@@ -724,21 +743,19 @@
       if (dot) dot.textContent = '✓';
     }
 
-    // Unlock next stage (stage-map__items only, skipping connectors)
-    const allItems = Array.from(
-      document.querySelectorAll('.stage-map__item')
-    );
+    // Unlock next stage item (querySelectorAll gives only real items, no connectors)
+    const allItems = Array.from(document.querySelectorAll('.stage-map__item'));
     const idx = allItems.findIndex(i => i.dataset.stage === stageId);
     if (idx !== -1 && allItems[idx + 1]) {
       allItems[idx + 1].classList.remove('stage-map__item--locked');
     }
   });
 
+  // Recovery mode activated
   document.addEventListener('dsa:recovery-mode', () => {
-    document.getElementById('recovery-banner')
-      ?.classList.remove('hidden');
+    document.getElementById('recovery-banner')?.classList.remove('hidden');
   });
-</script>
+  </script>
 
 </body>
 </html>
