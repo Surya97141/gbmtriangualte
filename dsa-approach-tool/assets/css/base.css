@@ -1,183 +1,41 @@
-/* assets/css/base.css */
-/* Reset, root styles, scrollbar, selection, typography base */
+/* assets/css/base.css — cream/white theme */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;scroll-behavior:smooth}
+body{font-family:var(--font-body);background-color:var(--deep);color:var(--text-primary);line-height:1.5;min-height:100vh;overflow-x:hidden}
 
-/* ── Reset ──────────────────────────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing : border-box;
-  margin     : 0;
-  padding    : 0;
-}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface-2)}
+::-webkit-scrollbar-thumb{background:var(--border-default);border-radius:var(--r-full)}
+::-webkit-scrollbar-thumb:hover{background:var(--cyan)}
+*{scrollbar-width:thin;scrollbar-color:var(--border-default) var(--surface-2)}
 
-html {
-  font-size         : 16px;
-  -webkit-font-smoothing : antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering    : optimizeLegibility;
-  scroll-behavior   : smooth;
-}
+::selection{background:var(--cyan-dim);color:var(--cyan)}
 
-body {
-  font-family      : var(--font-body);
-  background-color : var(--deep);
-  color            : var(--text-primary);
-  line-height      : 1.5;
-  min-height       : 100vh;
-  overflow-x       : hidden;
-}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:var(--r-xs)}
 
-/* ── Custom scrollbar ───────────────────────────────────────────────────── */
-::-webkit-scrollbar       { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--surface-0); }
-::-webkit-scrollbar-thumb {
-  background    : var(--border-default);
-  border-radius : var(--r-full);
-  transition    : background var(--transition-fast);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+h1,h2,h3,h4,h5,h6{font-family:var(--font-display);font-weight:700;color:var(--text-primary);line-height:1.25}
+h1{font-size:1.875rem} h2{font-size:1.5rem} h3{font-size:1.2rem} h4{font-size:1rem}
+p{color:var(--text-secondary);line-height:1.7;font-size:.875rem}
+a{color:var(--cyan);text-decoration:none;transition:opacity var(--transition-fast)}
+a:hover{opacity:.75}
+code,pre,kbd{font-family:var(--font-mono);font-size:.85em}
+code{background:var(--surface-2);color:var(--cyan);padding:1px 6px;border-radius:var(--r-xs);border:1px solid var(--border-dim)}
+pre{background:var(--surface-1);color:var(--text-primary);padding:var(--space-4);border-radius:var(--r-md);overflow-x:auto;border:1px solid var(--border-dim);line-height:1.7}
+kbd{background:var(--surface-2);color:var(--text-secondary);padding:2px 7px;border-radius:var(--r-xs);border:1px solid var(--border-default);font-size:.75rem}
+hr{border:none;border-top:1px solid var(--border-dim);margin:var(--space-6) 0}
 
-* {
-  scrollbar-width : thin;
-  scrollbar-color : var(--border-default) var(--surface-0);
-}
+input,textarea,select{font-family:var(--font-body);font-size:.875rem;color:var(--text-primary);background:var(--surface-0);border:1.5px solid var(--border-default);border-radius:var(--r-md);padding:var(--space-2) var(--space-3);outline:none;transition:border-color var(--transition-fast),box-shadow var(--transition-fast);width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+input::placeholder,textarea::placeholder{color:var(--text-muted)}
+textarea{resize:vertical;min-height:60px;line-height:1.6}
+input[type="checkbox"],input[type="radio"]{width:15px;height:15px;accent-color:var(--cyan);cursor:pointer;flex-shrink:0}
+button{font-family:var(--font-body);cursor:pointer;border:none;background:none;color:inherit}
+img,svg{display:block;max-width:100%}
 
-/* ── Selection ──────────────────────────────────────────────────────────── */
-::selection {
-  background : var(--cyan-dim);
-  color      : var(--cyan);
-}
-
-/* ── Focus ──────────────────────────────────────────────────────────────── */
-:focus-visible {
-  outline        : 1.5px solid var(--cyan);
-  outline-offset : 2px;
-  border-radius  : var(--r-xs);
-}
-
-/* ── Typography base ────────────────────────────────────────────────────── */
-h1, h2, h3, h4, h5, h6 {
-  font-family : var(--font-display);
-  font-weight : 700;
-  color       : var(--text-primary);
-  line-height : 1.2;
-}
-
-h1 { font-size: 2rem;    letter-spacing: -.02em; }
-h2 { font-size: 1.5rem;  letter-spacing: -.01em; }
-h3 { font-size: 1.2rem; }
-h4 { font-size: 1rem;   }
-
-p {
-  color      : var(--text-secondary);
-  line-height: 1.7;
-  font-size  : .875rem;
-}
-
-a {
-  color          : var(--cyan);
-  text-decoration: none;
-  transition     : color var(--transition-fast), opacity var(--transition-fast);
-}
-
-a:hover { color: #fff; }
-
-code, pre, kbd {
-  font-family: var(--font-mono);
-  font-size  : .85em;
-}
-
-code {
-  background   : var(--surface-1);
-  color        : var(--cyan);
-  padding      : 1px 6px;
-  border-radius: var(--r-xs);
-  border       : 1px solid var(--border-subtle);
-}
-
-pre {
-  background   : var(--void);
-  color        : var(--text-primary);
-  padding      : var(--space-4);
-  border-radius: var(--r-md);
-  overflow-x   : auto;
-  border       : 1px solid var(--border-dim);
-  line-height  : 1.7;
-}
-
-kbd {
-  background   : var(--surface-2);
-  color        : var(--text-secondary);
-  padding      : 2px 7px;
-  border-radius: var(--r-xs);
-  border       : 1px solid var(--border-default);
-  font-size    : .75rem;
-}
-
-hr {
-  border     : none;
-  border-top : 1px solid var(--border-dim);
-  margin     : var(--space-6) 0;
-}
-
-/* ── Input / Textarea base ──────────────────────────────────────────────── */
-input, textarea, select {
-  font-family  : var(--font-body);
-  font-size    : .875rem;
-  color        : var(--text-primary);
-  background   : var(--surface-1);
-  border       : 1px solid var(--border-default);
-  border-radius: var(--r-md);
-  padding      : var(--space-2) var(--space-3);
-  outline      : none;
-  transition   : border-color var(--transition-fast), box-shadow var(--transition-fast);
-  width        : 100%;
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: var(--cyan-border);
-  box-shadow  : 0 0 0 2px var(--cyan-glow);
-}
-
-input::placeholder, textarea::placeholder {
-  color: var(--text-muted);
-}
-
-textarea {
-  resize     : vertical;
-  min-height : 60px;
-  line-height: 1.6;
-}
-
-/* ── Checkbox / Radio ───────────────────────────────────────────────────── */
-input[type="checkbox"],
-input[type="radio"] {
-  width       : 15px;
-  height      : 15px;
-  accent-color: var(--cyan);
-  cursor      : pointer;
-  flex-shrink : 0;
-}
-
-/* ── Button reset ───────────────────────────────────────────────────────── */
-button {
-  font-family : var(--font-body);
-  cursor      : pointer;
-  border      : none;
-  background  : none;
-  color       : inherit;
-}
-
-/* ── Image / media ──────────────────────────────────────────────────────── */
-img, svg { display: block; max-width: 100%; }
-
-/* ── Utility helpers ────────────────────────────────────────────────────── */
-.hidden            { display: none !important; }
-.sr-only           { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
-.truncate          { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mono              { font-family: var(--font-mono); }
-.text-cyan         { color: var(--cyan); }
-.text-pass         { color: var(--pass); }
-.text-warn         { color: var(--warn); }
-.text-fail         { color: var(--fail); }
-.text-muted        { color: var(--text-muted); }
-.text-secondary    { color: var(--text-secondary); }
-.uppercase         { text-transform: uppercase; letter-spacing: 1.5px; font-size: .65em; }
+.hidden{display:none!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mono{font-family:var(--font-mono)}
+.text-cyan{color:var(--cyan)} .text-pass{color:var(--pass)} .text-warn{color:var(--warn)} .text-fail{color:var(--fail)} .text-muted{color:var(--text-muted)}
+.uppercase{text-transform:uppercase;letter-spacing:1.5px;font-size:.65em}
+.shake{animation:shake .4s ease}
