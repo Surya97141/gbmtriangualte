@@ -1,11 +1,8 @@
 // stages/stage4-5/stage4-5.js
-// Approach Variant stage — select specific algorithm variant,
-// re-check complexity at actual N, confirm or revise direction
-// Module contract: render(state), onMount(state), cleanup()
+// Approach Variant — cream/white theme, self-contained styles
+// Same pattern as stage0/1/2/2-5/3/3-5/4
 
 const Stage4_5 = (() => {
-
-  // ─── PRIVATE STATE ─────────────────────────────────────────────────────────
 
   let _state           = null;
   let _selectedVariant = null;
@@ -14,565 +11,626 @@ const Stage4_5 = (() => {
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
   function render(state) {
-    _state = state;
-    const saved = state.answers?.stage4_5 ?? {};
-
+    _state           = state;
+    const saved      = state.answers?.stage4_5 ?? {};
     _selectedVariant = saved.variantSelected ?? null;
     _recheckResult   = saved.recheckResult   ?? null;
 
-    const wrapper = DomUtils.div({ class: 'stage stage4-5' }, [
-      _buildIntro(),
-      _buildDirectionSummary(),
-      _buildVariantSection(saved),
-      _buildRecheckSection(saved),
-      _buildSummarySection(saved),
-    ]);
+    _injectStyles();
+
+    const directions = state.output?.directions ?? [];
+    const dpSubtype  = state.answers?.stage3?.dpSubtype       ?? null;
+    const graphGoal  = state.answers?.stage3?.graphGoal       ?? null;
+    const graphProps = state.answers?.stage3?.graphProperties ?? {};
+    const n          = state.answers?.stage0?.n               ?? 0;
+
+    const BSV = typeof BinarySearchVariants !== 'undefined' ? BinarySearchVariants : null;
+    const DPV = typeof DPVariants           !== 'undefined' ? DPVariants           : null;
+    const GV  = typeof GraphVariants        !== 'undefined' ? GraphVariants        : null;
+    const CR  = typeof ComplexityRecheck    !== 'undefined' ? ComplexityRecheck    : null;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 's45-shell';
+
+    wrapper.innerHTML = `
+      <div class="s45-main">
+
+        <div class="s45-rule">
+          Pick the specific variant of your approach. Re-check complexity at actual N.
+          Different variants of the same family have very different complexities.
+        </div>
+
+        <!-- Candidate directions from Stage 3 -->
+        ${directions.length ? `
+          <section class="s45-section">
+            <div class="s45-section-header">
+              <span class="s45-section-num">00</span>
+              <div>
+                <div class="s45-section-title">Candidate directions from Stage 3</div>
+                <div class="s45-section-sub">Your structural analysis produced these families</div>
+              </div>
+            </div>
+            <div class="s45-direction-grid" id="s45-direction-grid"></div>
+          </section>
+        ` : ''}
+
+        <!-- Section 01: Select variant -->
+        <section class="s45-section">
+          <div class="s45-section-header">
+            <span class="s45-section-num">01</span>
+            <div>
+              <div class="s45-section-title">Select the specific variant</div>
+              <div class="s45-section-sub">Pick the exact algorithm within your chosen family</div>
+            </div>
+          </div>
+          <div class="s45-variant-area" id="s45-variant-area"></div>
+        </section>
+
+        <!-- Section 02: Complexity re-check -->
+        <section class="s45-section">
+          <div class="s45-section-header">
+            <span class="s45-section-num">02</span>
+            <div>
+              <div class="s45-section-title">Complexity re-check at your N${n ? ` = ${n.toLocaleString()}` : ''}</div>
+              <div class="s45-section-sub">Final confirmation before proceeding to verification</div>
+            </div>
+          </div>
+          <div id="s45-recheck-region">
+            <div class="s45-recheck-placeholder">← Select a variant above to see complexity at your N</div>
+          </div>
+          <div id="s45-override-region"></div>
+        </section>
+
+      </div>
+
+      <!-- Live side panel -->
+      <aside class="s45-panel">
+        <div class="s45-panel-header">
+          <div class="s45-panel-title">Variant analysis</div>
+          <div class="s45-panel-sub">Updates as you select</div>
+        </div>
+        <div class="s45-panel-body" id="s45-panel-body">
+          <div class="s45-panel-empty">← Select a variant to see analysis</div>
+        </div>
+      </aside>
+    `;
+
+    // Build direction cards
+    if (directions.length) {
+      _buildDirectionCards(wrapper, directions, saved);
+    }
+
+    // Build variant area
+    _buildVariantArea(wrapper, directions, dpSubtype, graphGoal, graphProps, saved, n, BSV, DPV, GV, CR);
+
+    // Restore recheck if variant was saved
+    if (saved.variantSelected && saved.recheckResult) {
+      const region = wrapper.querySelector('#s45-recheck-region');
+      if (region) _renderRecheckResult(region, saved.recheckResult);
+    }
+
+    // Restore override
+    if (saved.recheckResult?.grade === 'warn') {
+      _renderOverride(wrapper, saved.overrideDecision);
+    }
+
+    setTimeout(() => _updatePanel(wrapper), 0);
 
     return wrapper;
   }
 
-  // ─── INTRO ─────────────────────────────────────────────────────────────────
+  // ─── DIRECTION CARDS ───────────────────────────────────────────────────────
 
-  function _buildIntro() {
-    return DomUtils.div({ class: 'stage-intro' }, [
-      DomUtils.div({ class: 'stage-intro__rule' },
-        'Pick the specific variant of your approach. Re-check complexity at actual N.'
-      ),
-      DomUtils.div({ class: 'stage-intro__sub' },
-        'Different variants of the same family have very different complexities. Verify before coding.'
-      ),
-    ]);
-  }
-
-  // ─── DIRECTION SUMMARY ────────────────────────────────────────────────────
-
-  function _buildDirectionSummary() {
-    const directions = _state?.output?.directions ?? [];
-    if (!directions.length) return DomUtils.div({});
-
-    const section = DomUtils.div({ class: 'stage4-5__section' });
-
-    section.appendChild(
-      DomUtils.div({ class: 'stage4-5__section-title' }, [
-        DomUtils.span({}, 'Candidate directions from Stage 3'),
-        DomUtils.span({ class: 'stage4-5__section-sub' },
-          'Select which direction you are pursuing'
-        ),
-      ])
-    );
-
-    const grid = DomUtils.div({ class: 's45-direction-grid' });
+  function _buildDirectionCards(wrapper, directions, saved) {
+    const grid = wrapper.querySelector('#s45-direction-grid');
+    if (!grid) return;
 
     directions.forEach(dir => {
-      const isSelected = _selectedVariant &&
-        _selectedVariant.startsWith(dir.family?.split('_')[0] ?? '');
-
-      const card = DomUtils.div({
-        class: `s45-direction-card ${isSelected ? 's45-direction-card--active' : ''}`,
-      }, [
-        DomUtils.div({ class: 's45-direction-card__label'  }, dir.label),
-        DomUtils.div({ class: 's45-direction-card__why'    }, dir.why),
-        DomUtils.div({ class: 's45-direction-card__verify' }, [
-          DomUtils.span({ class: 'verify-label' }, 'Verify: '),
-          DomUtils.span({}, dir.verifyBefore),
-        ]),
-      ]);
-
+      const card = document.createElement('div');
+      card.className = 's45-dir-card';
+      card.innerHTML = `
+        <div class="s45-dir-label">${dir.label}</div>
+        <div class="s45-dir-why">${dir.why}</div>
+        ${dir.verifyBefore ? `<div class="s45-dir-verify"><span class="s45-verify-label">Verify:</span> ${dir.verifyBefore}</div>` : ''}
+      `;
       grid.appendChild(card);
     });
-
-    section.appendChild(grid);
-    return section;
   }
 
-  // ─── VARIANT SECTION ──────────────────────────────────────────────────────
+  // ─── VARIANT AREA ──────────────────────────────────────────────────────────
 
-  function _buildVariantSection(saved) {
-    const section = DomUtils.div({
-      class: 'stage4-5__section',
-      id   : 'variant-section',
-    });
+  function _buildVariantArea(wrapper, directions, dpSubtype, graphGoal, graphProps, saved, n, BSV, DPV, GV, CR) {
+    const area = wrapper.querySelector('#s45-variant-area');
+    if (!area) return;
 
-    section.appendChild(
-      DomUtils.div({ class: 'stage4-5__section-title' }, [
-        DomUtils.span({}, 'Select the specific variant'),
-        DomUtils.span({ class: 'stage4-5__section-sub' },
-          'Pick the exact algorithm within your chosen family'
-        ),
-      ])
-    );
-
-    const directions   = _state?.output?.directions ?? [];
-    const dpSubtype    = _state?.answers?.stage3?.dpSubtype    ?? null;
-    const graphGoal    = _state?.answers?.stage3?.graphGoal    ?? null;
-    const graphProps   = _state?.answers?.stage3?.graphProperties ?? {};
-
-    // Build variant groups per direction family
     const shown = new Set();
+    let hasAny  = false;
+
+    // Try to get variants for each direction family
+    const familyVariants = [];
 
     directions.forEach(dir => {
       const family = dir.family ?? '';
-
       let variants = [];
 
-      if (family.includes('binary_search')) {
-        variants = BinarySearchVariants.getRelevant(directions);
-      } else if (family.includes('dp')) {
-        variants = DPVariants.getRelevant(directions, dpSubtype);
-      } else if (family.includes('graph')) {
-        variants = GraphVariants.getRelevant(directions, graphGoal, graphProps);
+      if (family.includes('binary_search') && BSV) {
+        variants = BSV.getRelevant?.(directions) ?? BSV.getAll?.() ?? [];
+      } else if (family.includes('dp') && DPV) {
+        variants = DPV.getRelevant?.(directions, dpSubtype) ?? DPV.getAll?.() ?? [];
+      } else if (family.includes('graph') && GV) {
+        variants = GV.getRelevant?.(directions, graphGoal, graphProps) ?? GV.getAll?.() ?? [];
+      } else if (family.includes('greedy')) {
+        variants = _fallbackGreedyVariants();
+      } else if (family.includes('two_pointer')) {
+        variants = _fallbackTwoPointerVariants();
       }
 
-      if (!variants.length) return;
+      if (variants.length) {
+        familyVariants.push({ dir, variants });
+      }
+    });
 
-      const groupTitle = DomUtils.div({
-        class: 's45-group-title',
-      }, `${dir.label} variants:`);
+    // If no matched variants, use fallback set
+    if (!familyVariants.length) {
+      familyVariants.push({ dir: { label: 'General' }, variants: _fallbackGeneralVariants() });
+    }
 
-      section.appendChild(groupTitle);
+    familyVariants.forEach(({ dir, variants }) => {
+      const groupTitle = document.createElement('div');
+      groupTitle.className = 's45-group-title';
+      groupTitle.textContent = `${dir.label} variants:`;
+      area.appendChild(groupTitle);
 
-      const grid = DomUtils.div({ class: 's45-variant-grid' });
+      const grid = document.createElement('div');
+      grid.className = 's45-variant-grid';
 
       variants.forEach(v => {
         if (shown.has(v.id)) return;
         shown.add(v.id);
+        hasAny = true;
 
         const isSelected = saved.variantSelected === v.id;
-        const card = _buildVariantCard(v, isSelected);
+        const card = _buildVariantCard(v, isSelected, n, saved.stage0?.timeLimit ?? 1, CR, wrapper);
         grid.appendChild(card);
       });
 
-      section.appendChild(grid);
+      area.appendChild(grid);
     });
 
-    // Fallback if no variants matched
-    if (!shown.size) {
-      section.appendChild(
-        DomUtils.div({ class: 'stage4-5__no-variants' },
-          'No specific variants available for current directions. ' +
-          'Proceed to complexity re-check below.'
-        )
-      );
+    if (!hasAny) {
+      area.innerHTML = `<div class="s45-no-variants">No specific variants available for current directions. Enter your constraints in Stage 0 and ensure Stage 3 directions are set.</div>`;
     }
-
-    return section;
   }
 
-  function _buildVariantCard(variant, isSelected) {
-    const n      = _state?.answers?.stage0?.n ?? 0;
-    const tl     = _state?.answers?.stage0?.timeLimit ?? 1;
-    const recheck = n ? ComplexityRecheck.recheck(variant.id, n, tl) : null;
+  function _buildVariantCard(variant, isSelected, n, tl, CR, wrapper) {
+    const recheck = (n && CR) ? CR.recheck?.(variant.id, n, tl) : null;
+    const grade   = recheck?.grade ?? 'safe';
 
-    const gradeClass = recheck
-      ? `s45-variant-card--${recheck.grade}`
-      : '';
+    const card = document.createElement('div');
+    card.className = `s45-variant-card s45-variant-card--${grade} ${isSelected ? 's45-variant-card--on' : ''}`;
+    card.dataset.id = variant.id;
 
-    const card = DomUtils.div({
-      class: `s45-variant-card ${isSelected ? 's45-variant-card--selected' : ''} ${gradeClass}`,
-      data : { variantId: variant.id },
-    });
+    const feasHTML = recheck && n ? `
+      <span class="s45-feasibility s45-feasibility--${grade}">
+        ${grade === 'safe' ? `✓ ${recheck.opsDisplay ?? ''}` : grade === 'warn' ? `~ ${recheck.opsDisplay ?? ''}` : `✗ TLE`}
+      </span>
+    ` : '';
 
-    // Header
-    const header = DomUtils.div({ class: 's45-variant-card__header' }, [
-      DomUtils.div({ class: 's45-variant-card__name'    }, variant.label),
-      DomUtils.div({ class: 's45-variant-card__tagline' }, variant.tagline),
-    ]);
+    const whenHTML = (variant.when ?? []).map(w =>
+      `<div class="s45-when-item">· ${w}</div>`
+    ).join('');
 
-    // Complexity + feasibility at N
-    const complexEl = DomUtils.div({ class: 's45-variant-card__complex' }, [
-      DomUtils.span({ class: 'detail-mono' }, variant.complexity),
-    ]);
+    const woHTML = (variant.watchOut ?? []).map(w =>
+      `<div class="s45-wo-item">⚠ ${w}</div>`
+    ).join('');
 
-    if (recheck && n) {
-      const badge = DomUtils.span({
-        class: `feasibility-badge feasibility-badge--${recheck.grade}`,
-      }, recheck.grade === 'safe' ? `✓ ${recheck.opsDisplay} ops` :
-         recheck.grade === 'warn' ? `~ ${recheck.opsDisplay} ops` :
-         `✗ TLE ${recheck.opsDisplay}`);
-      complexEl.appendChild(badge);
-    }
+    card.innerHTML = `
+      <div class="s45-variant-check">✓</div>
+      <div class="s45-variant-name">${variant.label}</div>
+      <div class="s45-variant-tagline">${variant.tagline ?? ''}</div>
+      <div class="s45-variant-complex">
+        <code class="s45-code">${variant.complexity}</code>
+        ${feasHTML}
+      </div>
+      ${whenHTML ? `<div class="s45-variant-when">${whenHTML}</div>` : ''}
+      ${woHTML ? `<div class="s45-variant-wos">${woHTML}</div>` : ''}
+    `;
 
-    card.appendChild(header);
-    card.appendChild(complexEl);
-
-    // When to use (collapsed by default)
-    if (variant.when?.length) {
-      const whenEl = DomUtils.div({ class: 's45-variant-card__when' });
-      variant.when.forEach(w => {
-        whenEl.appendChild(
-          DomUtils.div({ class: 's45-variant-when-item' }, [
-            DomUtils.span({ class: 'when-bullet' }, '·'),
-            DomUtils.span({}, w),
-          ])
-        );
-      });
-      card.appendChild(whenEl);
-    }
-
-    // Template (collapsible)
-    if (variant.template) {
-      const templateCollapsible = DomUtils.createCollapsible(
-        'Code template',
-        DomUtils.el('pre', { class: 's45-code-template' }, variant.template),
-        false
-      );
-      card.appendChild(templateCollapsible);
-    }
-
-    // Watch outs
-    if (variant.watchOut?.length) {
-      const woEl = DomUtils.div({ class: 's45-variant-card__watchouts' });
-      variant.watchOut.forEach(w => {
-        woEl.appendChild(
-          DomUtils.div({ class: 'watchout-row' }, [
-            DomUtils.span({ class: 'watchout-icon' }, '⚠'),
-            DomUtils.span({ class: 'watchout-text' }, w),
-          ])
-        );
-      });
-      card.appendChild(woEl);
-    }
-
-    card.addEventListener('click', () => _onVariantSelect(variant.id));
+    card.addEventListener('click', () => _onVariantSelect(variant.id, n, tl, CR, wrapper));
     return card;
   }
 
-  // ─── RECHECK SECTION ──────────────────────────────────────────────────────
-
-  function _buildRecheckSection(saved) {
-    const section = DomUtils.div({
-      class: 'stage4-5__section',
-      id   : 'recheck-section',
-    });
-
-    section.appendChild(
-      DomUtils.div({ class: 'stage4-5__section-title' }, [
-        DomUtils.span({}, 'Complexity re-check at your N'),
-        DomUtils.span({ class: 'stage4-5__section-sub' },
-          'Final confirmation before proceeding to verification'
-        ),
-      ])
-    );
-
-    const recheckEl = DomUtils.div({
-      class: 'stage4-5__recheck-region',
-      id   : 'recheck-region',
-    });
-
-    if (saved.variantSelected && saved.recheckResult) {
-      _renderRecheckResult(recheckEl, saved.recheckResult);
-    } else if (saved.variantSelected) {
-      _computeAndRenderRecheck(recheckEl, saved.variantSelected);
-    } else {
-      recheckEl.appendChild(
-        DomUtils.div({ class: 'recheck-placeholder' },
-          'Select a variant above to see complexity at your N'
-        )
-      );
-    }
-
-    section.appendChild(recheckEl);
-
-    // Manual override — if user wants to proceed despite warning
-    if (saved.recheckResult?.grade === 'warn') {
-      const overrideEl = DomUtils.div({ class: 'stage4-5__override' }, [
-        DomUtils.div({ class: 'stage4-5__override-note' },
-          'Borderline complexity — do you want to proceed with this variant anyway?'
-        ),
-        DomUtils.div({ class: 'stage4-5__override-btns' }, [
-          _buildOverrideBtn('proceed', saved.overrideDecision === 'proceed',
-            '→ Proceed anyway (tight constant may pass)'
-          ),
-          _buildOverrideBtn('reconsider', saved.overrideDecision === 'reconsider',
-            '← Reconsider — choose faster variant'
-          ),
-        ]),
-      ]);
-      section.appendChild(overrideEl);
-    }
-
-    return section;
-  }
-
-  function _buildOverrideBtn(value, isSelected, label) {
-    const btn = DomUtils.btn({
-      class: `override-btn ${isSelected ? 'override-btn--selected' : ''}`,
-      data : { value },
-    }, label);
-
-    btn.addEventListener('click', () => _onOverrideDecision(value));
-    return btn;
-  }
-
-  function _renderRecheckResult(container, result) {
-    DomUtils.clearContent(container);
-
-    const resultCard = DomUtils.div({
-      class: `recheck-result-card recheck-result-card--${result.grade}`,
-    }, [
-      DomUtils.div({ class: 'recheck-result-card__icon' },
-        result.grade === 'safe' ? '✓'
-        : result.grade === 'warn' ? '~'
-        : '✗'
-      ),
-      DomUtils.div({ class: 'recheck-result-card__message' }, result.message),
-      DomUtils.div({ class: 'recheck-result-card__detail' }, [
-        DomUtils.span({ class: 'detail-mono' }, result.complexityClass),
-        DomUtils.span({}, ` at n=${result.n} = `),
-        DomUtils.span({ class: 'detail-mono' }, result.opsDisplay),
-        DomUtils.span({}, ` ops (~${result.estimatedRuntime})`),
-      ]),
-    ]);
-
-    if (result.grade === 'tle') {
-      resultCard.appendChild(
-        DomUtils.div({ class: 'recheck-tle-warn' }, [
-          DomUtils.span({ class: 'watchout-icon' }, '⚠'),
-          DomUtils.span({},
-            'This variant will TLE at your N. Choose a faster variant or reconsider the approach.'
-          ),
-        ])
-      );
-    }
-
-    container.appendChild(resultCard);
-  }
-
-  function _computeAndRenderRecheck(container, variantId) {
-    const n  = _state?.answers?.stage0?.n ?? 0;
-    const tl = _state?.answers?.stage0?.timeLimit ?? 1;
-
-    if (!n) {
-      container.appendChild(
-        DomUtils.div({ class: 'recheck-placeholder' },
-          'N not set — go back to Stage 0 and set your constraint'
-        )
-      );
-      return;
-    }
-
-    const result = ComplexityRecheck.recheck(variantId, n, tl);
-    if (!result) {
-      container.appendChild(
-        DomUtils.div({ class: 'recheck-placeholder' },
-          'Could not compute complexity for this variant'
-        )
-      );
-      return;
-    }
-
-    _recheckResult = result;
-    State.setAnswer('stage4_5', { recheckResult: result });
-    _renderRecheckResult(container, result);
-  }
-
-  // ─── SUMMARY SECTION ──────────────────────────────────────────────────────
-
-  function _buildSummarySection(saved) {
-    const section = DomUtils.div({
-      class: 'stage4-5__section stage4-5__summary',
-      id   : 'stage4-5-summary',
-    });
-
-    _renderSummary(section, saved);
-    return section;
-  }
-
-  // ─── CHANGE HANDLERS ──────────────────────────────────────────────────────
-
-  function _onVariantSelect(variantId) {
+  function _onVariantSelect(variantId, n, tl, CR, wrapper) {
     _selectedVariant = variantId;
 
-    // Update card states
-    document.querySelectorAll('.s45-variant-card').forEach(card => {
-      card.classList.toggle(
-        's45-variant-card--selected',
-        card.dataset.variantId === variantId
-      );
-    });
+    wrapper.querySelectorAll('.s45-variant-card').forEach(c =>
+      c.classList.toggle('s45-variant-card--on', c.dataset.id === variantId)
+    );
 
-    // Compute recheck
-    const n  = _state?.answers?.stage0?.n ?? 0;
-    const tl = _state?.answers?.stage0?.timeLimit ?? 1;
-    const result = n ? ComplexityRecheck.recheck(variantId, n, tl) : null;
-
+    const result = (n && CR) ? CR.recheck?.(variantId, n, tl) : null;
     _recheckResult = result;
+
+    const allVariants = _getAllVariants();
+    const variant     = allVariants.find(v => v.id === variantId);
 
     State.setAnswer('stage4_5', {
       variantSelected  : variantId,
-      variantComplexity: ComplexityRecheck.VARIANT_COMPLEXITY_MAP[variantId] ?? null,
+      variantComplexity: variant?.complexity ?? null,
       variantFeasible  : result ? result.grade !== 'tle' : null,
       recheckResult    : result,
     });
 
-    // Update recheck region
-    const recheckEl = document.getElementById('recheck-region');
-    if (recheckEl && result) {
-      _renderRecheckResult(recheckEl, result);
+    // Update recheck
+    const recheckRegion = wrapper.querySelector('#s45-recheck-region');
+    if (recheckRegion) {
+      recheckRegion.innerHTML = '';
+      if (result) {
+        _renderRecheckResult(recheckRegion, result);
+      } else if (n) {
+        recheckRegion.innerHTML = `<div class="s45-recheck-placeholder">Could not compute complexity for this variant.</div>`;
+      } else {
+        recheckRegion.innerHTML = `<div class="s45-recheck-placeholder">N not set — go back to Stage 0 to set your constraint.</div>`;
+      }
     }
 
-    // Show/hide override if borderline
-    _refreshOverrideSection(result);
+    // Override region
+    _renderOverride(wrapper, null);
+    if (result?.grade === 'warn') _renderOverride(wrapper, null);
 
-    _refreshSummary();
-    _checkComplete();
+    _updatePanel(wrapper);
+    _checkComplete(wrapper);
   }
 
-  function _onOverrideDecision(decision) {
-    document.querySelectorAll('.override-btn').forEach(btn => {
-      btn.classList.toggle(
-        'override-btn--selected',
-        btn.dataset.value === decision
-      );
+  // ─── RECHECK RESULT ────────────────────────────────────────────────────────
+
+  function _renderRecheckResult(container, result) {
+    container.innerHTML = '';
+    const grade = result.grade ?? 'safe';
+    const icon  = grade === 'safe' ? '✓' : grade === 'warn' ? '~' : '✗';
+
+    container.innerHTML = `
+      <div class="s45-recheck-card s45-recheck-card--${grade}">
+        <div class="s45-recheck-icon">${icon}</div>
+        <div class="s45-recheck-content">
+          <div class="s45-recheck-message">${result.message ?? ''}</div>
+          <div class="s45-recheck-detail">
+            <code class="s45-code">${result.complexityClass ?? ''}</code>
+            at n = ${(result.n ?? 0).toLocaleString()} =
+            <code class="s45-code">${result.opsDisplay ?? ''}</code> ops
+            (~${result.estimatedRuntime ?? ''})
+          </div>
+          ${grade === 'tle' ? `<div class="s45-tle-warn">⚠ This variant will TLE at your N. Choose a faster variant or reconsider the approach.</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // ─── OVERRIDE SECTION ──────────────────────────────────────────────────────
+
+  function _renderOverride(wrapper, savedDecision) {
+    const region = wrapper.querySelector('#s45-override-region');
+    if (!region) return;
+    region.innerHTML = '';
+
+    const grade = _recheckResult?.grade;
+    if (grade !== 'warn') return;
+
+    region.innerHTML = `
+      <div class="s45-override">
+        <div class="s45-override-note">Borderline complexity — do you want to proceed with this variant anyway?</div>
+        <div class="s45-override-btns">
+          <button class="s45-override-btn ${savedDecision==='proceed'?'s45-override-btn--on':''}" data-val="proceed">→ Proceed anyway (tight constant may pass)</button>
+          <button class="s45-override-btn ${savedDecision==='reconsider'?'s45-override-btn--on':''}" data-val="reconsider">← Reconsider — choose faster variant</button>
+        </div>
+      </div>
+    `;
+
+    region.querySelectorAll('.s45-override-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.val;
+        region.querySelectorAll('.s45-override-btn').forEach(b =>
+          b.classList.toggle('s45-override-btn--on', b.dataset.val === val)
+        );
+        State.setAnswer('stage4_5', { overrideDecision: val });
+        _updatePanel(wrapper);
+        _checkComplete(wrapper);
+      });
     });
-
-    State.setAnswer('stage4_5', { overrideDecision: decision });
-
-    if (decision === 'reconsider') {
-      Renderer.showToast(
-        'Choose a faster variant from the list above', 'info', 3000
-      );
-    }
-
-    _refreshSummary();
-    _checkComplete();
   }
 
-  // ─── RENDER HELPERS ────────────────────────────────────────────────────────
+  // ─── SIDE PANEL ────────────────────────────────────────────────────────────
 
-  function _refreshOverrideSection(result) {
-    const section = document.getElementById('recheck-section');
-    if (!section) return;
+  function _updatePanel(wrapper) {
+    const body = (wrapper ?? document).querySelector('#s45-panel-body');
+    if (!body) return;
+    body.innerHTML = '';
 
-    const existingOverride = section.querySelector('.stage4-5__override');
-    if (existingOverride) existingOverride.remove();
-
-    if (result?.grade === 'warn') {
-      const overrideEl = DomUtils.div({ class: 'stage4-5__override' }, [
-        DomUtils.div({ class: 'stage4-5__override-note' },
-          'Borderline complexity — do you want to proceed with this variant anyway?'
-        ),
-        DomUtils.div({ class: 'stage4-5__override-btns' }, [
-          _buildOverrideBtn('proceed',     false, '→ Proceed anyway'),
-          _buildOverrideBtn('reconsider',  false, '← Choose faster variant'),
-        ]),
-      ]);
-      section.appendChild(overrideEl);
-    }
-  }
-
-  function _renderSummary(container, saved) {
-    DomUtils.clearContent(container);
+    const saved = State.getAnswer('stage4_5') ?? {};
 
     if (!saved.variantSelected) {
-      container.appendChild(
-        DomUtils.div({ class: 'summary-placeholder' },
-          'Select a variant above to see summary'
-        )
-      );
+      body.innerHTML = '<div class="s45-panel-empty">← Select a variant to see analysis</div>';
       return;
     }
 
-    // Find variant label
-    const allVariants = [
-      ...BinarySearchVariants.getAll(),
-      ...DPVariants.getAll(),
-      ...GraphVariants.getAll(),
-    ];
-    const variant = allVariants.find(v => v.id === saved.variantSelected);
+    const allVariants = _getAllVariants();
+    const variant     = allVariants.find(v => v.id === saved.variantSelected);
+    const grade       = saved.recheckResult?.grade ?? 'safe';
 
-    container.appendChild(
-      DomUtils.div({ class: 'stage4-5__section-title' }, 'Variant summary')
-    );
+    // Variant info
+    const varSec = document.createElement('div');
+    varSec.className = 's45-panel-section';
+    varSec.innerHTML = `
+      <div class="s45-panel-section-title">Selected variant</div>
+      <div class="s45-panel-variant-name">${variant?.label ?? saved.variantSelected}</div>
+      ${variant?.complexity ? `<code class="s45-panel-complexity">${variant.complexity}</code>` : ''}
+    `;
+    body.appendChild(varSec);
 
-    container.appendChild(
-      DomUtils.div({ class: 'summary-row' }, [
-        DomUtils.span({ class: 'summary-row__label' }, 'Variant:'),
-        DomUtils.span({ class: 'summary-row__value' }, variant?.label ?? saved.variantSelected),
-      ])
-    );
-
-    if (saved.variantComplexity) {
-      container.appendChild(
-        DomUtils.div({ class: 'summary-row' }, [
-          DomUtils.span({ class: 'summary-row__label' }, 'Complexity:'),
-          DomUtils.span({ class: 'summary-row__value detail-mono' }, saved.variantComplexity),
-        ])
-      );
-    }
-
+    // Recheck result
     if (saved.recheckResult) {
       const r = saved.recheckResult;
-      container.appendChild(
-        DomUtils.div({ class: 'summary-row' }, [
-          DomUtils.span({ class: 'summary-row__label' }, 'At N:'),
-          DomUtils.span({
-            class: `summary-row__value feasibility-inline feasibility-inline--${r.grade}`,
-          }, r.message),
-        ])
-      );
+      const recheckSec = document.createElement('div');
+      recheckSec.className = `s45-panel-section s45-panel-section--${grade}`;
+      recheckSec.innerHTML = `
+        <div class="s45-panel-section-title">At your N</div>
+        <div class="s45-panel-recheck-result s45-panel-recheck-result--${grade}">
+          ${grade === 'safe' ? '✓' : grade === 'warn' ? '~' : '✗'}
+          ${r.message ?? ''}
+        </div>
+        <div class="s45-panel-recheck-ops">${r.opsDisplay ?? ''} ops (~${r.estimatedRuntime ?? ''})</div>
+      `;
+      body.appendChild(recheckSec);
     }
 
+    // Override decision
     if (saved.overrideDecision) {
-      container.appendChild(
-        DomUtils.div({ class: 'summary-row' }, [
-          DomUtils.span({ class: 'summary-row__label' }, 'Decision:'),
-          DomUtils.span({ class: 'summary-row__value' },
-            saved.overrideDecision === 'proceed'
-              ? 'Proceeding despite borderline complexity'
-              : 'Reconsidering — need faster variant'
-          ),
-        ])
-      );
+      const overSec = document.createElement('div');
+      overSec.className = 's45-panel-section';
+      overSec.innerHTML = `
+        <div class="s45-panel-section-title">Decision</div>
+        <div class="s45-panel-decision">${
+          saved.overrideDecision === 'proceed'
+            ? '→ Proceeding despite borderline complexity'
+            : '← Reconsidering — choosing faster variant'
+        }</div>
+      `;
+      body.appendChild(overSec);
     }
+
+    // Completion gate
+    let isReady = false;
+    if (grade === 'safe') isReady = true;
+    else if (grade === 'warn' && saved.overrideDecision) isReady = true;
+
+    const gate = document.createElement('div');
+    gate.className = `s45-panel-gate ${isReady ? 's45-panel-gate--ready' : grade === 'tle' ? 's45-panel-gate--tle' : ''}`;
+    if (isReady) {
+      gate.textContent = '✓ Ready to proceed to Stage 5';
+    } else if (grade === 'tle') {
+      gate.textContent = '✗ TLE — must choose a faster variant';
+    } else if (grade === 'warn') {
+      gate.textContent = 'Make override decision to proceed';
+    } else {
+      gate.textContent = 'Select a variant to proceed';
+    }
+    body.appendChild(gate);
   }
 
-  function _refreshSummary() {
-    const section = document.getElementById('stage4-5-summary');
-    if (section) {
-      _renderSummary(section, State.getAnswer('stage4_5') ?? {});
-    }
-  }
+  // ─── COMPLETION ────────────────────────────────────────────────────────────
 
-  // ─── COMPLETION CHECK ──────────────────────────────────────────────────────
+  function _checkComplete(wrapper) {
+    const saved  = State.getAnswer('stage4_5') ?? {};
+    const grade  = saved.recheckResult?.grade ?? 'safe';
+    let valid    = false;
 
-  function _checkComplete() {
-    const saved = State.getAnswer('stage4_5') ?? {};
-
-    // Need: variant selected AND
-    // if borderline → override decision made
-    // if TLE → cannot proceed (must pick different variant)
-    const hasVariant = !!saved.variantSelected;
-    const grade      = saved.recheckResult?.grade ?? 'safe';
-
-    let valid = false;
-
-    if (!hasVariant) {
+    if (!saved.variantSelected) {
       valid = false;
     } else if (grade === 'safe') {
       valid = true;
     } else if (grade === 'warn') {
       valid = !!saved.overrideDecision;
     } else if (grade === 'tle') {
-      valid = false; // must choose different variant
-      Renderer.showToast(
-        'Selected variant will TLE. Choose a faster variant to proceed.', 'warning'
-      );
+      valid = false;
+      if (typeof Renderer !== 'undefined') {
+        Renderer.showToast?.('Selected variant will TLE. Choose a faster variant to proceed.', 'warning');
+      }
     }
 
-    Renderer.setNextEnabled(valid);
+    if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
     if (valid) {
       document.dispatchEvent(new CustomEvent('dsa:stage-complete', {
         detail: {
           stageId: 'stage4_5',
-          answers: {
-            ...saved,
-            variantFeasible: grade !== 'tle',
-          },
+          answers: { ...saved, variantFeasible: grade !== 'tle' },
         },
       }));
     }
+  }
+
+  // ─── FALLBACKS & HELPERS ───────────────────────────────────────────────────
+
+  function _getAllVariants() {
+    const BSV = typeof BinarySearchVariants !== 'undefined' ? BinarySearchVariants : null;
+    const DPV = typeof DPVariants           !== 'undefined' ? DPVariants           : null;
+    const GV  = typeof GraphVariants        !== 'undefined' ? GraphVariants        : null;
+    return [
+      ...(BSV?.getAll?.() ?? []),
+      ...(DPV?.getAll?.() ?? []),
+      ...(GV?.getAll?.()  ?? []),
+      ..._fallbackGreedyVariants(),
+      ..._fallbackTwoPointerVariants(),
+    ];
+  }
+
+  function _fallbackGreedyVariants() {
+    return [
+      { id: 'greedy_sort_end',    label: 'Sort by end time (Activity Selection)', tagline: 'Sort intervals by end time, greedily pick non-overlapping', complexity: 'O(n log n)', when: ['Interval scheduling', 'Meeting rooms'], watchOut: ['Only works when sorting by END time, not start'] },
+      { id: 'greedy_ratio',       label: 'Greedy by ratio (Fractional Knapsack)', tagline: 'Pick items with highest value/weight ratio first',          complexity: 'O(n log n)', when: ['Fractional knapsack', 'Bandwidth allocation'], watchOut: ['0/1 knapsack requires DP — greedy fails'] },
+      { id: 'greedy_exchange',    label: 'Exchange argument greedy',               tagline: 'Prove optimal by showing any swap worsens result',           complexity: 'O(n log n)', when: ['Job scheduling', 'String ordering'], watchOut: ['Must formally verify exchange argument'] },
+    ];
+  }
+
+  function _fallbackTwoPointerVariants() {
+    return [
+      { id: 'two_ptr_opposite',   label: 'Two pointers — opposite ends', tagline: 'Left from start, right from end, converge',  complexity: 'O(n)',       when: ['Two sum in sorted array', 'Palindrome check'], watchOut: ['Array must be sorted or work with unsorted structure'] },
+      { id: 'two_ptr_same_dir',   label: 'Two pointers — same direction (Sliding Window)', tagline: 'Both move right, window expands/shrinks', complexity: 'O(n)', when: ['Longest substring with condition', 'Min subarray sum ≥ k'], watchOut: ['Window validity must be monotone — shrinking left always valid'] },
+      { id: 'two_ptr_merge',      label: 'Two pointers — merge two sorted arrays', tagline: 'i on array A, j on array B, advance smaller',  complexity: 'O(n+m)',  when: ['Merge sorted arrays', 'Intersection of two sorted arrays'], watchOut: ['Both arrays must be sorted'] },
+    ];
+  }
+
+  function _fallbackGeneralVariants() {
+    return [
+      { id: 'fallback_bfs',         label: 'BFS',                    tagline: 'Level-by-level traversal, shortest path unweighted', complexity: 'O(V+E)',       when: ['Shortest path (unweighted)', 'Level order traversal'], watchOut: ['Does not work for weighted graphs'] },
+      { id: 'fallback_dfs',         label: 'DFS',                    tagline: 'Go deep before backtracking',                        complexity: 'O(V+E)',       when: ['Connected components', 'Cycle detection', 'Topo sort'], watchOut: ['May stack overflow on very deep graphs — use iterative'] },
+      { id: 'fallback_dp_1d',       label: '1D DP (linear)',         tagline: 'dp[i] depends on dp[i-1] or earlier states',         complexity: 'O(n)',         when: ['Fibonacci-style', 'Max subarray', 'Coin change'], watchOut: ['Define state precisely before coding'] },
+      { id: 'fallback_dp_2d',       label: '2D DP (quadratic)',      tagline: 'dp[i][j] — two index dimensions',                    complexity: 'O(n²)',        when: ['LCS, Edit Distance', 'Interval DP', 'Matrix DP'], watchOut: ['O(n²) — check if n ≤ 5000 at most'] },
+      { id: 'fallback_binary_search',label: 'Binary Search on Answer',tagline: 'Search on answer space, check feasibility',          complexity: 'O(n log n)',   when: ['Minimize max / maximize min', 'Feasibility monotone'], watchOut: ['Must verify feasibility function is monotone'] },
+      { id: 'fallback_sort_greedy', label: 'Sort + Greedy',          tagline: 'Sort by key, then apply local greedy rule',           complexity: 'O(n log n)',   when: ['Interval problems', 'Job scheduling'], watchOut: ['Verify greedy with exchange argument'] },
+    ];
+  }
+
+  // ─── STYLES ────────────────────────────────────────────────────────────────
+
+  function _injectStyles() {
+    if (document.getElementById('s45-styles')) return;
+    const style = document.createElement('style');
+    style.id = 's45-styles';
+    style.textContent = `
+    .s45-shell {
+      --s45-bg      : #f7f4ef;
+      --s45-surface : #ffffff;
+      --s45-surface2: #faf8f5;
+      --s45-border  : rgba(0,0,0,.09);
+      --s45-border2 : rgba(0,0,0,.16);
+      --s45-ink     : #1a1814;
+      --s45-ink2    : #4a4540;
+      --s45-muted   : #8a8070;
+      --s45-blue    : #2563eb;
+      --s45-blue-bg : rgba(37,99,235,.07);
+      --s45-blue-b  : rgba(37,99,235,.24);
+      --s45-green   : #059669;
+      --s45-green-bg: rgba(5,150,105,.07);
+      --s45-green-b : rgba(5,150,105,.28);
+      --s45-warn    : #d97706;
+      --s45-warn-bg : rgba(217,119,6,.07);
+      --s45-warn-b  : rgba(217,119,6,.28);
+      --s45-red     : #dc2626;
+      --s45-red-bg  : rgba(220,38,38,.06);
+      --s45-red-b   : rgba(220,38,38,.22);
+      --s45-mono    : 'Space Mono', monospace;
+      --s45-sans    : 'DM Sans', system-ui, sans-serif;
+      display       : flex;
+      gap           : 24px;
+      align-items   : flex-start;
+      background    : var(--s45-bg);
+      min-height    : 100%;
+      font-family   : var(--s45-sans);
+      color         : var(--s45-ink);
+      padding       : 28px;
+    }
+    .s45-main { flex: 1; display: flex; flex-direction: column; gap: 32px; min-width: 0; }
+    .s45-rule { font-family: var(--s45-mono); font-size: .71rem; color: var(--s45-muted); padding: 10px 16px; background: var(--s45-surface); border: 1px solid var(--s45-border); border-left: 3px solid var(--s45-blue); border-radius: 0 8px 8px 0; line-height: 1.6; }
+
+    /* Sections */
+    .s45-section { display: flex; flex-direction: column; gap: 14px; }
+    .s45-section-header { display: flex; align-items: flex-start; gap: 14px; }
+    .s45-section-num    { font-family: var(--s45-mono); font-size: .65rem; font-weight: 700; color: #fff; background: var(--s45-blue); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .s45-section-title  { font-size: .92rem; font-weight: 600; color: var(--s45-ink); }
+    .s45-section-sub    { font-size: .73rem; color: var(--s45-muted); margin-top: 2px; }
+
+    /* Direction cards */
+    .s45-direction-grid { display: flex; flex-direction: column; gap: 7px; }
+    .s45-dir-card { background: var(--s45-surface); border: 1.5px solid var(--s45-border); border-left: 3px solid var(--s45-blue); border-radius: 0 10px 10px 0; padding: 12px 16px; display: flex; flex-direction: column; gap: 5px; }
+    .s45-dir-label  { font-size: .84rem; font-weight: 600; color: var(--s45-blue); }
+    .s45-dir-why    { font-size: .74rem; color: var(--s45-ink2); line-height: 1.5; }
+    .s45-dir-verify { font-size: .72rem; color: var(--s45-muted); line-height: 1.4; padding: 5px 9px; background: var(--s45-surface2); border-radius: 6px; }
+    .s45-verify-label { font-weight: 600; color: var(--s45-blue); margin-right: 4px; }
+
+    /* Variant area */
+    .s45-variant-area    { display: flex; flex-direction: column; gap: 16px; }
+    .s45-group-title     { font-size: .78rem; font-weight: 600; color: var(--s45-ink2); border-bottom: 1px solid var(--s45-border); padding-bottom: 6px; }
+    .s45-variant-grid    { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 9px; }
+    .s45-variant-card    { position: relative; background: var(--s45-surface); border: 1.5px solid var(--s45-border); border-radius: 12px; padding: 14px; cursor: pointer; display: flex; flex-direction: column; gap: 7px; transition: all .14s; user-select: none; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+    .s45-variant-card:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,.07); }
+    .s45-variant-card--safe { border-left: 3px solid var(--s45-green); }
+    .s45-variant-card--warn { border-left: 3px solid var(--s45-warn);  }
+    .s45-variant-card--tle  { border-left: 3px solid var(--s45-red);   opacity: .7; }
+    .s45-variant-card--on   { border-color: var(--s45-blue); background: var(--s45-blue-bg); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+    .s45-variant-check { position: absolute; top: 9px; right: 9px; width: 17px; height: 17px; background: var(--s45-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .58rem; color: #fff; font-weight: 700; opacity: 0; transform: scale(.6); transition: opacity .14s, transform .14s; }
+    .s45-variant-card--on .s45-variant-check { opacity: 1; transform: scale(1); }
+    .s45-variant-name    { font-size: .84rem; font-weight: 600; color: var(--s45-ink); line-height: 1.3; }
+    .s45-variant-tagline { font-size: .7rem; color: var(--s45-muted); line-height: 1.4; }
+    .s45-variant-complex { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .s45-code { font-family: var(--s45-mono); font-size: .7rem; background: var(--s45-surface2); color: var(--s45-blue); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--s45-border); }
+    .s45-feasibility       { font-family: var(--s45-mono); font-size: .64rem; font-weight: 700; padding: 2px 8px; border-radius: 9999px; border: 1px solid; }
+    .s45-feasibility--safe { background: var(--s45-green-bg); color: var(--s45-green); border-color: var(--s45-green-b); }
+    .s45-feasibility--warn { background: var(--s45-warn-bg);  color: var(--s45-warn);  border-color: var(--s45-warn-b); }
+    .s45-feasibility--tle  { background: var(--s45-red-bg);   color: var(--s45-red);   border-color: var(--s45-red-b);  }
+    .s45-variant-when { display: flex; flex-direction: column; gap: 3px; }
+    .s45-when-item    { font-size: .7rem; color: var(--s45-muted); line-height: 1.3; }
+    .s45-variant-wos  { display: flex; flex-direction: column; gap: 4px; }
+    .s45-wo-item      { font-size: .7rem; color: var(--s45-warn); padding: 4px 8px; background: var(--s45-warn-bg); border: 1px solid var(--s45-warn-b); border-radius: 5px; line-height: 1.4; }
+    .s45-no-variants  { font-size: .76rem; color: var(--s45-muted); padding: 14px; background: var(--s45-surface2); border: 1px solid var(--s45-border); border-radius: 8px; line-height: 1.6; }
+
+    /* Recheck */
+    .s45-recheck-placeholder { font-family: var(--s45-mono); font-size: .72rem; color: var(--s45-muted); text-align: center; padding: 20px; background: var(--s45-surface2); border: 1.5px dashed var(--s45-border); border-radius: 9px; }
+    .s45-recheck-card        { display: flex; align-items: flex-start; gap: 14px; padding: 16px; border-radius: 12px; border: 1.5px solid; }
+    .s45-recheck-card--safe  { background: var(--s45-green-bg); border-color: var(--s45-green-b); }
+    .s45-recheck-card--warn  { background: var(--s45-warn-bg);  border-color: var(--s45-warn-b);  }
+    .s45-recheck-card--tle   { background: var(--s45-red-bg);   border-color: var(--s45-red-b);   }
+    .s45-recheck-icon        { font-family: var(--s45-mono); font-size: 1.5rem; font-weight: 700; flex-shrink: 0; line-height: 1; }
+    .s45-recheck-card--safe .s45-recheck-icon { color: var(--s45-green); }
+    .s45-recheck-card--warn .s45-recheck-icon { color: var(--s45-warn);  }
+    .s45-recheck-card--tle  .s45-recheck-icon { color: var(--s45-red);   }
+    .s45-recheck-message     { font-size: .86rem; font-weight: 600; color: var(--s45-ink); margin-bottom: 4px; }
+    .s45-recheck-detail      { font-size: .74rem; color: var(--s45-ink2); line-height: 1.5; }
+    .s45-tle-warn            { font-size: .74rem; color: var(--s45-red); margin-top: 6px; padding: 7px 10px; background: rgba(220,38,38,.05); border: 1px solid var(--s45-red-b); border-radius: 6px; }
+
+    /* Override */
+    .s45-override      { padding: 14px; background: var(--s45-surface2); border: 1.5px solid var(--s45-warn-b); border-radius: 9px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .s45-override-note { font-size: .78rem; font-weight: 500; color: var(--s45-ink2); }
+    .s45-override-btns { display: flex; gap: 9px; flex-wrap: wrap; }
+    .s45-override-btn  { flex: 1; padding: 9px 14px; border: 1.5px solid var(--s45-border); border-radius: 8px; background: var(--s45-surface); font-size: .78rem; font-weight: 500; cursor: pointer; transition: all .12s; color: var(--s45-ink2); }
+    .s45-override-btn:hover  { border-color: var(--s45-border2); }
+    .s45-override-btn--on    { border-color: var(--s45-blue); background: var(--s45-blue-bg); color: var(--s45-blue); font-weight: 600; }
+
+    /* Side panel */
+    .s45-panel { width: 268px; flex-shrink: 0; background: var(--s45-surface); border: 1.5px solid var(--s45-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
+    .s45-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s45-border); background: #f6f4f0; }
+    .s45-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s45-ink); }
+    .s45-panel-sub    { font-size: .66rem; color: var(--s45-muted); margin-top: 2px; }
+    .s45-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
+    .s45-panel-empty  { font-size: .74rem; color: var(--s45-muted); font-style: italic; text-align: center; padding: 24px 0; line-height: 1.6; }
+    .s45-panel-section { display: flex; flex-direction: column; gap: 7px; }
+    .s45-panel-section--safe { background: var(--s45-green-bg); border: 1px solid var(--s45-green-b); border-radius: 8px; padding: 10px 12px; }
+    .s45-panel-section--warn { background: var(--s45-warn-bg);  border: 1px solid var(--s45-warn-b);  border-radius: 8px; padding: 10px 12px; }
+    .s45-panel-section--tle  { background: var(--s45-red-bg);   border: 1px solid var(--s45-red-b);   border-radius: 8px; padding: 10px 12px; }
+    .s45-panel-section-title { font-family: var(--s45-mono); font-size: .58rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--s45-muted); margin-bottom: 2px; }
+    .s45-panel-section--safe .s45-panel-section-title { color: var(--s45-green); }
+    .s45-panel-section--warn .s45-panel-section-title { color: var(--s45-warn); }
+    .s45-panel-section--tle  .s45-panel-section-title { color: var(--s45-red); }
+    .s45-panel-variant-name  { font-size: .82rem; font-weight: 600; color: var(--s45-ink); }
+    .s45-panel-complexity    { font-family: var(--s45-mono); font-size: .7rem; color: var(--s45-blue); background: var(--s45-blue-bg); padding: 2px 7px; border-radius: 4px; border: 1px solid var(--s45-blue-b); }
+    .s45-panel-recheck-result      { font-size: .8rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .s45-panel-recheck-result--safe{ color: var(--s45-green); }
+    .s45-panel-recheck-result--warn{ color: var(--s45-warn);  }
+    .s45-panel-recheck-result--tle { color: var(--s45-red);   }
+    .s45-panel-recheck-ops  { font-family: var(--s45-mono); font-size: .64rem; color: var(--s45-muted); }
+    .s45-panel-decision     { font-size: .76rem; color: var(--s45-ink2); line-height: 1.4; }
+    .s45-panel-gate { padding: 10px 12px; border-radius: 8px; font-size: .74rem; font-weight: 500; text-align: center; background: var(--s45-surface2); border: 1.5px solid var(--s45-border); color: var(--s45-muted); }
+    .s45-panel-gate--ready { background: var(--s45-green-bg); border-color: var(--s45-green-b); color: var(--s45-green); }
+    .s45-panel-gate--tle   { background: var(--s45-red-bg);   border-color: var(--s45-red-b);   color: var(--s45-red); }
+    .s45-panel-body::-webkit-scrollbar { width: 3px; }
+    .s45-panel-body::-webkit-scrollbar-thumb { background: var(--s45-border2); border-radius: 4px; }
+
+    @media (max-width: 900px) {
+      .s45-shell { flex-direction: column; padding: 16px; }
+      .s45-panel { width: 100%; position: static; max-height: none; }
+      .s45-variant-grid { grid-template-columns: 1fr; }
+    }
+    `;
+    document.head.appendChild(style);
   }
 
   // ─── LIFECYCLE ─────────────────────────────────────────────────────────────
@@ -580,12 +638,9 @@ const Stage4_5 = (() => {
   function onMount(state) {
     const saved = state.answers?.stage4_5;
     if (!saved?.variantSelected) return;
-
     const grade = saved.recheckResult?.grade ?? 'safe';
-    if (grade === 'safe') {
-      Renderer.setNextEnabled(true);
-    } else if (grade === 'warn' && saved.overrideDecision) {
-      Renderer.setNextEnabled(true);
+    if (grade === 'safe' || (grade === 'warn' && saved.overrideDecision)) {
+      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
     }
   }
 
@@ -595,12 +650,8 @@ const Stage4_5 = (() => {
     _recheckResult   = null;
   }
 
-  // ─── PUBLIC ────────────────────────────────────────────────────────────────
-
   return { render, onMount, cleanup };
 
 })();
 
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Stage4_5;
-}
+if (typeof module !== 'undefined' && module.exports) module.exports = Stage4_5;
