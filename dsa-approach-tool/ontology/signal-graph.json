@@ -1,0 +1,372 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "ontology_version": "1.0.0",
+    "family": "sliding_window",
+    "node_type": "Signal",
+    "created_date": "2026-05-14",
+    "node_count": 9,
+    "edge_count": 22,
+    "description": "Signal nodes encoding observable problem features that carry algorithmic inference weight for the sliding window family. Signals are the atomic inputs to the inference pipeline.",
+    "references": {
+      "state_archetypes": "ontology/state-graph.json",
+      "invariants": "ontology/invariant-graph.json",
+      "misconceptions": "ontology/misconception-graph.json"
+    },
+    "edge_types": {
+      "implies": "Signal is evidence for a target StateArchetype. Weight encodes inference strength 0.0-1.0.",
+      "strengthens": "Signal raises confidence that a target Invariant holds. Weight encodes degree 0.0-1.0.",
+      "contradicts": "Presence of source makes target inapplicable or reduces its aggregate weight. Target may be Signal or StateArchetype.",
+      "breaks": "Presence of source makes target Invariant impossible to maintain. Hard invalidation. Weight is always 1.0.",
+      "requires_also": "Stored on node. This signal is downweighted by 0.5 if any listed co-requisite signal is absent from the active signal set."
+    }
+  },
+  "nodes": [
+    {
+      "id": "sig_contiguous_subarray",
+      "label": "Problem involves contiguous subarray or substring",
+      "source": "output_form",
+      "base_strength": 0.90,
+      "trigger_phrases": [
+        "contiguous subarray",
+        "substring",
+        "subarray of length",
+        "consecutive elements",
+        "contiguous subsequence",
+        "adjacent elements"
+      ],
+      "negation_id": null,
+      "requires_also": []
+    },
+    {
+      "id": "sig_range_constraint",
+      "label": "Explicit constraint on the content of the window (sum, distinct count, product, frequency)",
+      "source": "constraints",
+      "base_strength": 0.85,
+      "trigger_phrases": [
+        "sum at most",
+        "sum less than or equal",
+        "at most k distinct",
+        "sum does not exceed",
+        "product less than",
+        "at most k different",
+        "sum no greater than"
+      ],
+      "negation_id": null,
+      "requires_also": [
+        "sig_contiguous_subarray"
+      ]
+    },
+    {
+      "id": "sig_fixed_window_size",
+      "label": "Window size is fixed at exactly k elements for all positions",
+      "source": "constraints",
+      "base_strength": 0.95,
+      "trigger_phrases": [
+        "window of size k",
+        "subarray of length exactly k",
+        "exactly k consecutive",
+        "fixed-size window",
+        "every window of size k"
+      ],
+      "negation_id": "sig_variable_window_size",
+      "requires_also": []
+    },
+    {
+      "id": "sig_variable_window_size",
+      "label": "Window size varies based on constraint satisfaction, not fixed",
+      "source": "constraints",
+      "base_strength": 0.85,
+      "trigger_phrases": [
+        "longest subarray",
+        "shortest subarray",
+        "minimum length subarray",
+        "maximum length subarray",
+        "find the longest contiguous",
+        "find the shortest contiguous"
+      ],
+      "negation_id": "sig_fixed_window_size",
+      "requires_also": []
+    },
+    {
+      "id": "sig_monotone_removable",
+      "label": "Elements exit the window from one end only in FIFO order; removal order is positional",
+      "source": "structure",
+      "base_strength": 0.85,
+      "trigger_phrases": [
+        "sliding window maximum",
+        "sliding window minimum",
+        "maximum in every window of size k",
+        "minimum in every window of size k",
+        "maximum of each subarray"
+      ],
+      "negation_id": null,
+      "requires_also": [
+        "sig_contiguous_subarray"
+      ]
+    },
+    {
+      "id": "sig_optimization_query",
+      "label": "Query requests a minimum, maximum, longest, or shortest result",
+      "source": "output_form",
+      "base_strength": 1.00,
+      "trigger_phrases": [
+        "maximum sum",
+        "minimum length",
+        "longest subarray",
+        "shortest subarray",
+        "maximize the length",
+        "minimize the length",
+        "find the maximum",
+        "find the minimum"
+      ],
+      "negation_id": null,
+      "requires_also": []
+    },
+    {
+      "id": "sig_count_query",
+      "label": "Query requests a count of subarrays or substrings satisfying a condition",
+      "source": "output_form",
+      "base_strength": 1.00,
+      "trigger_phrases": [
+        "number of subarrays",
+        "count subarrays",
+        "how many subarrays",
+        "number of substrings",
+        "count the number of",
+        "total number of contiguous"
+      ],
+      "negation_id": null,
+      "requires_also": []
+    },
+    {
+      "id": "sig_monotone_constraint",
+      "label": "Expanding the window makes the constraint strictly harder to satisfy; shrinking always helps",
+      "source": "structure",
+      "base_strength": 0.90,
+      "trigger_phrases": [
+        "all positive integers",
+        "all non-negative",
+        "positive elements only",
+        "array of positive numbers"
+      ],
+      "negation_id": "sig_non_monotone_constraint",
+      "requires_also": []
+    },
+    {
+      "id": "sig_non_monotone_constraint",
+      "label": "Adding or removing an element can both improve or worsen constraint satisfaction",
+      "source": "structure",
+      "base_strength": 0.90,
+      "trigger_phrases": [
+        "negative numbers",
+        "mixed sign",
+        "integers can be negative",
+        "exactly k distinct",
+        "array contains negatives"
+      ],
+      "negation_id": "sig_monotone_constraint",
+      "requires_also": []
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_001",
+      "from": "sig_contiguous_subarray",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_fixed",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.80
+    },
+    {
+      "id": "e_002",
+      "from": "sig_contiguous_subarray",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_variable",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.85
+    },
+    {
+      "id": "e_003",
+      "from": "sig_contiguous_subarray",
+      "from_type": "Signal",
+      "to": "sa_monotone_deque",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.60
+    },
+    {
+      "id": "e_004",
+      "from": "sig_range_constraint",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_variable",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.85
+    },
+    {
+      "id": "e_005",
+      "from": "sig_fixed_window_size",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_fixed",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.95
+    },
+    {
+      "id": "e_006",
+      "from": "sig_variable_window_size",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_variable",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.90
+    },
+    {
+      "id": "e_007",
+      "from": "sig_monotone_removable",
+      "from_type": "Signal",
+      "to": "sa_monotone_deque",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.90
+    },
+    {
+      "id": "e_008",
+      "from": "sig_optimization_query",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_fixed",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.65
+    },
+    {
+      "id": "e_009",
+      "from": "sig_optimization_query",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_variable",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.55
+    },
+    {
+      "id": "e_010",
+      "from": "sig_optimization_query",
+      "from_type": "Signal",
+      "to": "sa_monotone_deque",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.60
+    },
+    {
+      "id": "e_011",
+      "from": "sig_count_query",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_count",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.80
+    },
+    {
+      "id": "e_012",
+      "from": "sig_count_query",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_variable",
+      "to_type": "StateArchetype",
+      "type": "implies",
+      "weight": 0.55
+    },
+    {
+      "id": "e_013",
+      "from": "sig_monotone_constraint",
+      "from_type": "Signal",
+      "to": "inv_window_validity",
+      "to_type": "Invariant",
+      "type": "strengthens",
+      "weight": 0.90
+    },
+    {
+      "id": "e_014",
+      "from": "sig_monotone_constraint",
+      "from_type": "Signal",
+      "to": "inv_monotone_feasibility",
+      "to_type": "Invariant",
+      "type": "strengthens",
+      "weight": 0.90
+    },
+    {
+      "id": "e_015",
+      "from": "sig_fixed_window_size",
+      "from_type": "Signal",
+      "to": "sig_variable_window_size",
+      "to_type": "Signal",
+      "type": "contradicts",
+      "weight": 1.00
+    },
+    {
+      "id": "e_016",
+      "from": "sig_variable_window_size",
+      "from_type": "Signal",
+      "to": "sig_fixed_window_size",
+      "to_type": "Signal",
+      "type": "contradicts",
+      "weight": 1.00
+    },
+    {
+      "id": "e_017",
+      "from": "sig_monotone_constraint",
+      "from_type": "Signal",
+      "to": "sig_non_monotone_constraint",
+      "to_type": "Signal",
+      "type": "contradicts",
+      "weight": 1.00
+    },
+    {
+      "id": "e_018",
+      "from": "sig_non_monotone_constraint",
+      "from_type": "Signal",
+      "to": "sig_monotone_constraint",
+      "to_type": "Signal",
+      "type": "contradicts",
+      "weight": 1.00
+    },
+    {
+      "id": "e_019",
+      "from": "sig_non_monotone_constraint",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_variable",
+      "to_type": "StateArchetype",
+      "type": "contradicts",
+      "weight": 0.95
+    },
+    {
+      "id": "e_020",
+      "from": "sig_non_monotone_constraint",
+      "from_type": "Signal",
+      "to": "sa_sliding_window_fixed",
+      "to_type": "StateArchetype",
+      "type": "contradicts",
+      "weight": 0.40
+    },
+    {
+      "id": "e_021",
+      "from": "sig_non_monotone_constraint",
+      "from_type": "Signal",
+      "to": "inv_window_validity",
+      "to_type": "Invariant",
+      "type": "breaks",
+      "weight": 1.00
+    },
+    {
+      "id": "e_022",
+      "from": "sig_non_monotone_constraint",
+      "from_type": "Signal",
+      "to": "inv_monotone_feasibility",
+      "to_type": "Invariant",
+      "type": "breaks",
+      "weight": 1.00
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "ontology_version": "1.0.0",
+    "family": "sliding_window",
+    "node_type": "TransitionArchetype",
+    "created_date": "2026-05-14",
+    "node_count": 2,
+    "description": "Transition archetype nodes for the sliding window family. A transition archetype defines the canonical movement operation — how state evolves from one step to the next.",
+    "field_notes": {
+      "operation_form": "Precise description of what happens at each step.",
+      "driver": "Which pointer or variable triggers each iteration.",
+      "direction": "push (current state updates future states) or pull (current state reads from past states).",
+      "strictly_smaller": "Whether each step references strictly smaller sub-problems (required for DAG structure).",
+      "amortized_cost": "Total cost across all n steps, not per-step cost.",
+      "requires_invariant": "Invariant IDs that must hold for this transition to be correct.",
+      "used_by_states": "State archetype IDs that use this transition."
+    }
+  },
+  "nodes": [
+    {
+      "id": "tr_expand_shrink_window",
+      "label": "Expand right pointer, shrink left pointer on violation",
+      "operation_form": "Outer loop: r advances from 0 to n-1 one step per iteration. Inner loop: while constraint violated, advance l and update aggregate. After inner loop: record answer candidate using current window [l, r].",
+      "driver": "r (right pointer) drives the outer iteration; l (left pointer) is reactive",
+      "direction": "push",
+      "strictly_smaller": false,
+      "amortized_cost": "O(n) total — l and r each move at most n times across all iterations",
+      "per_step_cost": "O(1) amortized per r advance",
+      "requires_invariant": [
+        "inv_window_validity",
+        "inv_monotone_feasibility"
+      ],
+      "used_by_states": [
+        "sa_sliding_window_fixed",
+        "sa_sliding_window_variable",
+        "sa_sliding_window_count"
+      ]
+    },
+    {
+      "id": "tr_deque_push_pop",
+      "label": "Monotone deque update on window advance",
+      "operation_form": "On each new r: (1) pop from deque back while arr[D.back()] <= arr[r]; (2) push r onto deque back. On each l advance: pop from deque front while D.front() < l. After both operations: D.front() is the argmax index for window [l, r].",
+      "driver": "r (right pointer) drives push; l (left pointer) drives front eviction",
+      "direction": "push",
+      "strictly_smaller": false,
+      "amortized_cost": "O(n) total — each index is pushed once and popped at most once",
+      "per_step_cost": "O(1) amortized; O(n) worst-case for a single step",
+      "requires_invariant": [
+        "inv_window_validity",
+        "inv_monotone_queue"
+      ],
+      "used_by_states": [
+        "sa_monotone_deque"
+      ]
+    }
+  ]
+}

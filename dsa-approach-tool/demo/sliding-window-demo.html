@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sliding Window Cognitive Harness</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      background: #010409;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    h1 {
+      color: #58a6ff;
+      font-size: 16px;
+      font-weight: bold;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      grid-template-rows: auto;
+      gap: 12px;
+      max-width: 1400px;
+    }
+
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .panel {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 12px;
+    }
+
+    .panel-title {
+      color: #58a6ff;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: #238636;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 7px 14px;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+    .btn-primary:hover:not(:disabled) { background: #2ea043; }
+    .btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-wrong {
+      background: #6e1c1c;
+      color: #ffa198;
+      border: 1px solid #f85149;
+      border-radius: 4px;
+      padding: 6px 12px;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    .btn-wrong:hover:not(:disabled) { background: #8c2020; }
+    .btn-wrong:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-verify {
+      background: #0d3068;
+      color: #79c0ff;
+      border: 1px solid #1f6feb;
+      border-radius: 4px;
+      padding: 5px 10px;
+      width: 100%;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+    .btn-verify:hover:not(:disabled) { background: #1a4a8a; }
+    .btn-verify:disabled { opacity: 0.5; cursor: default; }
+
+    #stage-progress {
+      color: #8b949e;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    #hypothesis-display {
+      padding: 8px;
+      background: #161b22;
+      border-radius: 4px;
+      border: 1px solid #30363d;
+      min-height: 40px;
+    }
+
+    #contradiction-status {
+      display: none;
+      padding: 8px;
+      background: #3d0000;
+      border: 1px solid #f85149;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    #recovery-panel {
+      display: none;
+      padding: 12px;
+      background: #1c1108;
+      border: 1px solid #f0883e;
+      border-radius: 6px;
+    }
+
+    #problem-statement {
+      padding: 10px;
+      background: #161b22;
+      border-radius: 4px;
+      border: 1px solid #30363d;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .right-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .algo-label {
+      color: #8b949e;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .recovery-label {
+      font-size: 11px;
+      color: #f0883e;
+      margin-bottom: 6px;
+    }
+
+    .section-sep {
+      border: none;
+      border-top: 1px solid #21262d;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Sliding Window — Cognitive Reasoning Harness</h1>
+
+<div class="layout">
+
+  <!-- ─── LEFT COLUMN ─────────────────────────────────────────── -->
+  <div class="left-column">
+
+    <!-- Problem -->
+    <div class="panel">
+      <div class="panel-title">Problem</div>
+      <div id="problem-statement">(loading...)</div>
+    </div>
+
+    <!-- Stage Control -->
+    <div class="panel">
+      <div class="panel-title">Stage Control</div>
+      <div id="stage-progress">Completed stages: 0 / 6</div>
+      <button id="btn-advance" class="btn-primary" onclick="Demo.advanceStage()">
+        Advance: Stage 0 — Problem Setup
+      </button>
+    </div>
+
+    <!-- Invariant Verification -->
+    <div class="panel">
+      <div class="panel-title">Invariant Verification</div>
+      <button class="btn-verify" data-verify-invariant="inv_window_validity"
+        onclick="Demo.verifyInvariant('inv_window_validity')">
+        Verify inv_window_validity (not active)
+      </button>
+      <button class="btn-verify" data-verify-invariant="inv_monotone_feasibility"
+        onclick="Demo.verifyInvariant('inv_monotone_feasibility')">
+        Verify inv_monotone_feasibility (not active)
+      </button>
+      <button class="btn-verify" data-verify-invariant="inv_monotone_queue"
+        onclick="Demo.verifyInvariant('inv_monotone_queue')">
+        Verify inv_monotone_queue (not active)
+      </button>
+    </div>
+
+    <!-- Wrong Paths -->
+    <div class="panel">
+      <div class="panel-title">Wrong Paths (Intentional)</div>
+      <div class="recovery-label">Trigger misconception escalation + recovery</div>
+
+      <button id="btn-wrong-path-1" class="btn-wrong" disabled
+        onclick="Demo.triggerWrongPath1()">
+        WRONG PATH 1: Stage 3 → local_optimality = no
+      </button>
+      <div style="color:#8b949e;font-size:10px;margin-bottom:8px;padding-left:4px;">
+        → sig_non_monotone_constraint fires<br>
+        → breaks inv_window_validity<br>
+        → mc_monotonicity_failure escalates to likely<br>
+        → Recovery: rr_constraint_monotonicity_check
+      </div>
+
+      <button id="btn-wrong-path-2" class="btn-wrong" disabled
+        onclick="Demo.triggerWrongPath2()">
+        WRONG PATH 2: Stage 5 → segment tree O(n log n)
+      </button>
+      <div style="color:#8b949e;font-size:10px;padding-left:4px;">
+        → mc_segment_tree_overkill escalates to confirmed<br>
+        → Recovery: rr_complexity_downgrade
+      </div>
+    </div>
+
+    <!-- Current Hypothesis -->
+    <div class="panel">
+      <div class="panel-title">Current Hypothesis</div>
+      <div id="hypothesis-display">
+        <div style="color:#484f58;">No hypothesis formed yet</div>
+      </div>
+      <div id="contradiction-status"></div>
+    </div>
+
+    <!-- Confidence Panel -->
+    <div class="panel" style="padding:0;">
+      <div id="confidence-panel" style="border-radius:6px;"></div>
+    </div>
+
+  </div>
+
+  <!-- ─── RIGHT COLUMN ─────────────────────────────────────────── -->
+  <div class="right-column">
+
+    <!-- Recovery Panel -->
+    <div id="recovery-panel"></div>
+
+    <!-- IR Inspector -->
+    <div id="ir-inspector" style="border-radius:6px;"></div>
+
+    <!-- Event Trace -->
+    <div id="event-trace" style="border-radius:6px;"></div>
+
+  </div>
+
+</div>
+
+<!-- ─── SCRIPT LOAD ORDER ──────────────────────────────────────────────────── -->
+<!-- Core infrastructure (no inter-module deps) -->
+<script src="../core/event-bus.js"></script>
+<script src="../core/ontology-loader.js"></script>
+<script src="../core/ir-manager.js"></script>
+<script src="../core/engine-registry.js"></script>
+<script src="../core/confidence-engine.js"></script>
+
+<!-- Engines -->
+<script src="../engines/signal-engine.js"></script>
+<script src="../engines/state-engine.js"></script>
+<script src="../engines/invariant-engine.js"></script>
+<script src="../engines/transition-engine.js"></script>
+<script src="../engines/misconception-engine.js"></script>
+
+<!-- Recovery -->
+<script src="../recovery/recovery-router.js"></script>
+<script src="../recovery/misconception-recovery.js"></script>
+
+<!-- Visualization -->
+<script src="../visualization/visualization-registry.js"></script>
+<script src="../visualization/sliding-window-visualizer.js"></script>
+
+<!-- Debug panels -->
+<script src="../debug/ir-inspector.js"></script>
+<script src="../debug/event-trace-panel.js"></script>
+<script src="../debug/confidence-panel.js"></script>
+
+<!-- Demo orchestration (must be last) -->
+<script src="demo-bootstrap.js"></script>
+
+</body>
+</html>

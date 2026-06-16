@@ -120,8 +120,10 @@ const DPStateVerifier = (() => {
       allPassed,
       failedChecks,
       verdict: allPassed
-        ? { label: 'State verified ✓', color: 'green',  message: 'DP state is complete and non-redundant' }
-        : { label: 'Issues found ✗',   color: 'yellow', message: `${failedChecks.length} check(s) failed — review before coding` },
+        ? { label: 'State verified ✓',    color: 'green',  message: 'DP state is complete and non-redundant' }
+        : failedChecks.length >= 3
+          ? { label: 'Critical issues ✗', color: 'red',    message: `${failedChecks.length} check(s) failed — do not proceed to coding` }
+          : { label: 'Issues found ✗',    color: 'yellow', message: `${failedChecks.length} check(s) failed — review before coding` },
       recommendations: failedChecks.map(f => {
         const check = CHECKS.find(c => c.id === f.checkId);
         return check?.failFix ?? 'Review this check carefully';

@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "slice_id": "sliding_window",
+    "slice_label": "Sliding Window",
+    "created_date": "2026-05-14",
+    "description": "Configuration for the sliding window vertical slice. Declares which ontology graphs, engines, recovery routes, and visualizations are active for this family.",
+    "status": "active"
+  },
+
+  "ontology": {
+    "graphs": [
+      "ontology/signal-graph.json",
+      "ontology/state-graph.json",
+      "ontology/invariant-graph.json",
+      "ontology/misconception-graph.json",
+      "ontology/transition-graph.json"
+    ],
+    "primary_family": "sliding_window"
+  },
+
+  "engines": {
+    "execution_order": ["E5", "E1", "E2", "E3", "E4", "E6", "E7", "E8", "E9"],
+    "active": {
+      "E1": { "module": "engines/signal-engine.js",        "enabled": true },
+      "E2": { "module": "engines/state-engine.js",         "enabled": true },
+      "E3": { "module": "engines/invariant-engine.js",     "enabled": true },
+      "E4": { "module": "engines/transition-engine.js",    "enabled": true },
+      "E5": { "module": "core/confidence-engine.js",       "enabled": true },
+      "E6": { "module": "engines/hypothesis-engine.js",    "enabled": false, "note": "Not yet implemented — hypothesis formation is manual in this slice" },
+      "E7": { "module": "engines/misconception-engine.js", "enabled": true },
+      "E8": { "module": "engines/composition-engine.js",   "enabled": false, "note": "No hybrid compositions in sliding window slice" },
+      "E9": { "module": "core/confidence-engine.js",       "enabled": true }
+    }
+  },
+
+  "recovery_routes": [
+    "rr_constraint_monotonicity_check",
+    "rr_complexity_downgrade",
+    "rr_constraint_reread",
+    "rr_deque_dual_invariant"
+  ],
+
+  "visualizations": [
+    {
+      "id": "va_two_pointer_array",
+      "appears_after_stage": "stage3",
+      "trigger_condition": "sig_contiguous_subarray active AND sig_range_constraint active",
+      "reveals_invariant": "inv_window_validity"
+    },
+    {
+      "id": "va_valid_invalid_coloring",
+      "appears_after_stage": "stage3_5",
+      "trigger_condition": "inv_monotone_feasibility active",
+      "reveals_invariant": "inv_monotone_feasibility"
+    },
+    {
+      "id": "va_monotone_deque_evolution",
+      "appears_after_stage": "stage5",
+      "trigger_condition": "sa_monotone_deque in candidate_states with status candidate",
+      "reveals_invariant": "inv_monotone_queue"
+    }
+  ],
+
+  "stage_signal_rules": {
+    "stage2": [
+      "solution_depth:subarray → sig_contiguous_subarray",
+      "solution_depth:substring → sig_contiguous_subarray",
+      "optimization_type:maximize → sig_optimization_query",
+      "optimization_type:minimize → sig_optimization_query",
+      "optimization_type:count → sig_count_query",
+      "window_size_type:fixed → sig_fixed_window_size",
+      "window_size_type:variable → sig_variable_window_size"
+    ],
+    "stage3": [
+      "feasibility_boundary_answered:true → sig_range_constraint",
+      "local_optimality_answered:yes → sig_monotone_constraint",
+      "local_optimality_answered:no → sig_non_monotone_constraint",
+      "local_optimality_answered:unsure → sig_non_monotone_constraint (strength 0.65)"
+    ],
+    "stage4": [
+      "monotone_removal_confirmed:true → sig_monotone_removable"
+    ]
+  },
+
+  "expected_archetypes": [
+    "sa_sliding_window_fixed",
+    "sa_sliding_window_variable",
+    "sa_monotone_deque",
+    "sa_sliding_window_count"
+  ],
+
+  "confidence_thresholds": {
+    "proceed":   85,
+    "verify":    65,
+    "backtrack":  0
+  }
+}

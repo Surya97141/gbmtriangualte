@@ -1,0 +1,74 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "ontology_version": "1.0.0",
+    "family": "sliding_window",
+    "node_type": "Invariant",
+    "created_date": "2026-05-14",
+    "node_count": 3,
+    "description": "Invariant nodes for the sliding window family. An invariant is a structural property that must hold at every step of computation. Invariants are the correctness guarantees — not algorithm names.",
+    "field_notes": {
+      "statement": "The precise logical condition that must hold.",
+      "maintained_by": "The operation that preserves this invariant.",
+      "violated_by": "The condition or operation that destroys it.",
+      "proof_sketch": "One-line informal justification of why the invariant holds.",
+      "breaks_if": "Conditions under which this invariant is structurally impossible to maintain.",
+      "preserves": "State archetype IDs whose correctness depends on this invariant.",
+      "manifests_meta_pattern": "The higher-level cognitive primitive this invariant is an instance of."
+    }
+  },
+  "nodes": [
+    {
+      "id": "inv_window_validity",
+      "label": "Window validity invariant",
+      "statement": "At every step, the window [l, r] satisfies the constraint. After each expansion of r, l is advanced until the constraint holds.",
+      "maintained_by": "Shrink l (advance left pointer) until the constraint is satisfied after each r expansion",
+      "violated_by": "Expanding r without checking the constraint; or applying a non-monotone constraint where shrinking l does not restore validity",
+      "proof_sketch": "Induction: if [l,r] is valid and we expand to [l,r+1], any violation is fixed by advancing l since removing a left element can only reduce the constraint load (for monotone constraints)",
+      "breaks_if": [
+        "Constraint is non-monotone in window size (adding an element can make the constraint easier to satisfy)",
+        "Elements can be negative in a sum constraint"
+      ],
+      "preserves": [
+        "sa_sliding_window_fixed",
+        "sa_sliding_window_variable",
+        "sa_monotone_deque",
+        "sa_sliding_window_count"
+      ],
+      "manifests_meta_pattern": "mp_monotonicity"
+    },
+    {
+      "id": "inv_monotone_feasibility",
+      "label": "Monotone feasibility invariant",
+      "statement": "Expanding the window (increasing r while l is fixed) can only make the constraint harder to satisfy or leave it unchanged. Shrinking the window (advancing l) can only make it easier.",
+      "maintained_by": "Problem structure — constraint must be monotone increasing in window size",
+      "violated_by": "Negative elements in a sum constraint; non-additive constraints; constraints that depend on absolute positions",
+      "proof_sketch": "For sum constraints with all positive elements: sum([l..r+1]) = sum([l..r]) + arr[r+1] >= sum([l..r]) since arr[r+1] > 0. Monotonicity follows.",
+      "breaks_if": [
+        "Array contains negative integers and constraint is on sum",
+        "Constraint is 'exactly k distinct' rather than 'at most k distinct'"
+      ],
+      "preserves": [
+        "sa_sliding_window_variable",
+        "sa_sliding_window_count"
+      ],
+      "manifests_meta_pattern": "mp_monotonicity"
+    },
+    {
+      "id": "inv_monotone_queue",
+      "label": "Monotone queue invariant",
+      "statement": "The deque D contains indices in strictly decreasing order of their array values: arr[D[0]] > arr[D[1]] > ... > arr[D[k-1]]. The front index D[0] is always the index of the maximum element in the current window [l, r].",
+      "maintained_by": "Before pushing index r: pop all indices from the back while arr[D.back()] <= arr[r]. After advancing l: pop from the front while D.front() < l.",
+      "violated_by": "Pushing without back-popping dominated elements; forgetting to evict out-of-range indices from the front",
+      "proof_sketch": "Back-popping ensures any index with value <= current can never be a future maximum (current dominates it for any future window). Front-popping ensures the maximum candidate is always within the window bounds.",
+      "breaks_if": [
+        "Deque front eviction (out-of-window check) is omitted",
+        "Deque back-pop condition uses strict inequality when equal elements need special handling"
+      ],
+      "preserves": [
+        "sa_monotone_deque"
+      ],
+      "manifests_meta_pattern": "mp_monotonicity"
+    }
+  ]
+}

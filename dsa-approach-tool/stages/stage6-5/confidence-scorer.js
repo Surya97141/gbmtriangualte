@@ -8,7 +8,7 @@ const ConfidenceScorer = (() => {
 
   const SCORE_BANDS = [
     {
-      min    : 75,
+      min    : 85,
       max    : 100,
       level  : 'high',
       label  : 'High Confidence',
@@ -19,8 +19,8 @@ const ConfidenceScorer = (() => {
       detail : 'You have verified key properties, tested edge cases, and the complexity fits. Start with the simplest correct implementation.',
     },
     {
-      min    : 45,
-      max    : 74,
+      min    : 65,
+      max    : 84,
       level  : 'medium',
       label  : 'Medium Confidence',
       icon   : '~',
@@ -31,10 +31,10 @@ const ConfidenceScorer = (() => {
     },
     {
       min    : 0,
-      max    : 44,
+      max    : 64,
       level  : 'low',
       label  : 'Low Confidence',
-      icon   : '!',
+      icon   : '✗',
       color  : 'red',
       action : 'backtrack',
       message: 'Too many assumptions remain unverified. Risk of WA or TLE is high.',
@@ -48,7 +48,7 @@ const ConfidenceScorer = (() => {
     // Stage 0
     complexity_budget_computed    : 'Complexity budget computed',
     infeasible_classes_eliminated : 'Infeasible classes eliminated',
-    memory_checked                : 'Memory feasibility checked',
+    memory_checked                : 'Memory check done',
 
     // Stage 1
     input_type_identified         : 'Input type identified',
@@ -62,7 +62,7 @@ const ConfidenceScorer = (() => {
 
     // Stage 2.5
     decomposition_checked         : 'Decomposition checked',
-    subproblems_identified        : 'Subproblems identified',
+    subproblems_identified        : 'Sub-problems identified',
 
     // Stage 3
     order_sensitivity_answered    : 'Order sensitivity answered',
@@ -72,11 +72,11 @@ const ConfidenceScorer = (() => {
     state_space_answered          : 'State space answered',
     dependency_structure_answered : 'Dependency structure answered',
     search_space_answered         : 'Search space answered',
-    dp_subtype_identified         : 'DP sub-type identified',
+    dp_subtype_identified         : 'DP subtype identified',
     graph_goal_identified         : 'Graph goal identified',
 
     // Stage 3.5
-    transformation_check_done     : 'Transformation check done',
+    transformation_check_done     : 'Transformation checked',
     reframe_questions_answered    : 'Reframe questions answered',
 
     // Stage 4
@@ -95,12 +95,12 @@ const ConfidenceScorer = (() => {
     type_specific_cases_reviewed  : 'Type-specific cases reviewed',
 
     // Penalties
-    property_answered_unsure      : 'Property answered as unsure',
-    verification_skipped          : 'Relevant verifier skipped',
-    no_counterexample_for_greedy  : 'No counter-example test for greedy',
-    state_not_verified_for_dp     : 'DP state not verified',
-    transformation_skipped        : 'Transformation check skipped',
-    edge_cases_skipped            : 'Edge cases skipped',
+    property_answered_unsure      : 'Unsure answers (penalty per)',
+    verification_skipped          : 'Verification entirely skipped (penalty)',
+    no_counterexample_for_greedy  : 'Greedy not tested (penalty)',
+    state_not_verified_for_dp     : 'DP state not verified (penalty)',
+    transformation_skipped        : 'Reframing skipped (penalty)',
+    edge_cases_skipped            : 'Edge cases skipped (penalty)',
   };
 
   // ─── SCORE BAND LOOKUP ────────────────────────────────────────────────────

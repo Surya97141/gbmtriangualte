@@ -1,0 +1,146 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "ontology_version": "1.0.0",
+    "family": "sliding_window",
+    "node_type": "StateArchetype",
+    "created_date": "2026-05-14",
+    "node_count": 4,
+    "description": "State archetype nodes for the sliding window family. Each archetype defines a canonical computational state shape, fill order, feasibility envelope, and required invariants.",
+    "references": {
+      "invariants": "ontology/invariant-graph.json",
+      "transitions": "ontology/transition-graph.json"
+    },
+    "field_notes": {
+      "requires": "Invariant IDs that must hold for this archetype to produce correct results.",
+      "uses": "Transition archetype IDs that drive this state's computation.",
+      "commonly_confused_with": "Other archetype IDs that solvers frequently conflate with this one.",
+      "verified_by": "Verifier check IDs executed during Stage 5.",
+      "confidence_weight": "Points awarded to the confidence score when this archetype is confirmed and verified."
+    }
+  },
+  "nodes": [
+    {
+      "id": "sa_sliding_window_fixed",
+      "label": "Fixed-size sliding window",
+      "state_form": "window [r-k+1, r] moves right; maintain aggregate over k elements",
+      "fill_order": "r = k-1 to n-1, one step right per iteration; l = r-k+1 is derived",
+      "dimension_count": 1,
+      "feasibility": "O(n) time, O(1) auxiliary space (O(k) if storing window elements)",
+      "space_optimization": null,
+      "canonical_problem": "Maximum sum subarray of size k",
+      "common_variants": [
+        "sa_sliding_window_variable",
+        "sa_monotone_deque"
+      ],
+      "requires": [
+        "inv_window_validity"
+      ],
+      "uses": [
+        "tr_expand_shrink_window"
+      ],
+      "commonly_confused_with": [
+        "sa_sliding_window_variable"
+      ],
+      "verified_by": [
+        "v_window_validity_check",
+        "v_amortized_complexity_check"
+      ],
+      "prerequisites": [],
+      "confidence_weight": 8
+    },
+    {
+      "id": "sa_sliding_window_variable",
+      "label": "Variable-size sliding window (two-pointer)",
+      "state_form": "window [l, r]; expand r greedily, shrink l when constraint violated",
+      "fill_order": "r = 0 to n-1 outer loop; l advances independently on violation; total moves O(n)",
+      "dimension_count": 2,
+      "feasibility": "O(n) amortized — l and r each traverse the array at most once",
+      "space_optimization": null,
+      "canonical_problem": "Longest subarray with sum at most k",
+      "common_variants": [
+        "sa_sliding_window_fixed",
+        "sa_sliding_window_count"
+      ],
+      "requires": [
+        "inv_window_validity",
+        "inv_monotone_feasibility"
+      ],
+      "uses": [
+        "tr_expand_shrink_window"
+      ],
+      "commonly_confused_with": [
+        "sa_sliding_window_fixed"
+      ],
+      "verified_by": [
+        "v_window_validity_check",
+        "v_monotonicity_check",
+        "v_amortized_complexity_check"
+      ],
+      "prerequisites": [],
+      "confidence_weight": 8
+    },
+    {
+      "id": "sa_monotone_deque",
+      "label": "Sliding window with monotone deque",
+      "state_form": "deque D holds indices in decreasing value order; D.front() is argmax of current window [l, r]",
+      "fill_order": "r = 0 to n-1; pop back while arr[D.back()] <= arr[r]; push r; pop front while D.front() < l",
+      "dimension_count": 1,
+      "feasibility": "O(n) total — each index pushed and popped at most once",
+      "space_optimization": "Deque stores indices only, not values",
+      "canonical_problem": "Sliding window maximum",
+      "common_variants": [
+        "sa_sliding_window_fixed"
+      ],
+      "requires": [
+        "inv_window_validity",
+        "inv_monotone_queue"
+      ],
+      "uses": [
+        "tr_deque_push_pop"
+      ],
+      "commonly_confused_with": [
+        "sa_sliding_window_fixed"
+      ],
+      "verified_by": [
+        "v_window_validity_check",
+        "v_deque_dual_invariant_check"
+      ],
+      "prerequisites": [
+        "sa_sliding_window_fixed"
+      ],
+      "confidence_weight": 8
+    },
+    {
+      "id": "sa_sliding_window_count",
+      "label": "Count subarrays satisfying constraint — at-most-k subtraction trick",
+      "state_form": "count(at_most_k) - count(at_most_(k-1)); each count uses sa_sliding_window_variable",
+      "fill_order": "two independent passes of sa_sliding_window_variable",
+      "dimension_count": 1,
+      "feasibility": "O(n) — two linear passes",
+      "space_optimization": null,
+      "canonical_problem": "Number of subarrays with at most k distinct characters",
+      "common_variants": [
+        "sa_sliding_window_variable"
+      ],
+      "requires": [
+        "inv_window_validity",
+        "inv_monotone_feasibility"
+      ],
+      "uses": [
+        "tr_expand_shrink_window"
+      ],
+      "commonly_confused_with": [
+        "sa_sliding_window_variable"
+      ],
+      "verified_by": [
+        "v_window_validity_check",
+        "v_at_most_k_trick_check"
+      ],
+      "prerequisites": [
+        "sa_sliding_window_variable"
+      ],
+      "confidence_weight": 7
+    }
+  ]
+}

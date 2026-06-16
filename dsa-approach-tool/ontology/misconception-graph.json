@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "schema_version": "1.0",
+    "ontology_version": "1.0.0",
+    "family": "sliding_window",
+    "node_type": "Misconception",
+    "created_date": "2026-05-14",
+    "node_count": 4,
+    "description": "Misconception nodes for the sliding window family. Each misconception encodes a named cognitive failure pattern with triggering conditions, the invariant it breaks, and the recovery route that corrects it.",
+    "risk_levels": {
+      "watch": "Conditions suggest the misconception could apply; monitoring without alerting.",
+      "likely": "Multiple trigger conditions active; system surfaces a diagnostic check to the user.",
+      "confirmed": "Solver has explicitly made the incorrect claim; recovery route activates immediately."
+    },
+    "field_notes": {
+      "symptom": "What the solver observes — the failure mode visible in output or behavior.",
+      "root_cause": "The exact wrong reasoning step.",
+      "trigger_context": "State archetype IDs where this misconception commonly fires.",
+      "trigger_signals": "Signal IDs whose co-presence elevates risk to likely.",
+      "anti_trigger_signals": "Signal IDs whose presence suppresses this misconception risk.",
+      "detection_question": "Single diagnostic question that definitively surfaces the misconception.",
+      "correction": "The minimal correct reasoning that resolves the misconception.",
+      "breaks_invariant": "Invariant ID this misconception causes to fail.",
+      "recovery_route_id": "ID of the recovery route that should activate."
+    }
+  },
+  "nodes": [
+    {
+      "id": "mc_monotonicity_failure",
+      "label": "Sliding window applied to non-monotone constraint",
+      "symptom": "Window shrink does not restore constraint validity; loop runs incorrectly or produces wrong answer",
+      "root_cause": "Solver assumes the constraint is monotone in window size but it is not — adding an element can improve or worsen the constraint independently of window direction",
+      "trigger_context": [
+        "sa_sliding_window_variable",
+        "sa_sliding_window_count"
+      ],
+      "trigger_signals": [
+        "sig_non_monotone_constraint"
+      ],
+      "anti_trigger_signals": [
+        "sig_monotone_constraint"
+      ],
+      "detection_question": "If I add one more element to the right of a currently valid window, can the window ever become MORE valid? (e.g., because the new element is negative and the constraint is sum-based)",
+      "correction": "Sliding window requires inv_monotone_feasibility. If adding an element to a valid window can make it more valid (not just less valid), shrinking from the left is not a correct fix. Use prefix sums, or the at-most-k subtraction trick, or a different data structure.",
+      "breaks_invariant": "inv_monotone_feasibility",
+      "recovery_route_id": "rr_constraint_monotonicity_check"
+    },
+    {
+      "id": "mc_segment_tree_overkill",
+      "label": "Using O(n log n) segment tree when O(n) two-pointer suffices",
+      "symptom": "Correct output but time limit exceeded, or unnecessarily complex implementation for a linear problem",
+      "root_cause": "Solver defaults to a range query structure without first checking if the window aggregate can be maintained with O(1) incremental updates",
+      "trigger_context": [
+        "sa_sliding_window_variable",
+        "sa_sliding_window_fixed"
+      ],
+      "trigger_signals": [
+        "sig_optimization_query",
+        "sig_contiguous_subarray"
+      ],
+      "anti_trigger_signals": [
+        "sig_monotone_removable"
+      ],
+      "detection_question": "After advancing r by one position, can you update the window aggregate (sum, count, etc.) in O(1) using only the new element arr[r] and the current aggregate?",
+      "correction": "If the window aggregate updates in O(1) per step (e.g., running sum += arr[r], running sum -= arr[l]), a segment tree adds O(log n) overhead with no benefit. Use the running variable directly.",
+      "breaks_invariant": null,
+      "recovery_route_id": "rr_complexity_downgrade"
+    },
+    {
+      "id": "mc_fixed_window_confusion",
+      "label": "Treating a variable-size window problem as fixed-size",
+      "symptom": "Wrong answer — reports result for exactly-k window size when the problem allows any size satisfying the constraint",
+      "root_cause": "Solver reads a size value k from the problem and treats it as a fixed window size when k actually appears in the constraint on window content",
+      "trigger_context": [
+        "sa_sliding_window_variable"
+      ],
+      "trigger_signals": [
+        "sig_range_constraint",
+        "sig_fixed_window_size"
+      ],
+      "anti_trigger_signals": [
+        "sig_variable_window_size"
+      ],
+      "detection_question": "Is the window SIZE fixed at k in every case, or does the window size vary and k appears only in the constraint on what the window contains?",
+      "correction": "Re-read the constraint. 'Window of size k' means fixed size. 'Sum at most k' or 'at most k distinct elements' means variable size with k as a content threshold — use sa_sliding_window_variable.",
+      "breaks_invariant": "inv_window_validity",
+      "recovery_route_id": "rr_constraint_reread"
+    },
+    {
+      "id": "mc_deque_invariant_break",
+      "label": "Forgetting to evict out-of-window indices from the deque front",
+      "symptom": "Correct result for small windows; wrong answer when the front index falls outside the current window [l, r]",
+      "root_cause": "Solver implements back-popping (monotone order maintenance) but omits front-popping (window range enforcement). The two invariants of the deque are not maintained simultaneously.",
+      "trigger_context": [
+        "sa_monotone_deque"
+      ],
+      "trigger_signals": [
+        "sig_monotone_removable"
+      ],
+      "anti_trigger_signals": [],
+      "detection_question": "After advancing the left pointer l, do you check whether the deque's front index is still inside the window [l, r]?",
+      "correction": "The monotone deque requires two simultaneous invariant maintenance operations: (1) pop from the back while arr[D.back()] <= arr[r] to maintain monotone order; (2) pop from the front while D.front() < l to maintain window range. Both must execute on every step.",
+      "breaks_invariant": "inv_monotone_queue",
+      "recovery_route_id": "rr_deque_dual_invariant"
+    }
+  ]
+}

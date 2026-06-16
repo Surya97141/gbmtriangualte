@@ -25,9 +25,9 @@ const Stage6_5 = (() => {
     subproblem_overlap_answered  : 4,
     feasibility_boundary_answered: 4,
     local_optimality_answered    : 4,
-    state_space_answered         : 4,
-    dependency_structure_answered: 4,
-    search_space_answered        : 4,
+    state_space_answered         : 3,
+    dependency_structure_answered: 3,
+    search_space_answered        : 3,
     dp_subtype_identified        : 2,
     graph_goal_identified        : 2,
     transformation_check_done    : 3,
@@ -52,44 +52,8 @@ const Stage6_5 = (() => {
     edge_cases_skipped          : -5,
   };
 
-  const CATEGORY_LABELS = {
-    complexity_budget_computed   : 'Complexity budget computed',
-    infeasible_classes_eliminated: 'Infeasible classes eliminated',
-    memory_checked               : 'Memory check done',
-    input_type_identified        : 'Input type identified',
-    secondary_signals_noted      : 'Secondary signals noted',
-    query_type_identified        : 'Query type identified',
-    output_form_identified       : 'Output form identified',
-    optimization_type_identified : 'Optimization type identified',
-    solution_depth_identified    : 'Solution depth identified',
-    decomposition_checked        : 'Decomposition checked',
-    subproblems_identified       : 'Sub-problems identified',
-    order_sensitivity_answered   : 'Order sensitivity answered',
-    subproblem_overlap_answered  : 'Subproblem overlap answered',
-    feasibility_boundary_answered: 'Feasibility boundary answered',
-    local_optimality_answered    : 'Local optimality answered',
-    state_space_answered         : 'State space answered',
-    dependency_structure_answered: 'Dependency structure answered',
-    search_space_answered        : 'Search space answered',
-    dp_subtype_identified        : 'DP subtype identified',
-    graph_goal_identified        : 'Graph goal identified',
-    transformation_check_done    : 'Transformation checked',
-    reframe_questions_answered   : 'Reframe questions answered',
-    constraint_interaction_checked: 'Constraint interaction checked',
-    hidden_structure_checked     : 'Hidden structure checked',
-    greedy_counterexample_tested : 'Greedy counter-example tested',
-    monotonicity_verified        : 'Monotonicity verified',
-    dp_state_verified            : 'DP state verified',
-    graph_properties_verified    : 'Graph properties verified',
-    keyword_crosscheck_done      : 'Keyword cross-check done',
-    universal_cases_reviewed     : 'Universal edge cases reviewed',
-    type_specific_cases_reviewed : 'Type-specific cases reviewed',
-    property_answered_unsure     : 'Unsure answers (penalty per)',
-    no_counterexample_for_greedy : 'Greedy not tested (penalty)',
-    state_not_verified_for_dp    : 'DP state not verified (penalty)',
-    transformation_skipped       : 'Reframing skipped (penalty)',
-    edge_cases_skipped           : 'Edge cases skipped (penalty)',
-  };
+  // Single source of truth lives in confidence-scorer.js
+  const CATEGORY_LABELS = ConfidenceScorer.CATEGORY_LABELS;
 
   const STAGE_GROUPS = [
     { label: 'Stage 0 — Complexity',    keys: ['complexity_budget_computed','infeasible_classes_eliminated','memory_checked'] },
@@ -101,14 +65,11 @@ const Stage6_5 = (() => {
     { label: 'Stage 4 — Constraints',   keys: ['constraint_interaction_checked','hidden_structure_checked'] },
     { label: 'Stage 5 — Verification',  keys: ['greedy_counterexample_tested','monotonicity_verified','dp_state_verified','graph_properties_verified','keyword_crosscheck_done'] },
     { label: 'Stage 6 — Edge Cases',    keys: ['universal_cases_reviewed','type_specific_cases_reviewed'] },
-    { label: 'Penalties',               keys: ['property_answered_unsure','no_counterexample_for_greedy','state_not_verified_for_dp','transformation_skipped','edge_cases_skipped'] },
+    { label: 'Penalties',               keys: ['property_answered_unsure','verification_skipped','no_counterexample_for_greedy','state_not_verified_for_dp','transformation_skipped','edge_cases_skipped'] },
   ];
 
-  const BANDS = [
-    { level: 'high',   min: 85, max: 100, label: 'High Confidence',   color: 'green',  icon: '✓',  message: 'Thorough analysis — proceed to Stage 7',          detail: 'Your structural analysis is comprehensive. Proceed with confidence.' },
-    { level: 'medium', min: 65, max: 84,  label: 'Moderate Confidence',color: 'yellow', icon: '~',  message: 'Reasonable analysis — consider a few improvements', detail: 'Most structures identified. A few gaps may cause issues at implementation.' },
-    { level: 'low',    min: 0,  max: 64,  label: 'Low Confidence',     color: 'red',    icon: '✗',  message: 'Incomplete analysis — return and fill gaps',         detail: 'Significant gaps in structural analysis. Proceeding risks wrong architecture.' },
-  ];
+  // Single source of truth lives in confidence-scorer.js
+  const BANDS = ConfidenceScorer.SCORE_BANDS;
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
@@ -116,21 +77,14 @@ const Stage6_5 = (() => {
     _state  = state;
     _report = _computeReport(state);
 
-    const band = _getBand(_report.score);
+    const band = ConfidenceScorer.getBand(_report.score);
 
-    const CS = typeof ConfidenceScorer !== 'undefined' ? ConfidenceScorer : null;
-    if (CS) {
-      State.setAnswer('stage6_5', {
-        score   : _report.score,
-        band    : band.level,
-        report  : _report,
-        computed: true,
-      });
-    } else {
-      State.setAnswer('stage6_5', {
-        score: _report.score, band: band.level, computed: true,
-      });
-    }
+    State.setAnswer('stage6_5', {
+      score   : _report.score,
+      band    : band.level,
+      report  : _report,
+      computed: true,
+    });
 
     _injectStyles();
 
@@ -517,10 +471,16 @@ const Stage6_5 = (() => {
     const isBS     = families.some(f => f.includes('binary_search'));
     const isGraph  = families.some(f => f.includes('graph'));
 
+    // Penalise if directions were identified but stage 5 was entirely skipped
+    const hasVerifierActivity = s5.verifierStates && Object.keys(s5.verifierStates).length > 0;
+    if (dirs.length > 0 && Object.keys(s5).length === 0) {
+      deduct('verification_skipped', PENALTY_MAP.verification_skipped);
+    }
+
     if (isGreedy) {
       if (s5.greedyTested || s5.verifierStates?.greedy?.verdict) {
         earn('greedy_counterexample_tested');
-      } else {
+      } else if (hasVerifierActivity) {
         deduct('no_counterexample_for_greedy', PENALTY_MAP.no_counterexample_for_greedy);
       }
     }
@@ -530,7 +490,7 @@ const Stage6_5 = (() => {
     if (isDP) {
       if (s5.dpStateVerified || s5.verifierStates?.dp_state?.checkAnswers) {
         earn('dp_state_verified');
-      } else {
+      } else if (hasVerifierActivity) {
         deduct('state_not_verified_for_dp', PENALTY_MAP.state_not_verified_for_dp);
       }
     }
@@ -580,10 +540,6 @@ const Stage6_5 = (() => {
       sug.push({ text: 'Complete the reframing check in Stage 3.5', stage: 'Stage 3.5', points: SCORE_MAP.transformation_check_done });
 
     return sug.slice(0, 3);
-  }
-
-  function _getBand(score) {
-    return BANDS.find(b => score >= b.min && score <= b.max) ?? BANDS[2];
   }
 
   // ─── STYLES ────────────────────────────────────────────────────────────────
@@ -757,7 +713,7 @@ const Stage6_5 = (() => {
   function onMount(state) {
     const saved = state.answers?.stage6_5;
     if (!saved?.score) return;
-    const band = _getBand(saved.score);
+    const band = ConfidenceScorer.getBand(saved.score);
     if (band.level === 'high' || saved.overrideProceeded) {
       if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
     }

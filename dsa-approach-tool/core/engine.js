@@ -10,6 +10,9 @@ const Engine = (() => {
   let _autoSaveTimer = null;
   const AUTO_SAVE_INTERVAL = 30000;
 
+  let _touchStartX = 0;
+  let _touchStartY = 0;
+
   // ─── INIT ──────────────────────────────────────────────────────────────────
 
   function init() {
@@ -71,10 +74,6 @@ const Engine = (() => {
       _shakeNextButton();
       return;
     }
-
-    // ── FIX: was _buildStageOutput(current) which was never defined ────────
-    // Run post-processing for the current stage before leaving
-    _postProcess(current);
 
     const next = Router.next(current, state);
     if (!next) {
@@ -351,7 +350,7 @@ const Engine = (() => {
 
     // TWO POINTER / SLIDING WINDOW
     if (
-      p.orderSensitivity !== 'yes' &&
+      p.orderSensitivity === 'no' &&
       (input.inputTypes ?? []).some(t =>
         ['single_array', 'two_arrays', 'single_string'].includes(t)
       ) &&
@@ -387,8 +386,11 @@ const Engine = (() => {
 
   function _refineDirection(state, family, detail) {
     const directions = State.getDirections();
-    const existing   = directions.find(d => d.family === family);
-    if (existing) Object.assign(existing, detail);
+    const idx = directions.findIndex(d => d.family === family);
+    if (idx === -1) return;
+    const updated = { ...directions[idx], ...detail };
+    State.clearDirections();
+    directions.forEach((d, i) => State.addDirection(i === idx ? updated : d));
   }
 
   function _applyTransformation(transformationId, state) {
@@ -475,6 +477,21 @@ const Engine = (() => {
         e.returnValue = '';
       }
     });
+
+    document.addEventListener('touchstart', (e) => {
+      _touchStartX = e.changedTouches[0].screenX;
+      _touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].screenX - _touchStartX;
+      const dy = e.changedTouches[0].screenY - _touchStartY;
+      // Only fire if the horizontal component clearly dominates (not a scroll)
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        if (dx < 0) _navigateNext();
+        else        _navigateBack();
+      }
+    }, { passive: true });
   }
 
   // ─── STATE SUBSCRIPTIONS ───────────────────────────────────────────────────
