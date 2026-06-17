@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir -p \"c:/GBMlookup/dsa-approach-tool/stages/home\")"
+      "Bash(mkdir -p \"c:/GBMlookup/dsa-approach-tool/stages/home\")",
+      "Bash(git add *)",
+      "Bash(git check-ignore *)",
+      "Bash(cat .gitignore)",
+      "Bash(git commit -m ' *)"
     ],
     "additionalDirectories": [
       "c:\\GBMlookup\\dsa-approach-tool\\stages"
