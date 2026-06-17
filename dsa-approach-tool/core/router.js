@@ -167,6 +167,12 @@ const Router = (() => {
       required: true,
       skipIf  : null,
     },
+    {
+      id      : 'stage8',
+      label   : 'Code Translation',
+      required: true,
+      skipIf  : null,
+    },
   ];
 
   // ─── RECOVERY PATHS ────────────────────────────────────────────────────────

@@ -280,7 +280,7 @@ const SessionUtils = {
     const stageOrder = [
       'stage0', 'stage1', 'stage2', 'stage2_5',
       'stage3', 'stage3_5', 'stage4', 'stage4_5',
-      'stage5', 'stage6', 'stage6_5', 'stage7',
+      'stage5', 'stage6', 'stage6_5', 'stage7', 'stage8',
     ];
     const fromIdx = stageOrder.indexOf(stageId);
     if (fromIdx === -1) return;

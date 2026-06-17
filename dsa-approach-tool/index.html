@@ -219,6 +219,64 @@
   .shake { animation: shake .4s ease; }
 
   .hidden { display: none !important; }
+
+  /* ── Streak counter in topbar ────────────────────────────────────── */
+  .topbar__streak {
+    font-family   : var(--font-mono);
+    font-size     : .62rem;
+    color         : var(--pass);
+    letter-spacing: .5px;
+    white-space   : nowrap;
+    padding       : 3px 8px;
+    border        : 1px solid rgba(6,214,160,.25);
+    border-radius : 4px;
+    background    : rgba(6,214,160,.06);
+  }
+
+  /* ── Pattern unlock collapsible in sidebar ───────────────────────── */
+  .pm-collapsible {
+    border-top: 1px solid var(--border-default);
+    flex-shrink: 0;
+  }
+
+  .pm-collapsible-summary {
+    display        : flex;
+    align-items    : center;
+    justify-content: space-between;
+    padding        : 9px 16px;
+    font-family    : var(--font-mono);
+    font-size      : .6rem;
+    letter-spacing : 1px;
+    text-transform : uppercase;
+    color          : var(--text-muted);
+    cursor         : pointer;
+    list-style     : none;
+    user-select    : none;
+    gap            : 8px;
+  }
+
+  .pm-collapsible-summary::-webkit-details-marker { display: none; }
+
+  .pm-collapsible-summary::after {
+    content   : '▶';
+    font-size : .55rem;
+    flex-shrink: 0;
+    transition: transform .18s;
+  }
+
+  .pm-collapsible[open] .pm-collapsible-summary::after { transform: rotate(90deg); }
+
+  .pm-collapsible-label { flex: 1; }
+
+  .pm-collapsible-count {
+    font-size    : .58rem;
+    background   : var(--surface-2);
+    padding      : 1px 6px;
+    border-radius: 9999px;
+    color        : var(--text-secondary);
+  }
+
+  #pm-grid { padding: 8px 10px 12px; }
   </style>
 </head>
 
@@ -291,6 +349,9 @@
 
       <div class="topbar__right">
         <span class="topbar__confidence" id="topbar-confidence" aria-live="polite"></span>
+        <span class="topbar__streak" id="topbar-streak" aria-live="polite"
+              title="Consecutive days with a completed Stage 8 walkthrough"
+              style="display:none"></span>
         <button class="btn btn--ghost btn--sm" id="topbar-reset-btn"
                 aria-label="Reset current session">
           ↺ Reset
@@ -414,6 +475,15 @@
             <span class="stage-map__sub">Direction + Actions</span>
           </div>
         </div>
+        <div class="stage-map__connector"></div>
+
+        <div class="stage-map__item stage-map__item--locked" data-stage="stage8" role="listitem">
+          <div class="stage-map__dot">8</div>
+          <div class="stage-map__label">
+            <span class="stage-map__name">Code Translation</span>
+            <span class="stage-map__sub">Chunk walkthrough</span>
+          </div>
+        </div>
 
         <div class="stage-map__section-label" style="margin-top:8px">Recovery</div>
 
@@ -430,6 +500,15 @@
       <div class="sidebar__footer">
         <div class="sidebar__score" id="sidebar-score"></div>
       </div>
+
+      <!-- Pattern unlock map — async-rendered by PatternMap.render() on load -->
+      <details class="pm-collapsible" id="pm-collapsible">
+        <summary class="pm-collapsible-summary">
+          <span class="pm-collapsible-label">Pattern unlocks</span>
+          <span class="pm-collapsible-count" id="pm-count"></span>
+        </summary>
+        <div class="pm-grid" id="pm-grid"></div>
+      </details>
 
     </nav>
 
@@ -555,7 +634,11 @@
   <script src="/stages/stage7/output/next-action.js"></script>
   <script src="/stages/stage7/output/summary-builder.js"></script>
   <script src="/stages/stage7/output/tradeoff-resolver.js"></script>
+  <script src="/stages/stage7/output/code-chunker.js"></script>
   <script src="/stages/stage7/stage7.js"></script>
+
+  <script src="/stages/home/pattern-map.js"></script>
+  <script src="/stages/stage8/stage8.js"></script>
 
   <script src="/recovery/recovery-paths/wa-path.js"></script>
   <script src="/recovery/recovery-paths/tle-path.js"></script>
@@ -633,8 +716,41 @@
       } else {
         console.error('[Shell] Engine not loaded — check script order and errors above');
       }
+
+      // ── Streak counter ──────────────────────────────────────────────────
+      _refreshStreak();
+
+      // ── Pattern unlock map (async) ──────────────────────────────────────
+      _renderPatternMap();
     }, 1600);
   })();
+
+  // ── Streak + pattern map helpers ─────────────────────────────────────
+  function _refreshStreak() {
+    const streak   = (typeof SessionUtils !== 'undefined') ? SessionUtils.computeStreak() : 0;
+    const streakEl = document.getElementById('topbar-streak');
+    if (!streakEl) return;
+    if (streak > 0) {
+      streakEl.textContent = streak + 'd streak';
+      streakEl.style.display = 'inline';
+    } else {
+      streakEl.style.display = 'none';
+    }
+  }
+
+  function _renderPatternMap() {
+    const grid = document.getElementById('pm-grid');
+    if (!grid || typeof PatternMap === 'undefined') return;
+    PatternMap.render(grid).then(() => {
+      const collapsible = document.getElementById('pm-collapsible');
+      if (collapsible && PatternMap.hasUnlocks()) collapsible.open = true;
+      const countEl = document.getElementById('pm-count');
+      if (countEl) {
+        const n = grid.querySelectorAll('.pm-card--unlocked').length;
+        countEl.textContent = n > 0 ? n : '';
+      }
+    }).catch(() => {});
+  }
 
   // ── Mobile sidebar toggle ─────────────────────────────────────────────
   (function setupSidebar() {
@@ -754,6 +870,12 @@
   // Recovery mode activated
   document.addEventListener('dsa:recovery-mode', () => {
     document.getElementById('recovery-banner')?.classList.remove('hidden');
+  });
+
+  // Refresh streak + pattern map after any session reset (covers stage8 completion path)
+  document.addEventListener('dsa:reset', () => {
+    _refreshStreak();
+    _renderPatternMap();
   });
   </script>
 

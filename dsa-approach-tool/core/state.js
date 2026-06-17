@@ -142,6 +142,14 @@ const State = (() => {
         tradeoffContext : null,        // 'contest'|'interview'|'practice'
         answeredAt      : null,
       },
+
+      stage8: {
+        selectedLanguage: 'python',   // 'python'|'javascript'|'cpp'|'java'
+        chunks          : [],         // [{id, stepNumber, name, mentalModelLine, code, understood, timeSpent}]
+        completedAt     : null,       // timestamp when all chunks understood
+        patternUnlocked : null,       // direction.label string — used by PatternMap
+        answeredAt      : null,
+      },
     },
 
     // ── Output — built progressively ──────────────────────────────────────────
@@ -251,7 +259,7 @@ const State = (() => {
     const ORDER = [
       'stage0','stage1','stage2','stage2_5',
       'stage3','stage3_5','stage4','stage4_5',
-      'stage5','stage6','stage6_5','stage7',
+      'stage5','stage6','stage6_5','stage7','stage8',
     ];
     const fromIdx = ORDER.indexOf(stageId);
     if (fromIdx === -1) return;

@@ -180,6 +180,7 @@ const Renderer = (() => {
       stage6         : (typeof Stage6         !== 'undefined') ? Stage6         : null,
       stage6_5       : (typeof Stage6_5       !== 'undefined') ? Stage6_5       : null,
       stage7         : (typeof Stage7         !== 'undefined') ? Stage7         : null,
+      stage8         : (typeof Stage8         !== 'undefined') ? Stage8         : null,
       recovery_wa    : (typeof RecoveryWA     !== 'undefined') ? RecoveryWA     : null,
       recovery_tle   : (typeof RecoveryTLE    !== 'undefined') ? RecoveryTLE    : null,
       recovery_logic : (typeof RecoveryLogic  !== 'undefined') ? RecoveryLogic  : null,
