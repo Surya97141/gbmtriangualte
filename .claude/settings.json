@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"c:/GBMlookup/dsa-approach-tool/stages/home\")"
+    ],
+    "additionalDirectories": [
+      "c:\\GBMlookup\\dsa-approach-tool\\stages"
+    ]
+  }
+}

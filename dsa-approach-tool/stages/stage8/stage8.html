@@ -1,0 +1,508 @@
+<!-- stages/stage8/stage8.html -->
+<!-- Reference template for Stage 8 — Code Translation -->
+<!-- stage8.js builds this dynamically. Use for layout/style reference only. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stage 8 — Code Translation</title>
+  <style>
+
+    /* ── Reset + Tokens ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink        : #1a1a2e;
+      --bg         : #f5f0e8;
+      --surface    : #fffdf7;
+      --border     : #d4ccb8;
+      --muted      : #8a8070;
+      --green      : #06d6a0;
+      --green-bg   : rgba(6,214,160,.08);
+      --blue       : #2196f3;
+      --blue-bg    : rgba(33,150,243,.07);
+      --radius-sm  : 6px;
+      --radius-md  : 10px;
+      --font-mono  : 'Space Mono', monospace;
+      --font-sans  : 'DM Sans', sans-serif;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background : var(--bg);
+      color      : var(--ink);
+      padding    : 24px;
+      max-width  : 960px;
+      margin     : 0 auto;
+    }
+
+    /* ── Shell layout (split panel) ──────────────────────────────────────── */
+    .s8-shell {
+      display      : flex;
+      min-height   : 520px;
+      border-radius: 12px;
+      overflow     : hidden;
+      border       : 1.5px solid var(--border);
+    }
+
+    /* ── Left nav (240px fixed) ──────────────────────────────────────────── */
+    .s8-nav {
+      width         : 240px;
+      flex-shrink   : 0;
+      display       : flex;
+      flex-direction: column;
+      background    : var(--surface);
+      border-right  : 1.5px solid var(--border);
+    }
+
+    .s8-nav-header {
+      padding      : 16px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .s8-stage-label {
+      font-family   : var(--font-mono);
+      font-size     : .58rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      display       : block;
+    }
+
+    .s8-nav-title {
+      font-size  : .9rem;
+      font-weight: 700;
+      margin-top : 3px;
+    }
+
+    .s8-nav-dir {
+      font-size  : .69rem;
+      color      : var(--muted);
+      margin-top : 4px;
+      line-height: 1.4;
+    }
+
+    .s8-nav-block {
+      padding      : 12px 14px;
+      border-bottom: 1px solid rgba(212,204,184,.4);
+    }
+
+    .s8-nav-block--grow {
+      flex      : 1;
+      overflow-y: auto;
+    }
+
+    .s8-block-label {
+      font-family   : var(--font-mono);
+      font-size     : .57rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 7px;
+    }
+
+    /* ── Language selector (2 × 2 grid) ──────────────────────────────────── */
+    .s8-lang-grid {
+      display              : grid;
+      grid-template-columns: 1fr 1fr;
+      gap                  : 5px;
+    }
+
+    .s8-lang-btn {
+      padding      : 5px 0;
+      border       : 1.5px solid var(--border);
+      border-radius: 6px;
+      background   : var(--bg);
+      font-family  : var(--font-mono);
+      font-size    : .63rem;
+      color        : var(--muted);
+      cursor       : pointer;
+    }
+
+    .s8-lang-btn--on {
+      background  : rgba(37,99,235,.06);
+      border-color: #2563eb;
+      color       : #2563eb;
+      font-weight : 700;
+    }
+
+    /* ── Chunk nav list ──────────────────────────────────────────────────── */
+    .s8-chunk-nav { display: flex; flex-direction: column; gap: 2px; }
+
+    .s8-nav-item {
+      display      : flex;
+      align-items  : center;
+      gap          : 7px;
+      padding      : 7px 10px;
+      border       : 1.5px solid transparent;
+      border-radius: 7px;
+      background   : none;
+      cursor       : pointer;
+      text-align   : left;
+      width        : 100%;
+    }
+
+    .s8-nav-item--active {
+      background  : rgba(37,99,235,.06);
+      border-color: rgba(37,99,235,.22);
+    }
+
+    .s8-nav-num  { font-family: var(--font-mono); font-size: .64rem; color: var(--muted); flex-shrink: 0; min-width: 14px; }
+    .s8-nav-name { font-size: .71rem; flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .s8-nav-check { font-size: .64rem; color: var(--green); flex-shrink: 0; opacity: 0; }
+    .s8-nav-item--done .s8-nav-check { opacity: 1; }
+
+    /* ── Progress bar ────────────────────────────────────────────────────── */
+    .s8-nav-footer  { padding: 12px 14px; border-top: 1px solid var(--border); }
+    .s8-progress-track { height: 5px; background: rgba(212,204,184,.5); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+    .s8-progress-fill  { height: 100%; background: var(--green); border-radius: 99px; width: 75%; }
+    .s8-progress-label { font-family: var(--font-mono); font-size: .6rem; color: var(--muted); }
+
+    /* ── Right main panel ────────────────────────────────────────────────── */
+    .s8-main {
+      flex      : 1;
+      overflow-y: auto;
+      padding   : 28px 32px;
+      background: var(--bg);
+    }
+
+    /* ── Chunk view ──────────────────────────────────────────────────────── */
+    .s8-chunk-view { display: flex; flex-direction: column; gap: 18px; }
+
+    .s8-chunk-header { display: flex; align-items: center; gap: 12px; }
+
+    .s8-step-badge {
+      display        : inline-flex;
+      align-items    : center;
+      justify-content: center;
+      width          : 28px;
+      height         : 28px;
+      border-radius  : 50%;
+      background     : rgba(37,99,235,.06);
+      border         : 1.5px solid rgba(37,99,235,.28);
+      font-family    : var(--font-mono);
+      font-size      : .72rem;
+      font-weight    : 700;
+      color          : #2563eb;
+      flex-shrink    : 0;
+    }
+
+    .s8-chunk-name { font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+
+    /* ── Mental model callout — 3px blue left border ─────────────────────── */
+    .s8-callout {
+      padding      : 12px 16px;
+      background   : var(--surface);
+      border       : 1.5px solid var(--border);
+      border-left  : 3px solid #2563eb;
+      border-radius: var(--radius-sm);
+    }
+
+    .s8-callout-label {
+      font-family   : var(--font-mono);
+      font-size     : .57rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color         : var(--muted);
+      margin-bottom : 5px;
+    }
+
+    .s8-callout-text { font-size: .82rem; font-style: italic; line-height: 1.6; }
+
+    /* ── Code block (dark bg) ────────────────────────────────────────────── */
+    .s8-code-wrap   { border-radius: var(--radius-sm); overflow: hidden; border: 1.5px solid rgba(0,0,0,.18); }
+
+    .s8-code-toolbar {
+      display        : flex;
+      align-items    : center;
+      justify-content: space-between;
+      padding        : 6px 14px;
+      background     : rgba(0,0,0,.4);
+    }
+
+    .s8-code-lang-tag { font-family: var(--font-mono); font-size: .61rem; color: rgba(226,232,240,.55); }
+
+    .s8-copy-btn {
+      padding      : 3px 10px;
+      border       : 1px solid rgba(226,232,240,.18);
+      border-radius: 4px;
+      background   : transparent;
+      color        : rgba(226,232,240,.65);
+      font-family  : var(--font-mono);
+      font-size    : .6rem;
+      cursor       : pointer;
+    }
+
+    .s8-code-block { display: flex; background: #1a1a2e; }
+
+    .s8-line-nums {
+      display       : flex;
+      flex-direction: column;
+      padding       : 14px 10px 14px 14px;
+      min-width     : 42px;
+      text-align    : right;
+      font-family   : var(--font-mono);
+      font-size     : .71rem;
+      line-height   : 1.7;
+      color         : #4a5568;
+      user-select   : none;
+      border-right  : 1px solid rgba(255,255,255,.06);
+      flex-shrink   : 0;
+    }
+
+    .s8-line-nums span { display: block; }
+
+    .s8-code-pre {
+      flex       : 1;
+      margin     : 0;
+      padding    : 14px 16px;
+      font-family: var(--font-mono);
+      font-size  : .71rem;
+      line-height: 1.7;
+      color      : #e2e8f0;
+      white-space: pre;
+      background : transparent;
+      overflow-x : auto;
+    }
+
+    /* ── Action buttons ──────────────────────────────────────────────────── */
+    .s8-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .s8-btn-understand {
+      padding      : 9px 22px;
+      border       : 1.5px solid var(--green);
+      border-radius: var(--radius-sm);
+      background   : var(--green-bg);
+      color        : #028a5b;
+      font-family  : var(--font-sans);
+      font-size    : .82rem;
+      font-weight  : 600;
+      cursor       : pointer;
+    }
+
+    .s8-btn-explain {
+      padding      : 9px 16px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : transparent;
+      color        : var(--muted);
+      font-family  : var(--font-sans);
+      font-size    : .82rem;
+      cursor       : pointer;
+    }
+
+    /* ── Completion state ────────────────────────────────────────────────── */
+    .s8-completion {
+      display        : flex;
+      flex-direction : column;
+      align-items    : center;
+      justify-content: center;
+      text-align     : center;
+      gap            : 14px;
+      padding        : 56px 24px;
+    }
+
+    .s8-completion-icon {
+      width          : 64px;
+      height         : 64px;
+      border-radius  : 50%;
+      background     : var(--green-bg);
+      border         : 2px solid rgba(6,214,160,.4);
+      display        : flex;
+      align-items    : center;
+      justify-content: center;
+      font-size      : 1.8rem;
+      color          : var(--green);
+    }
+
+    .s8-completion-heading { font-size: 1.18rem; font-weight: 700; }
+    .s8-completion-sub     { font-size: .83rem; color: var(--muted); }
+
+    .s8-completion-actions {
+      display        : flex;
+      gap            : 10px;
+      flex-wrap      : wrap;
+      justify-content: center;
+      margin-top     : 4px;
+    }
+
+    .s8-btn-home {
+      padding      : 10px 22px;
+      border       : 1.5px solid #2563eb;
+      border-radius: var(--radius-sm);
+      background   : #2563eb;
+      color        : #fff;
+      font-family  : var(--font-sans);
+      font-size    : .84rem;
+      font-weight  : 600;
+      cursor       : pointer;
+    }
+
+    .s8-btn-again {
+      padding      : 10px 22px;
+      border       : 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background   : transparent;
+      color        : var(--muted);
+      font-family  : var(--font-sans);
+      font-size    : .84rem;
+      cursor       : pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     ACTIVE CHUNK VIEW (step 2 of 4 shown, Kruskal example)
+════════════════════════════════════════════════════════════════════════ -->
+<div class="s8-shell">
+
+  <!-- Left nav -->
+  <aside class="s8-nav">
+    <div class="s8-nav-header">
+      <span class="s8-stage-label">Stage 8</span>
+      <div class="s8-nav-title">Code translation</div>
+      <div class="s8-nav-dir">Kruskal's MST + Union Find</div>
+    </div>
+
+    <div class="s8-nav-block">
+      <div class="s8-block-label">Language</div>
+      <div class="s8-lang-grid">
+        <button class="s8-lang-btn s8-lang-btn--on">Python</button>
+        <button class="s8-lang-btn">JavaScript</button>
+        <button class="s8-lang-btn">C++</button>
+        <button class="s8-lang-btn">Java</button>
+      </div>
+    </div>
+
+    <div class="s8-nav-block s8-nav-block--grow">
+      <div class="s8-block-label">Steps</div>
+      <div class="s8-chunk-nav">
+        <div class="s8-nav-item s8-nav-item--done">
+          <span class="s8-nav-num">1</span>
+          <span class="s8-nav-name">Union Find class</span>
+          <span class="s8-nav-check">✓</span>
+        </div>
+        <div class="s8-nav-item s8-nav-item--active">
+          <span class="s8-nav-num">2</span>
+          <span class="s8-nav-name">Sort edges</span>
+          <span class="s8-nav-check">✓</span>
+        </div>
+        <div class="s8-nav-item">
+          <span class="s8-nav-num">3</span>
+          <span class="s8-nav-name">Build MST</span>
+          <span class="s8-nav-check">✓</span>
+        </div>
+        <div class="s8-nav-item">
+          <span class="s8-nav-num">4</span>
+          <span class="s8-nav-name">Return result</span>
+          <span class="s8-nav-check">✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="s8-nav-footer">
+      <div class="s8-progress-track">
+        <div class="s8-progress-fill" style="width:25%"></div>
+      </div>
+      <div class="s8-progress-label">1 / 4 understood</div>
+    </div>
+  </aside>
+
+  <!-- Right panel — active chunk -->
+  <main class="s8-main">
+    <div class="s8-chunk-view">
+
+      <div class="s8-chunk-header">
+        <span class="s8-step-badge">2</span>
+        <h2 class="s8-chunk-name">Sort edges</h2>
+      </div>
+
+      <div class="s8-callout">
+        <div class="s8-callout-label">Why this exists</div>
+        <p class="s8-callout-text">
+          Kruskal's greedy rule only works if we always pick the cheapest
+          remaining safe edge — sorting upfront lets the loop grab them in order
+          without any priority queue overhead.
+        </p>
+      </div>
+
+      <div class="s8-code-wrap">
+        <div class="s8-code-toolbar">
+          <span class="s8-code-lang-tag">Python</span>
+          <button class="s8-copy-btn">Copy</button>
+        </div>
+        <div class="s8-code-block">
+          <div class="s8-line-nums" aria-hidden="true">
+            <span>1</span>
+            <span>2</span>
+          </div>
+          <pre class="s8-code-pre">edges.sort(key=lambda e: e[2])   # sort by weight ascending
+# edges = [(u, v, w), ...]</pre>
+        </div>
+      </div>
+
+      <div class="s8-actions">
+        <button class="s8-btn-understand">I understand this</button>
+        <button class="s8-btn-explain">Explain this chunk →</button>
+      </div>
+
+    </div>
+  </main>
+
+</div><!-- /s8-shell -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     COMPLETION STATE
+════════════════════════════════════════════════════════════════════════ -->
+<br><br>
+<div class="s8-shell">
+  <aside class="s8-nav">
+    <div class="s8-nav-header">
+      <span class="s8-stage-label">Stage 8</span>
+      <div class="s8-nav-title">Code translation</div>
+      <div class="s8-nav-dir">Kruskal's MST + Union Find</div>
+    </div>
+    <div class="s8-nav-block">
+      <div class="s8-block-label">Language</div>
+      <div class="s8-lang-grid">
+        <button class="s8-lang-btn s8-lang-btn--on">Python</button>
+        <button class="s8-lang-btn">JavaScript</button>
+        <button class="s8-lang-btn">C++</button>
+        <button class="s8-lang-btn">Java</button>
+      </div>
+    </div>
+    <div class="s8-nav-block s8-nav-block--grow">
+      <div class="s8-block-label">Steps</div>
+      <div class="s8-chunk-nav">
+        <div class="s8-nav-item s8-nav-item--done"><span class="s8-nav-num">1</span><span class="s8-nav-name">Union Find class</span><span class="s8-nav-check">✓</span></div>
+        <div class="s8-nav-item s8-nav-item--done"><span class="s8-nav-num">2</span><span class="s8-nav-name">Sort edges</span><span class="s8-nav-check">✓</span></div>
+        <div class="s8-nav-item s8-nav-item--done"><span class="s8-nav-num">3</span><span class="s8-nav-name">Build MST</span><span class="s8-nav-check">✓</span></div>
+        <div class="s8-nav-item s8-nav-item--done"><span class="s8-nav-num">4</span><span class="s8-nav-name">Return result</span><span class="s8-nav-check">✓</span></div>
+      </div>
+    </div>
+    <div class="s8-nav-footer">
+      <div class="s8-progress-track"><div class="s8-progress-fill" style="width:100%"></div></div>
+      <div class="s8-progress-label">4 / 4 understood</div>
+    </div>
+  </aside>
+
+  <main class="s8-main">
+    <div class="s8-completion">
+      <div class="s8-completion-icon" aria-hidden="true">✓</div>
+      <h2 class="s8-completion-heading">You've got the full algorithm.</h2>
+      <p class="s8-completion-sub">Mental model → code translation complete.</p>
+      <div class="s8-completion-actions">
+        <button class="s8-btn-home">Back to problem list</button>
+        <button class="s8-btn-again">Try another problem</button>
+      </div>
+    </div>
+  </main>
+</div><!-- /s8-shell -->
+
+</body>
+</html>

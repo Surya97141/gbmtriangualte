@@ -6,10 +6,11 @@ const SessionUtils = {
 
   // ─── CONSTANTS ─────────────────────────────────────────────────────────────
 
-  STORAGE_KEY       : 'dsa_tool_session',
-  HISTORY_KEY       : 'dsa_tool_history',
-  MAX_HISTORY       : 20,
-  VERSION           : '1.0.0',
+  STORAGE_KEY         : 'dsa_tool_session',
+  HISTORY_KEY         : 'dsa_tool_history',
+  PATTERN_UNLOCKS_KEY : 'dsa_pattern_unlocks',
+  MAX_HISTORY         : 20,
+  VERSION             : '1.0.0',
 
   // ─── SAVE / LOAD ───────────────────────────────────────────────────────────
 
@@ -100,17 +101,20 @@ const SessionUtils = {
       const history = this.loadHistory();
 
       const entry = {
-        id          : this._generateId(),
-        savedAt     : Date.now(),
-        version     : this.VERSION,
-        n           : sessionState.answers?.stage0?.n ?? null,
-        q           : sessionState.answers?.stage0?.q ?? null,
-        inputType   : sessionState.answers?.stage1?.inputTypes ?? [],
-        outputType  : sessionState.answers?.stage2?.outputType ?? null,
-        directions  : sessionState.output?.directions?.map(d => d.id) ?? [],
-        confidence  : sessionState.confidence?.level ?? null,
-        stagesVisited: sessionState.stagesVisited ?? [],
-        recoveryUsed: sessionState.recoveryMode ?? false,
+        id             : this._generateId(),
+        savedAt        : Date.now(),
+        version        : this.VERSION,
+        n              : sessionState.answers?.stage0?.n ?? null,
+        q              : sessionState.answers?.stage0?.q ?? null,
+        inputType      : sessionState.answers?.stage1?.inputTypes ?? [],
+        outputType     : sessionState.answers?.stage2?.outputType ?? null,
+        directions     : sessionState.output?.directions?.map(d => d.id) ?? [],
+        confidence     : sessionState.confidence?.level ?? null,
+        stagesVisited  : sessionState.stagesVisited ?? [],
+        recoveryUsed   : sessionState.recoveryMode ?? false,
+        // Added alongside existing fields — used by computeStreak() and getPatternHistory()
+        stagesCompleted: sessionState.stagesCompleted ?? [],
+        stage8         : sessionState.answers?.stage8 ?? null,
       };
 
       history.unshift(entry);
@@ -358,6 +362,70 @@ const SessionUtils = {
 
   isInRecovery(sessionState) {
     return sessionState.recoveryMode === true;
+  },
+
+  // ─── STREAK COMPUTATION ────────────────────────────────────────────────────
+
+  // Returns the current streak as an integer (0 if no streak or never started).
+  // A streak counts consecutive calendar days on which at least one Stage 8
+  // completion was saved. Today or yesterday must be in the streak — if neither
+  // has a completion the streak is 0 (broken). Yesterday counts because the user
+  // may not have completed today's problem yet (grace period).
+  computeStreak() {
+    const history = this.loadHistory();
+    if (!history.length) return 0;
+
+    // Only sessions where Stage 8 was completed count toward the streak.
+    // Support both field shapes: stagesCompleted array OR stage8.completedAt.
+    const completed = history.filter(e =>
+      (e.stagesCompleted ?? []).includes('stage8') ||
+      (e.stage8?.completedAt != null)
+    );
+    if (!completed.length) return 0;
+
+    // Convert a timestamp to a local-timezone YYYY-MM-DD string
+    const toDateStr = ts => {
+      const d = new Date(ts);
+      return [
+        d.getFullYear(),
+        String(d.getMonth() + 1).padStart(2, '0'),
+        String(d.getDate()).padStart(2, '0'),
+      ].join('-');
+    };
+
+    // Deduplicate dates (one completion per day is enough) and sort descending
+    const dates = [...new Set(completed.map(e => toDateStr(e.savedAt)))].sort().reverse();
+    if (!dates.length) return 0;
+
+    const today     = toDateStr(Date.now());
+    const yesterday = toDateStr(Date.now() - 86400000);
+
+    // If neither today nor yesterday has a completion the streak is broken
+    if (dates[0] !== today && dates[0] !== yesterday) return 0;
+
+    // Walk backwards through sorted dates counting consecutive days
+    let streak = 1;
+    for (let i = 1; i < dates.length; i++) {
+      const prevExpected = toDateStr(new Date(dates[i - 1]).getTime() - 86400000);
+      if (dates[i] === prevExpected) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  },
+
+  // Returns an array of unique patternUnlocked strings from all Stage 8
+  // completions in history. Used by pattern-map.js to mark unlocked cards.
+  getPatternHistory() {
+    const history  = this.loadHistory();
+    const patterns = new Set();
+    history.forEach(e => {
+      const name = e.stage8?.patternUnlocked;
+      if (name) patterns.add(name);
+    });
+    return [...patterns];
   },
 
   // ─── PRIVATE HELPERS ───────────────────────────────────────────────────────
