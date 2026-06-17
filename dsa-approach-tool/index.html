@@ -352,6 +352,10 @@
         <span class="topbar__streak" id="topbar-streak" aria-live="polite"
               title="Consecutive days with a completed Stage 8 walkthrough"
               style="display:none"></span>
+        <button class="btn btn--ghost btn--sm" id="topbar-save-btn"
+                aria-label="Download session as JSON file" title="Download session">
+          ↓ Save
+        </button>
         <button class="btn btn--ghost btn--sm" id="topbar-reset-btn"
                 aria-label="Reset current session">
           ↺ Reset
@@ -790,6 +794,32 @@
       detail: { stageId }
     }));
   });
+
+  // ── Save (download) button ────────────────────────────────────────────
+  document.getElementById('topbar-save-btn')
+    ?.addEventListener('click', () => {
+      const state   = typeof State !== 'undefined' ? State.serialize() : null;
+      const n       = state?.answers?.stage0?.n;
+      const stage   = state?.currentStage ?? 'session';
+      const date    = new Date().toISOString().slice(0, 10);
+      const name    = `dsa-session${n ? '-n' + n : ''}-${stage}-${date}.json`;
+
+      const ok = typeof SessionUtils !== 'undefined'
+        ? SessionUtils.downloadSession(state, name)
+        : false;
+
+      const btn = document.getElementById('topbar-save-btn');
+      if (!btn) return;
+      if (ok) {
+        const prev = btn.textContent;
+        btn.textContent = '✓ Saved';
+        btn.disabled    = true;
+        setTimeout(() => { btn.textContent = prev; btn.disabled = false; }, 1800);
+      } else {
+        btn.textContent = '✗ Failed';
+        setTimeout(() => { btn.textContent = '↓ Save'; }, 1800);
+      }
+    });
 
   // ── Reset button ──────────────────────────────────────────────────────
   document.getElementById('topbar-reset-btn')
