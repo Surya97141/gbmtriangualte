@@ -49,7 +49,7 @@ const PatternMap = (() => {
   // patternName — the direction label string (e.g. "Kruskal's MST + Union Find")
   function unlock(patternName) {
     if (!patternName) return;
-    const key     = _normalise(patternName);
+    const key     = PatternKey.normalisePatternKey(patternName);
     const unlocks = _loadUnlocks();
     const now     = new Date().toISOString();
 
@@ -81,12 +81,18 @@ const PatternMap = (() => {
     const results = [];
 
     const add = rawName => {
-      const cleaned = _cleanSignal(rawName);
-      if (!cleaned) return;
-      const key = _normalise(cleaned);
+      if (!rawName) return;
+      const key = PatternKey.normalisePatternKey(rawName);
       if (!key || seen.has(key)) return;
       seen.add(key);
-      results.push({ name: cleaned, key });
+      // Display name: strip annotations but keep the human-readable label.
+      const name = String(rawName)
+        .replace(/\s*\([^)]*\)/g, '')
+        .replace(/\s*[—–]\s*.+$/, '')
+        .replace(/\s+O\s*\([^)]*\)/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      results.push({ name: name || rawName, key });
     };
 
     // 1. keyword-signals.json — signals strings from exactPhrases
@@ -105,33 +111,6 @@ const PatternMap = (() => {
     });
 
     return results.sort((a, b) => a.name.localeCompare(b.name));
-  }
-
-  // Strip trailing complexity/condition annotations so signal strings become
-  // clean algorithm names suitable for display and key-matching.
-  // e.g. "BFS — if unweighted" → "BFS"
-  //      "Kruskal (sort edges + Union Find)" → "Kruskal + Union Find"
-  //      "DP O(n^2)" → "DP"
-  function _cleanSignal(s) {
-    return s
-      .replace(/\s+O\([^)]*\)/g, '')        // remove O(...) complexity annotations
-      .replace(/\s*—\s*if\s+.+$/i, '')      // remove "— if weighted" suffixes
-      .replace(/\s*—\s*if\s+.+$/i, '')      // second pass for nested cases
-      .replace(/\(sort edges \+ /g, '+ ')   // clean Kruskal parenthetical
-      .replace(/\s*\(priority queue\)/gi, '') // remove generic parentheticals
-      .replace(/[()]/g, '')                  // remove any remaining parens
-      .replace(/\s{2,}/g, ' ')              // collapse multiple spaces
-      .trim();
-  }
-
-  // Normalise to a stable deduplication key:
-  // lowercase, strip non-alphanumeric (except spaces), collapse spaces.
-  function _normalise(s) {
-    return s
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
   }
 
   // ─── UNLOCK STORAGE ────────────────────────────────────────────────────────
