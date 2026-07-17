@@ -20,6 +20,16 @@ const Recovery = (() => {
     reframe_path      : ReframePath,
   };
 
+  // Maps the failureType passed to Engine.enterRecovery() (and thus the
+  // recovery_wa/recovery_tle/recovery_logic/recovery_reframe stage ids) to
+  // the PATHS key it should jump straight into.
+  const FAILURE_TO_PATH = {
+    wa     : 'wa_path',
+    tle    : 'tle_path',
+    logic  : 'logic_unclear_path',
+    reframe: 'reframe_path',
+  };
+
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
   function render(state) {
@@ -29,6 +39,17 @@ const Recovery = (() => {
     _activePath  = saved.activePath  ?? null;
     _currentStep = saved.currentStep ?? null;
     _history     = saved.history     ?? [];
+
+    // First entry into recovery (no path chosen yet this session) — honor
+    // the failure type the user picked in the "What went wrong?" modal
+    // instead of showing the path selector a second time.
+    if (!_activePath && state.recoveryEntry?.failureType) {
+      const mapped = FAILURE_TO_PATH[state.recoveryEntry.failureType];
+      if (mapped && PATHS[mapped]) {
+        _activePath  = mapped;
+        _currentStep = PATHS[mapped].getFirstStep().id;
+      }
+    }
 
     document.dispatchEvent(new CustomEvent('dsa:recovery-mode'));
 
@@ -555,18 +576,16 @@ const Recovery = (() => {
   function _onTerminalAction(action) {
     // Dismiss recovery mode — go back to last active stage
     State.setAnswer('recovery', { completed: true, activePath: null });
-    const lastStage = _state?.answers?.stage7
+    State.exitRecovery();
+    const lastStage = _state?.answers?.stage7?.answeredAt
       ? 'stage7'
       : _state?.currentStage ?? 'stage0';
-    if (typeof Router !== 'undefined') {
-      Router.navigate(lastStage);
-    }
+    document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: lastStage } }));
   }
 
   function _onNavigateAction(stageId) {
-    if (typeof Router !== 'undefined') {
-      Router.navigate(stageId);
-    }
+    State.exitRecovery();
+    document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId } }));
   }
 
   // ─── RENDER HELPERS ───────────────────────────────────────────────────────

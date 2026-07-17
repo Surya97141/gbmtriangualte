@@ -169,20 +169,16 @@ const Engine = (() => {
         State.clearDirections();
         directions.forEach(d => State.addDirection(d));
         State.setOutput('structuralFindings', state.answers?.stage3?.properties ?? {});
-        break;
-      }
 
-      case 'stage3_dp': {
-        _refineDirection(state, 'dp', {
-          subtype: state.answers?.stage3?.dpSubtype,
-        });
-        break;
-      }
-
-      case 'stage3_graph': {
-        _refineDirection(state, 'graph', {
-          goal: state.answers?.stage3?.graphGoal,
-        });
+        // Stage 3's inline DP sub-classifier / graph deep-dive sections (when
+        // triggered) arrive bundled in this same answers payload — refine the
+        // matching direction card with the extra detail if present.
+        if (state.answers?.stage3?.dpSubtype) {
+          _refineDirection(state, 'dp', { subtype: state.answers.stage3.dpSubtype });
+        }
+        if (state.answers?.stage3?.graphGoal) {
+          _refineDirection(state, 'graph', { goal: state.answers.stage3.graphGoal });
+        }
         break;
       }
 

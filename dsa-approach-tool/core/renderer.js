@@ -79,7 +79,7 @@ const Renderer = (() => {
 
   async function _unmountCurrent(direction) {
     const container = _getContainer();
-    if (!container || !container.firstChild) return;
+    if (!container || !container.firstElementChild) return;
 
     // Call cleanup on current stage if it has one
     if (_currentStageId && _stageModules[_currentStageId]?.cleanup) {
@@ -166,25 +166,20 @@ const Renderer = (() => {
       stage2         : (typeof Stage2         !== 'undefined') ? Stage2         : null,
       stage2_5       : (typeof Stage2_5       !== 'undefined') ? Stage2_5       : null,
       stage3         : (typeof Stage3         !== 'undefined') ? Stage3         : null,
-      stage3_dp      : (typeof Stage3_DP      !== 'undefined') ? Stage3_DP      : null,
-      stage3_graph   : (typeof Stage3_Graph   !== 'undefined') ? Stage3_Graph   : null,
       stage3_5       : (typeof Stage3_5       !== 'undefined') ? Stage3_5       : null,
       stage4         : (typeof Stage4         !== 'undefined') ? Stage4         : null,
       stage4_5       : (typeof Stage4_5       !== 'undefined') ? Stage4_5       : null,
       stage5         : (typeof Stage5         !== 'undefined') ? Stage5         : null,
-      stage5_greedy  : (typeof Stage5_Greedy  !== 'undefined') ? Stage5_Greedy  : null,
-      stage5_bsearch : (typeof Stage5_BSearch !== 'undefined') ? Stage5_BSearch : null,
-      stage5_dp      : (typeof Stage5_DP      !== 'undefined') ? Stage5_DP      : null,
-      stage5_graph   : (typeof Stage5_Graph   !== 'undefined') ? Stage5_Graph   : null,
-      stage5_keyword : (typeof Stage5_Keyword !== 'undefined') ? Stage5_Keyword : null,
       stage6         : (typeof Stage6         !== 'undefined') ? Stage6         : null,
       stage6_5       : (typeof Stage6_5       !== 'undefined') ? Stage6_5       : null,
       stage7         : (typeof Stage7         !== 'undefined') ? Stage7         : null,
       stage8         : (typeof Stage8         !== 'undefined') ? Stage8         : null,
-      recovery_wa    : (typeof RecoveryWA     !== 'undefined') ? RecoveryWA     : null,
-      recovery_tle   : (typeof RecoveryTLE    !== 'undefined') ? RecoveryTLE    : null,
-      recovery_logic : (typeof RecoveryLogic  !== 'undefined') ? RecoveryLogic  : null,
-      recovery_reframe:(typeof RecoveryReframe!== 'undefined') ? RecoveryReframe: null,
+      // All four recovery entry points share the single Recovery module —
+      // it picks the right path from state.recoveryEntry.failureType.
+      recovery_wa     : (typeof Recovery !== 'undefined') ? Recovery : null,
+      recovery_tle    : (typeof Recovery !== 'undefined') ? Recovery : null,
+      recovery_logic  : (typeof Recovery !== 'undefined') ? Recovery : null,
+      recovery_reframe: (typeof Recovery !== 'undefined') ? Recovery : null,
     };
     return MODULE_MAP[stageId] ?? null;
   }
@@ -201,6 +196,15 @@ const Renderer = (() => {
 
     if (numEl)   numEl.textContent   = stageNum ? `${stageNum} / ${total}` : '';
     if (titleEl) titleEl.textContent = stageInfo?.label ?? stageId;
+
+    document.dispatchEvent(new CustomEvent('dsa:stage-change', {
+      detail: {
+        stageId,
+        stageIndex : stageNum,
+        totalStages: total,
+        stageName  : stageInfo?.label ?? stageId,
+      },
+    }));
 
     // Recovery mode indicator
     const headerEl = document.getElementById(HEADER_ID);
@@ -293,7 +297,7 @@ const Renderer = (() => {
 
   function _animateOut(container, direction) {
     return new Promise(resolve => {
-      const el = container.firstChild;
+      const el = container.firstElementChild;
       if (!el) { resolve(); return; }
 
       const tx = direction === 'back' ? '16px' : '-16px';

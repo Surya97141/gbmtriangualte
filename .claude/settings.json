@@ -5,7 +5,26 @@
       "Bash(git add *)",
       "Bash(git check-ignore *)",
       "Bash(cat .gitignore)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Read(//tmp/claude/d--GBMlookup/4060c33d-9467-42c6-8ff3-a84d17f2ccfd/**)",
+      "Bash(node cdp-driver.mjs)",
+      "Bash(tee driver-output.log)",
+      "Bash(node --check core/renderer.js)",
+      "Bash(python3 -)",
+      "Bash(grep \"404\\\\|favicon\\\\|\\\\.woff\\\\|\\\\.ttf\" /tmp/http-server.log | sort -u | tail -20)",
+      "Read(//tmp/**)",
+      "Bash(node cdp-full.mjs)",
+      "Bash(tee driver-full-output.log)",
+      "Bash(curl -s http://127.0.0.1:9222/json/list)",
+      "Bash(node -e ' *)",
+      "Bash(node cdp-inspect.mjs \"document.getElementById\\('topbar-stage-num'\\)?.textContent + ' | ' + document.getElementById\\('topbar-stage-name'\\)?.textContent\")",
+      "Bash(tasklist //FI \"IMAGENAME eq chrome.exe\")",
+      "Bash(taskkill //F //IM chrome.exe //T)",
+      "Bash(timeout 90 node cdp-full.mjs)",
+      "Bash(tee driver-full-output3.log)",
+      "Bash(node cdp-inspect.mjs \"document.getElementById\\('topbar-stage-num'\\)?.textContent + ' | ' + document.getElementById\\('topbar-stage-name'\\)?.textContent + ' | nextDisabled=' + document.getElementById\\('btn-next'\\)?.disabled\")",
+      "Bash(node --check core/router.js)",
+      "Bash(tee driver-full-output4.log)"
     ],
     "additionalDirectories": [
       "c:\\GBMlookup\\dsa-approach-tool\\stages"

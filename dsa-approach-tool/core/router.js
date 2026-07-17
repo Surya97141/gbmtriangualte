@@ -52,28 +52,6 @@ const Router = (() => {
       skipIf  : null,
     },
     {
-      id      : 'stage3_dp',
-      label   : 'DP Sub-Classifier',
-      required: false,
-      // Only show if Stage 3 finds overlapping subproblems
-      skipIf  : (state) => {
-        const overlap = state.answers.stage3?.properties?.subproblemOverlap;
-        return overlap !== 'yes_direct' && overlap !== 'yes_split';
-      },
-    },
-    {
-      id      : 'stage3_graph',
-      label   : 'Graph Deep-Dive',
-      required: false,
-      // Only show if input type includes graph
-      skipIf  : (state) => {
-        const inputTypes = state.answers.stage1?.inputTypes ?? [];
-        return !inputTypes.some(t =>
-          ['graph_edge_list', 'graph_adjacency', 'implicit_graph', 'grid'].includes(t)
-        );
-      },
-    },
-    {
       id      : 'stage3_5',
       label   : 'Reframing Check',
       required: false,
@@ -107,47 +85,6 @@ const Router = (() => {
       label   : 'Verification Challenges',
       required: true,
       skipIf  : null,
-    },
-    {
-      id      : 'stage5_greedy',
-      label   : 'Greedy Verifier',
-      required: false,
-      skipIf  : (state) => {
-        return !_isLeaningToward(state, 'greedy');
-      },
-    },
-    {
-      id      : 'stage5_bsearch',
-      label   : 'Monotonicity Verifier',
-      required: false,
-      skipIf  : (state) => {
-        return !_isLeaningToward(state, 'binary_search');
-      },
-    },
-    {
-      id      : 'stage5_dp',
-      label   : 'DP State Verifier',
-      required: false,
-      skipIf  : (state) => {
-        return !_isLeaningToward(state, 'dp');
-      },
-    },
-    {
-      id      : 'stage5_graph',
-      label   : 'Graph Property Verifier',
-      required: false,
-      skipIf  : (state) => {
-        return !_isLeaningToward(state, 'graph');
-      },
-    },
-    {
-      id      : 'stage5_keyword',
-      label   : 'Keyword Cross-Check',
-      required: false,
-      // Skip if no directions identified
-      skipIf  : (state) => {
-        return (state.output?.directions ?? []).length === 0;
-      },
     },
     {
       id      : 'stage6',
@@ -203,14 +140,6 @@ const Router = (() => {
       console.warn(`Router.shouldSkip error for ${stage.id}:`, e);
       return false;
     }
-  }
-
-  // Check if directions include a particular family
-  function _isLeaningToward(state, family) {
-    return (state.output?.directions ?? []).some(d =>
-      (d.id     ?? '').toLowerCase().includes(family) ||
-      (d.family ?? '').toLowerCase().includes(family)
-    );
   }
 
   // ─── NEXT STAGE ────────────────────────────────────────────────────────────
@@ -343,15 +272,8 @@ const Router = (() => {
 
     const SKIP_REASONS = {
       stage2_5  : 'Simple single-input problem — decomposition not needed',
-      stage3_dp : 'No overlapping subproblems identified in Stage 3',
-      stage3_graph: 'No graph input type selected in Stage 1',
       stage3_5  : 'All Stage 3 properties answered with certainty',
       stage4_5  : 'No candidate directions identified yet',
-      stage5_greedy : 'Not leaning toward greedy direction',
-      stage5_bsearch: 'Not leaning toward binary search direction',
-      stage5_dp     : 'Not leaning toward DP direction',
-      stage5_graph  : 'Not leaning toward graph direction',
-      stage5_keyword: 'No directions identified yet',
     };
 
     return _shouldSkip(stage, state)
@@ -370,6 +292,10 @@ const Router = (() => {
   // Check if a specific stage is accessible given current progress
   // Prevents jumping ahead illegally
   function isAccessible(targetStageId, state) {
+    // Recovery stages aren't part of the gated forward sequence — they're
+    // always reachable, entered on demand via Engine.enterRecovery().
+    if (targetStageId?.startsWith('recovery_')) return true;
+
     const targetIdx  = _getStageIndex(targetStageId);
     if (targetIdx === -1) return false;
 
