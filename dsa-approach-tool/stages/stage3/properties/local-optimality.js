@@ -8,6 +8,9 @@ const LocalOptimality = (() => {
     id       : 'localOptimality',
     label    : '3D — Local vs global optimality',
     question : 'At each decision point, can you make a choice that is locally best AND never need to revise it later?',
+    beginnerPhrasing: {
+      question: 'If you always grab the best-looking option right now, never looking back or changing your mind, do you still end up with the best possible overall answer?',
+    },
     why      : 'This is the greedy safety test. If local optimal choices always lead to a globally optimal result — Greedy works in O(n) or O(n log n). If any local choice can lead to a globally suboptimal result — Greedy fails and you need DP.',
     answers  : [
       {

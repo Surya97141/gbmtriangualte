@@ -64,9 +64,101 @@ const KeywordCrosscheck = (() => {
     },
   ];
 
+  // ─── EARLY-INTAKE SIGNALS ───────────────────────────────────────────────────
+  // Used only by the optional "paste problem statement" intake stage (before
+  // Stage 1) to pre-fill Stage 1 / Stage 2's own selections. Separate tables
+  // from KEYWORD_SIGNALS above (which map to algorithm families for the
+  // Stage 5 verifier) since these map to input-type / output-form ids instead
+  // — same scanning approach (lowercase substring match), different target.
+
+  const INPUT_TYPE_SIGNALS = [
+    { keywords: ['two arrays', 'nums1', 'nums2'],                    inputType: 'two_arrays' },
+    { keywords: ['array', 'nums', 'elements', 'list of integers'],   inputType: 'single_array' },
+    { keywords: ['two strings', 's1', 's2', 'source', 'target string'], inputType: 'two_strings' },
+    { keywords: ['words', 'list of strings', 'dictionary'],          inputType: 'multiple_strings' },
+    { keywords: ['string', 'word', 's ='],                           inputType: 'single_string' },
+    { keywords: ['matrix', 'grid', 'rows and columns', 'board'],     inputType: 'matrix_grid' },
+    { keywords: ['edge list', 'edges = ', 'connections'],            inputType: 'graph_edge_list' },
+    { keywords: ['adjacency'],                                       inputType: 'graph_adjacency' },
+    { keywords: ['binary tree', 'tree node', 'root ='],              inputType: 'tree_explicit' },
+    { keywords: ['intervals', 'meetings', 'start and end time'],     inputType: 'intervals' },
+    { keywords: ['given an integer n', 'given a number'],            inputType: 'single_number' },
+  ];
+
+  const OUTPUT_FORM_SIGNALS = [
+    { keywords: ['return the number of', 'count the', 'how many'],       outputForm: 'count' },
+    { keywords: ['return true', 'return false', 'is it possible', 'determine if'], outputForm: 'boolean' },
+    { keywords: ['return the index', 'position of', 'return the indices'], outputForm: 'index_position' },
+    { keywords: ['longest substring', 'longest subarray', 'maximum subarray', 'minimum subarray'], outputForm: 'subarray_substring' },
+    { keywords: ['longest subsequence', 'longest common subsequence'],    outputForm: 'subsequence' },
+    { keywords: ['rearrange', 'sort the array', 'next permutation'],      outputForm: 'full_array' },
+    { keywords: ['minimum spanning tree', 'shortest path tree'],          outputForm: 'tree_graph' },
+    { keywords: ['return the maximum', 'return the minimum', 'return the sum', 'return the total'], outputForm: 'single_value' },
+  ];
+
+  // Order matters — first match with any hit wins for query type (checked
+  // most-specific first).
+  const QUERY_TYPE_SIGNALS = [
+    { keywords: ['update', 'modify the array', 'point update'],        queryType: 'updates' },
+    { keywords: ['queries are given offline', 'process all queries'],  queryType: 'offline' },
+    { keywords: ['for each query', 'q queries', 'answer each query'],  queryType: 'online' },
+  ];
+
   function getVerifier()     { return { ...VERIFIER }; }
   function getKeywords()     { return [...KEYWORD_SIGNALS]; }
   function getMismatches()   { return [...MISMATCHES]; }
+
+  // Suggest input type(s) from pasted problem text — returns up to 3 ids,
+  // best (most keyword hits) first.
+  function suggestInputTypes(text, limit = 3) {
+    const lower = (text ?? '').toLowerCase();
+    const scored = INPUT_TYPE_SIGNALS
+      .map(sig => ({ inputType: sig.inputType, hits: sig.keywords.filter(kw => lower.includes(kw)) }))
+      .filter(s => s.hits.length > 0)
+      .sort((a, b) => b.hits.length - a.hits.length);
+
+    const seen = new Set();
+    const result = [];
+    scored.forEach(s => {
+      if (seen.has(s.inputType) || result.length >= limit) return;
+      seen.add(s.inputType);
+      result.push({ inputType: s.inputType, matchedKeywords: s.hits });
+    });
+    return result;
+  }
+
+  // Suggest a single output form — best match, or null if nothing hit.
+  function suggestOutputForm(text) {
+    const lower = (text ?? '').toLowerCase();
+    let best = null;
+    OUTPUT_FORM_SIGNALS.forEach(sig => {
+      const hits = sig.keywords.filter(kw => lower.includes(kw));
+      if (hits.length && (!best || hits.length > best.matchedKeywords.length)) {
+        best = { outputForm: sig.outputForm, matchedKeywords: hits };
+      }
+    });
+    return best;
+  }
+
+  // Suggest a query type — defaults to 'none' if nothing matches (safest
+  // assumption: a single direct computation, not a query workload).
+  function suggestQueryType(text) {
+    const lower = (text ?? '').toLowerCase();
+    for (const sig of QUERY_TYPE_SIGNALS) {
+      const hits = sig.keywords.filter(kw => lower.includes(kw));
+      if (hits.length) return { queryType: sig.queryType, matchedKeywords: hits };
+    }
+    return { queryType: 'none', matchedKeywords: [] };
+  }
+
+  // Combined suggestion used by the intake stage.
+  function suggestAll(text) {
+    return {
+      inputTypes: suggestInputTypes(text),
+      outputForm: suggestOutputForm(text),
+      queryType : suggestQueryType(text),
+    };
+  }
 
   // Scan problem description for keyword signals
   function scanProblemText(text) {
@@ -126,6 +218,10 @@ const KeywordCrosscheck = (() => {
     scanProblemText,
     detectMismatches,
     buildReport,
+    suggestInputTypes,
+    suggestOutputForm,
+    suggestQueryType,
+    suggestAll,
   };
 
 })();

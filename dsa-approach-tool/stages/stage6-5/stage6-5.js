@@ -88,6 +88,10 @@ const Stage6_5 = (() => {
     _report = _computeReport(state);
 
     const band = ConfidenceScorer.getBand(_report.score);
+    const isBeginner   = typeof Preferences !== 'undefined' && Preferences.getSkillLevel() === 'beginner';
+    const softerFraming = isBeginner &&
+      (band.level === 'medium' || band.level === 'low') &&
+      _isPrimarilyUnsureDriven(_report);
 
     State.setAnswer('stage6_5', {
       score   : _report.score,
@@ -120,6 +124,13 @@ const Stage6_5 = (() => {
             <div class="s65-band-label">${band.label}</div>
             <div class="s65-band-message">${band.message}</div>
             <div class="s65-band-detail">${band.detail}</div>
+            ${softerFraming ? `
+              <div class="s65-band-soft-note">
+                Marking a property "unsure" isn't a mistake — it means you're being honest about
+                what you don't yet know, which is exactly the right instinct at this stage.
+                Revisit the flagged properties below when you're ready; there's no rush.
+              </div>
+            ` : ''}
           </div>
           <div class="s65-thresholds">
             ${BANDS.map(b => `
@@ -407,6 +418,22 @@ const Stage6_5 = (() => {
     body.appendChild(gateSec);
   }
 
+  // Is "unsure" answers the single biggest drag on the score, outweighing
+  // every other penalty combined? Used to soften the band message for
+  // Beginner Mode — an honest "unsure" is a different situation than
+  // skipped verification or a risky property combo, and shouldn't read
+  // the same way.
+  function _isPrimarilyUnsureDriven(report) {
+    const unsureDeduction = report.deducted.find(d => d.key === 'property_answered_unsure');
+    if (!unsureDeduction) return false;
+
+    const otherPenaltyTotal = report.deducted
+      .filter(d => d.key !== 'property_answered_unsure')
+      .reduce((sum, d) => sum + Math.abs(d.points), 0);
+
+    return Math.abs(unsureDeduction.points) >= otherPenaltyTotal;
+  }
+
   // ─── SCORE COMPUTATION ─────────────────────────────────────────────────────
 
   function _computeReport(state) {
@@ -547,7 +574,28 @@ const Stage6_5 = (() => {
     const fp = answers.fastpath ?? {};
     if (fp.direction) earn('fastpath_direction_provided');
 
-    const score       = Math.max(0, Math.min(100, Math.round(total)));
+    let score = Math.max(0, Math.min(100, Math.round(total)));
+
+    // Fast-path sessions can only ever earn points from the Fast Path,
+    // Stage 5, and Stage 6 groups — everything else is legitimately
+    // skipped, not failed. Scoring that against the full walkthrough's
+    // ~100-point ceiling means even a perfect fast-path run caps out
+    // around 30, permanently stuck in the "low" band with no way forward.
+    // Rescale to the ceiling that's actually achievable on this path.
+    if (answers.entry?.path === 'fast') {
+      let achievableMax = SCORE_MAP.fastpath_direction_provided + SCORE_MAP.keyword_crosscheck_done
+        + SCORE_MAP.universal_cases_reviewed + SCORE_MAP.type_specific_cases_reviewed;
+      const anyFamilyMatched = isGreedy || isBS || isDP || isGraph;
+      if (isGreedy || !anyFamilyMatched) achievableMax += SCORE_MAP.greedy_counterexample_tested;
+      if (isBS     || !anyFamilyMatched) achievableMax += SCORE_MAP.monotonicity_verified;
+      if (isDP     || !anyFamilyMatched) achievableMax += SCORE_MAP.dp_state_verified;
+      if (isGraph  || !anyFamilyMatched) achievableMax += SCORE_MAP.graph_properties_verified;
+
+      if (achievableMax > 0) {
+        score = Math.max(0, Math.min(100, Math.round((total / achievableMax) * 100)));
+      }
+    }
+
     const suggestions = _buildSuggestions(earned, families, s5, s6);
 
     // Find weakest non-penalty group
@@ -638,6 +686,18 @@ const Stage6_5 = (() => {
     .s65-band-label   { font-size: 1.1rem; font-weight: 700; color: var(--s65-ink); }
     .s65-band-message { font-size: .86rem; font-weight: 500; color: var(--s65-ink2); }
     .s65-band-detail  { font-size: .76rem; color: var(--s65-muted); line-height: 1.5; max-width: 420px; }
+    .s65-band-soft-note {
+      font-size    : .74rem;
+      color        : var(--s65-ink2);
+      line-height  : 1.55;
+      max-width    : 420px;
+      margin-top   : 8px;
+      padding      : 9px 12px;
+      background   : rgba(37,99,235,.06);
+      border       : 1px solid rgba(37,99,235,.22);
+      border-left  : 3px solid #2563eb;
+      border-radius: 0 8px 8px 0;
+    }
     .s65-thresholds   { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
     .s65-threshold { padding: 4px 12px; border-radius: 9999px; border: 1.5px solid; display: flex; flex-direction: column; align-items: center; opacity: .5; font-size: .68rem; }
     .s65-threshold--active { opacity: 1; }

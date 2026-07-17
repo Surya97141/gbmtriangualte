@@ -197,6 +197,7 @@ const Stage1 = (() => {
     wrapper.innerHTML = `
       <div class="s1-main" id="s1-main">
         <div class="s1-rule">Understand what you are given before thinking about what to do with it.</div>
+        <div id="s1-autosuggest-banner-region"></div>
         <div id="s1-fastpath-banner-region"></div>
 
         <!-- Input types -->
@@ -272,8 +273,33 @@ const Stage1 = (() => {
     // Initial panel render
     setTimeout(() => _updatePanel(wrapper), 0);
     _maybeShowFastPathBanner(wrapper);
+    _renderAutoSuggestBanner(wrapper);
 
     return wrapper;
+  }
+
+  // ─── AUTO-SUGGEST BANNER (from the optional intake stage) ──────────────────
+
+  function _renderAutoSuggestBanner(wrapper) {
+    const region = (wrapper ?? document).querySelector('#s1-autosuggest-banner-region');
+    if (!region) return;
+    region.innerHTML = '';
+
+    const saved = _state?.answers?.stage1 ?? {};
+    if (!saved.autoSuggested) return;
+
+    const banner = document.createElement('div');
+    banner.className = 's1-autosuggest-banner';
+    banner.innerHTML = `
+      <div class="s1-autosuggest-text"><b>Auto-suggested</b> from your pasted problem statement — confirm or change below.</div>
+      <button class="s1-autosuggest-btn" id="s1-autosuggest-confirm">✓ Looks good</button>
+    `;
+    region.appendChild(banner);
+
+    banner.querySelector('#s1-autosuggest-confirm').addEventListener('click', () => {
+      State.setAnswer('stage1', { autoSuggested: false });
+      region.innerHTML = '';
+    });
   }
 
   // ─── FAST PATH AUTO-DETECT BANNER ───────────────────────────────────────────
@@ -540,11 +566,13 @@ const Stage1 = (() => {
     // Update panel
     _updatePanel();
 
-    // Save answers
+    // Save answers — any real interaction here counts as the user having
+    // confirmed/changed whatever the intake stage auto-suggested.
     const answers = {
       inputTypes      : [..._selectedTypes],
       secondarySignals: [..._selectedSignals],
       queryType       : _queryType,
+      autoSuggested   : false,
     };
 
     if (typeof State !== 'undefined') {
@@ -574,6 +602,7 @@ const Stage1 = (() => {
     }
 
     _maybeShowFastPathBanner();
+    _renderAutoSuggestBanner();
   }
 
   // ─── STYLES ────────────────────────────────────────────────────────────────
@@ -1068,6 +1097,20 @@ const Stage1 = (() => {
     .s1-fastpath-btn--primary:hover { background: #1d4fc4; }
     .s1-fastpath-btn--ghost { background: transparent; border-color: var(--s1-border2); color: var(--s1-muted); }
     .s1-fastpath-btn--ghost:hover { border-color: var(--s1-ink2); color: var(--s1-ink); }
+
+    /* Auto-suggest banner (from the optional intake stage) */
+    .s1-autosuggest-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      padding: 12px 16px; background: var(--s1-green-bg); border: 1.5px solid var(--s1-green-border);
+      border-radius: var(--s1-r);
+    }
+    .s1-autosuggest-text { font-size: .78rem; color: var(--s1-ink2); line-height: 1.5; flex: 1; min-width: 220px; }
+    .s1-autosuggest-text b { color: var(--s1-ink); }
+    .s1-autosuggest-btn {
+      padding: 6px 14px; border-radius: 6px; font-size: .74rem; cursor: pointer; white-space: nowrap;
+      border: 1.5px solid var(--s1-green); background: var(--s1-surface); color: var(--s1-green);
+    }
+    .s1-autosuggest-btn:hover { background: var(--s1-green-bg); }
 
     /* Responsive — hide panel on small screens */
     @media (max-width: 900px) {

@@ -223,16 +223,23 @@ const Engine = (() => {
       }
 
       case 'stage6_5': {
-        const report = ConfidenceUtils.compute(state);
-        State.setConfidence(report);
-        Renderer.renderConfidenceGate(report);
-        if (report.level === 'low') {
-          Renderer.setNextEnabled(false);
-          Renderer.showToast(
-            'Confidence too low to proceed. Return to the suggested stage.',
-            'warning',
-            5000
-          );
+        // stage6-5.js computes and persists its own authoritative score/band
+        // into answers.stage6_5 on every render (it accounts for things the
+        // legacy ConfidenceUtils never knew about, e.g. the fast path's
+        // rescaled ceiling). Mirror that into state.confidence — the
+        // canonical place other code (session export, Outcomes) reads from
+        // — instead of recomputing via the legacy module, which was
+        // silently overwriting the correct score and could re-disable Next
+        // right after stage6-5.js's own gate had just enabled it.
+        const s65 = state.answers?.stage6_5 ?? {};
+        if (s65.score != null) {
+          State.setConfidence({
+            score     : s65.score,
+            level     : s65.band,
+            earned    : s65.report?.earned    ?? [],
+            deducted  : s65.report?.deducted  ?? [],
+            gateAction: null,
+          });
         }
         break;
       }

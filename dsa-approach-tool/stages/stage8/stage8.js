@@ -79,6 +79,11 @@ const Stage8 = (() => {
           <div class="s8-progress-label" id="s8-progress-label">
             0 / ${_chunks.length} understood
           </div>
+          ${_isContestMode() ? `
+            <button class="s8-finish-btn" id="s8-finish-btn" title="Contest Mode — skip remaining chunk checks">
+              Finish walkthrough →
+            </button>
+          ` : ''}
         </div>
       </aside>
 
@@ -88,6 +93,11 @@ const Stage8 = (() => {
     _buildChunkNav(wrapper);
     _wireLanguageButtons(wrapper);
     _refreshProgress(wrapper);
+
+    wrapper.querySelector('#s8-finish-btn')?.addEventListener('click', () => {
+      const main = wrapper.querySelector('#s8-main');
+      if (main) _buildCompletionState(main, dir);
+    });
 
     const main = wrapper.querySelector('#s8-main');
     if (_chunks.length > 0 && _understood.every(Boolean)) {
@@ -371,7 +381,15 @@ const Stage8 = (() => {
       SessionUtils.pushToHistory(State.get());
     }
 
-    document.dispatchEvent(new CustomEvent('dsa:reset', { detail: { reason: 'stage8_complete' } }));
+    const doReset = () => {
+      document.dispatchEvent(new CustomEvent('dsa:reset', { detail: { reason: 'stage8_complete' } }));
+    };
+
+    if (typeof OutcomePrompt !== 'undefined') {
+      OutcomePrompt.show(doReset);
+    } else {
+      doReset();
+    }
   }
 
   // ─── LANGUAGE SWITCHING ────────────────────────────────────────────────────
@@ -437,6 +455,10 @@ const Stage8 = (() => {
   }
 
   // ─── HELPERS ───────────────────────────────────────────────────────────────
+
+  function _isContestMode() {
+    return typeof Preferences !== 'undefined' && Preferences.getMode() === 'contest';
+  }
 
   function _getDir() {
     if (!_state) return null;
@@ -649,6 +671,22 @@ const Stage8 = (() => {
     .s8-progress-track { height: 5px; background: rgba(212,204,184,.5); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
     .s8-progress-fill  { height: 100%; background: var(--s8-green); border-radius: 99px; transition: width .3s ease; width: 0%; }
     .s8-progress-label { font-family: var(--s8-mono); font-size: .6rem; color: var(--s8-muted); }
+
+    .s8-finish-btn {
+      width        : 100%;
+      margin-top   : 10px;
+      padding      : 7px 0;
+      border       : 1.5px solid var(--s8-accent);
+      border-radius: var(--s8-r);
+      background   : var(--s8-accent-bg);
+      color        : var(--s8-accent);
+      font-family  : var(--s8-sans);
+      font-size    : .72rem;
+      font-weight  : 600;
+      cursor       : pointer;
+      transition   : background .13s;
+    }
+    .s8-finish-btn:hover { background: rgba(37,99,235,.14); }
 
     /* ── Right panel ─────────────────────────────────────────────────────── */
     .s8-main {

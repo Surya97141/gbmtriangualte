@@ -8,6 +8,9 @@ const SubproblemOverlap = (() => {
     id       : 'subproblemOverlap',
     label    : '3B — Subproblem overlap',
     question : 'If you knew the optimal answer for a smaller version of this problem, does it directly help you solve the full problem?',
+    beginnerPhrasing: {
+      question: 'If someone handed you the answer for a smaller version of this exact problem — like the same problem on just the first half of the input — could you use that to build the answer for the whole thing?',
+    },
     why      : 'This is the core test for DP vs Greedy vs Divide and Conquer. Overlapping subproblems → DP. Independent subproblems → D&C. No subproblem structure → Greedy or direct.',
     answers  : [
       {

@@ -159,15 +159,49 @@ const Stage3 = (() => {
 
   // ─── PROPERTY LIST ─────────────────────────────────────────────────────────
 
+  function _isBeginnerMode() {
+    return typeof Preferences !== 'undefined' && Preferences.getSkillLevel() === 'beginner';
+  }
+
+  // Picks two contrasting worked examples for a property. Prefers a genuine
+  // yes/no pair (the clearest possible contrast) when the property has one;
+  // otherwise falls back to the first case plus the first later one whose
+  // answer differs, so the pair always shows two different outcomes rather
+  // than two examples of the same one.
+  function _pickWorkedExamples(mod, prop) {
+    const cases = mod.getTestCases?.() ?? [];
+    if (!cases.length) return [];
+
+    const yesCase = cases.find(c => c.answer === 'yes' || c.answer === 'yes_direct');
+    const noCase  = cases.find(c => c.answer === 'no');
+
+    let picked;
+    if (yesCase && noCase) {
+      picked = [yesCase, noCase];
+    } else {
+      const first  = cases[0];
+      const second = cases.find(c => c.answer !== first.answer);
+      picked = second ? [first, second] : cases.slice(0, 2);
+    }
+
+    return picked.map(c => ({
+      ...c,
+      answerMeta: prop.answers?.find(a => a.id === c.answer) ?? null,
+    }));
+  }
+
   function _buildPropList(wrapper, saved) {
     const list = wrapper.querySelector('#s3-prop-list');
     if (!list) return;
+
+    const beginnerMode = _isBeginnerMode();
 
     PROPERTY_ORDER.forEach((propId, idx) => {
       const mod  = PROPERTY_MODULES[propId];
       if (!mod) return;
       const prop = mod.getProperty();
       const savedAnswer = saved.properties?.[propId] ?? null;
+      const useConcrete = beginnerMode && !!prop.beginnerPhrasing;
 
       const block = document.createElement('div');
       block.className = `s3-prop-block ${savedAnswer ? 's3-prop-block--answered' : ''}`;
@@ -183,16 +217,82 @@ const Stage3 = (() => {
         </div>
       `).join('');
 
+      const questionHTML = useConcrete
+        ? `
+          <div class="s3-prop-question">${prop.beginnerPhrasing.question}</div>
+          <button class="s3-formal-toggle" id="s3-formal-toggle-${propId}" aria-expanded="false">Show formal term ▾</button>
+          <div class="s3-formal-reveal" id="s3-formal-reveal-${propId}" style="display:none">
+            <div class="s3-prop-label">${prop.label}</div>
+            <div class="s3-prop-question s3-prop-question--formal">${prop.question}</div>
+          </div>
+        `
+        : `
+          <div class="s3-prop-label">${prop.label}</div>
+          <div class="s3-prop-question">${prop.question}</div>
+        `;
+
+      const examples = _pickWorkedExamples(mod, prop);
+      const examplesHTML = examples.length ? `
+        <aside class="s3-prop-examples">
+          <div class="s3-examples-title">Worked examples</div>
+          ${examples.map(ex => `
+            <div class="s3-example-card s3-example-card--${ex.answerMeta?.color ?? 'gray'}">
+              <div class="s3-example-badge">${ex.answerMeta?.label ?? ex.answer}</div>
+              <div class="s3-example-scenario">${ex.scenario}</div>
+              <div class="s3-example-reasoning">${ex.reasoning}</div>
+            </div>
+          `).join('')}
+        </aside>
+      ` : '';
+
+      const verification = mod.getVerification?.();
+      const whyHatchHTML = verification ? `
+        <button class="s3-why-hatch-btn" id="s3-why-hatch-btn-${propId}" aria-expanded="false">
+          Not sure? Show me why it matters →
+        </button>
+        <div class="s3-why-hatch-panel" id="s3-why-hatch-panel-${propId}" style="display:none">
+          <div class="s3-why-hatch-prompt">${verification.prompt ?? 'Verification test:'}</div>
+          <ol class="s3-why-hatch-steps">
+            ${(verification.steps ?? []).map(s => `<li>${s}</li>`).join('')}
+          </ol>
+          ${verification.warning ? `<div class="s3-why-hatch-warn">⚠ ${verification.warning}</div>` : ''}
+          <div class="s3-why-hatch-note">Walk through both outcomes above against your own problem, then pick an answer below — this doesn't answer it for you.</div>
+        </div>
+      ` : '';
+
       block.innerHTML = `
         <div class="s3-prop-num">${idx + 1}</div>
         <div class="s3-prop-content">
-          <div class="s3-prop-label">${prop.label}</div>
-          <div class="s3-prop-question">${prop.question}</div>
+          ${questionHTML}
           <div class="s3-prop-why"><span class="s3-why-label">Why this matters:</span> ${prop.why}</div>
+          ${whyHatchHTML}
           <div class="s3-ans-grid">${optionsHTML}</div>
           <div class="s3-prop-impact" id="s3-impact-${propId}"></div>
         </div>
+        ${examplesHTML}
       `;
+
+      if (verification) {
+        const hatchBtn   = block.querySelector(`#s3-why-hatch-btn-${propId}`);
+        const hatchPanel = block.querySelector(`#s3-why-hatch-panel-${propId}`);
+        hatchBtn?.addEventListener('click', () => {
+          const isOpen = hatchPanel.style.display !== 'none';
+          hatchPanel.style.display = isOpen ? 'none' : '';
+          hatchBtn.textContent = isOpen ? 'Not sure? Show me why it matters →' : 'Hide walkthrough ▴';
+          hatchBtn.setAttribute('aria-expanded', String(!isOpen));
+        });
+      }
+
+      if (useConcrete) {
+        const toggleBtn = block.querySelector(`#s3-formal-toggle-${propId}`);
+        const reveal     = block.querySelector(`#s3-formal-reveal-${propId}`);
+        toggleBtn?.addEventListener('click', () => {
+          const isOpen = reveal.style.display !== 'none';
+          reveal.style.display = isOpen ? 'none' : '';
+          toggleBtn.textContent = isOpen ? 'Show formal term ▾' : 'Hide formal term ▴';
+          toggleBtn.setAttribute('aria-expanded', String(!isOpen));
+        });
+      }
 
       // Wire answer cards
       block.querySelectorAll('.s3-ans-card').forEach(card => {
@@ -778,7 +878,7 @@ const Stage3 = (() => {
 
     /* Property blocks */
     .s3-prop-list { display: flex; flex-direction: column; gap: 10px; }
-    .s3-prop-block { background: var(--s3-surface); border: 1.5px solid var(--s3-border); border-radius: 12px; padding: 18px; display: flex; gap: 14px; transition: border-color .14s; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
+    .s3-prop-block { background: var(--s3-surface); border: 1.5px solid var(--s3-border); border-radius: 12px; padding: 18px; display: flex; flex-direction: row; gap: 14px; transition: border-color .14s; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
     .s3-prop-block:hover         { border-color: var(--s3-border2); }
     .s3-prop-block--answered     { border-color: var(--s3-green-b); }
     .s3-prop-num { font-family: var(--s3-mono); font-size: .65rem; font-weight: 700; color: #fff; background: var(--s3-muted); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: background .14s; }
@@ -788,6 +888,89 @@ const Stage3 = (() => {
     .s3-prop-question { font-size: .9rem; font-weight: 600; color: var(--s3-ink); line-height: 1.4; }
     .s3-prop-why      { font-size: .73rem; color: var(--s3-ink2); line-height: 1.5; padding: 7px 10px; background: var(--s3-surface2); border-radius: 6px; border-left: 2px solid var(--s3-border2); }
     .s3-why-label     { font-weight: 600; color: var(--s3-blue); margin-right: 4px; }
+
+    /* Beginner Mode — concrete phrasing + formal-term reveal */
+    .s3-formal-toggle {
+      align-self    : flex-start;
+      padding       : 0;
+      border        : none;
+      background    : none;
+      font-family   : var(--s3-mono);
+      font-size     : .64rem;
+      letter-spacing: .3px;
+      color         : var(--s3-blue);
+      cursor        : pointer;
+    }
+    .s3-formal-toggle:hover { text-decoration: underline; }
+    .s3-formal-reveal {
+      display       : flex;
+      flex-direction: column;
+      gap           : 4px;
+      padding       : 8px 10px;
+      background    : var(--s3-surface2);
+      border-left   : 2px solid var(--s3-blue-b);
+      border-radius : 6px;
+    }
+    .s3-prop-question--formal { font-size: .78rem; color: var(--s3-ink2); font-weight: 500; }
+
+    /* "Not sure?" escape hatch — walks through both branches, doesn't answer for you */
+    .s3-why-hatch-btn {
+      align-self    : flex-start;
+      padding       : 5px 10px;
+      border        : 1px dashed var(--s3-border2);
+      border-radius : 7px;
+      background    : var(--s3-surface2);
+      font-family   : var(--s3-mono);
+      font-size     : .66rem;
+      letter-spacing: .2px;
+      color         : var(--s3-ink2);
+      cursor        : pointer;
+      transition    : border-color .13s, color .13s;
+    }
+    .s3-why-hatch-btn:hover { border-color: var(--s3-blue-b); color: var(--s3-blue); }
+    .s3-why-hatch-panel {
+      display       : flex;
+      flex-direction: column;
+      gap           : 8px;
+      padding       : 12px 14px;
+      background    : var(--s3-indigo-bg);
+      border        : 1px solid var(--s3-indigo-b);
+      border-radius : 9px;
+    }
+    .s3-why-hatch-prompt { font-size: .78rem; font-weight: 700; color: var(--s3-indigo); }
+    .s3-why-hatch-steps  { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+    .s3-why-hatch-steps li { font-size: .76rem; color: var(--s3-ink2); line-height: 1.5; }
+    .s3-why-hatch-warn { font-size: .72rem; color: var(--s3-warn); padding: 6px 9px; background: var(--s3-warn-bg); border: 1px solid var(--s3-warn-b); border-radius: 6px; }
+    .s3-why-hatch-note { font-size: .68rem; color: var(--s3-muted); font-style: italic; }
+
+    /* Worked-example sidebar — always visible, at point of question */
+    .s3-prop-examples {
+      width        : 230px;
+      flex-shrink  : 0;
+      display      : flex;
+      flex-direction: column;
+      gap          : 8px;
+      padding-left : 14px;
+      border-left  : 1.5px dashed var(--s3-border2);
+    }
+    .s3-examples-title { font-family: var(--s3-mono); font-size: .58rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--s3-muted); }
+    .s3-example-card {
+      background   : var(--s3-surface2);
+      border       : 1px solid var(--s3-border);
+      border-radius: 8px;
+      padding      : 8px 10px;
+      display      : flex;
+      flex-direction: column;
+      gap          : 3px;
+    }
+    .s3-example-card--green  { border-color: var(--s3-green-b);  background: var(--s3-green-bg); }
+    .s3-example-card--red    { border-color: var(--s3-red-b);    background: var(--s3-red-bg); }
+    .s3-example-card--yellow { border-color: var(--s3-warn-b);   background: var(--s3-warn-bg); }
+    .s3-example-card--blue   { border-color: var(--s3-blue-b);   background: var(--s3-blue-bg); }
+    .s3-example-card--pur    { border-color: var(--s3-violet-b); background: var(--s3-violet-bg); }
+    .s3-example-badge      { font-family: var(--s3-mono); font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--s3-ink2); }
+    .s3-example-scenario   { font-size: .74rem; font-weight: 600; color: var(--s3-ink); line-height: 1.35; }
+    .s3-example-reasoning  { font-size: .68rem; color: var(--s3-ink2); line-height: 1.42; }
 
     /* Answer cards */
     .s3-ans-grid  { display: flex; flex-wrap: wrap; gap: 7px; }
@@ -903,6 +1086,8 @@ const Stage3 = (() => {
       .s3-ans-grid { flex-direction: column; }
       .s3-dp-grid  { grid-template-columns: 1fr 1fr; }
       .s3-goal-grid{ grid-template-columns: 1fr 1fr; }
+      .s3-prop-block   { flex-wrap: wrap; }
+      .s3-prop-examples{ width: 100%; border-left: none; border-top: 1.5px dashed var(--s3-border2); padding-left: 0; padding-top: 10px; margin-top: 2px; }
     }
     `;
     document.head.appendChild(style);

@@ -8,6 +8,9 @@ const StateSpace = (() => {
     id       : 'stateSpace',
     label    : '3E — State space characterization',
     question : 'Can you define a "state" that fully captures what you need to know at any point in the algorithm?',
+    beginnerPhrasing: {
+      question: 'Could you describe, in a short list of numbers or flags, everything you\'d need to remember to keep solving the problem from partway through — without needing the full history of how you got there?',
+    },
     why      : 'The shape and size of the state space determines which algorithm is feasible. Small polynomial state → DP. Exponential state → Bitmask DP (n≤20) or Backtracking. Path-dependent state → Backtracking with pruning. Graph-shaped state space → BFS/DFS on states.',
     answers  : [
       {

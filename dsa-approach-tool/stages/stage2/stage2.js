@@ -208,6 +208,7 @@ const Stage2 = (() => {
           What you must produce constrains the approach as much as what you are given.
           Output form, optimization type, and solution depth each eliminate different families.
         </div>
+        <div id="s2-autosuggest-banner-region"></div>
 
         <!-- Section 01: Output form -->
         <section class="s2-section">
@@ -266,8 +267,39 @@ const Stage2 = (() => {
 
     // Initial panel render
     setTimeout(() => _updatePanel(wrapper), 0);
+    _renderAutoSuggestBanner(wrapper);
 
     return wrapper;
+  }
+
+  // ─── AUTO-SUGGEST BANNER (from the optional intake stage) ──────────────────
+
+  function _renderAutoSuggestBanner(wrapper) {
+    const region = (wrapper ?? document).querySelector('#s2-autosuggest-banner-region');
+    if (!region) return;
+    region.innerHTML = '';
+
+    const saved = _state?.answers?.stage2 ?? {};
+    if (!saved.autoSuggested) return;
+
+    const banner = document.createElement('div');
+    banner.className = 's2-autosuggest-banner';
+    banner.innerHTML = `
+      <div class="s2-autosuggest-text"><b>Auto-suggested</b> from your pasted problem statement — confirm or change below.</div>
+      <button class="s2-autosuggest-btn" id="s2-autosuggest-confirm">✓ Looks good</button>
+    `;
+    region.appendChild(banner);
+
+    banner.querySelector('#s2-autosuggest-confirm').addEventListener('click', () => {
+      State.setAnswer('stage2', { autoSuggested: false });
+      region.innerHTML = '';
+    });
+  }
+
+  function _markUserEdited(wrapper) {
+    State.setAnswer('stage2', { autoSuggested: false });
+    const region = (wrapper ?? document).querySelector('#s2-autosuggest-banner-region');
+    if (region) region.innerHTML = '';
   }
 
   // ─── FORM GRID ─────────────────────────────────────────────────────────────
@@ -294,6 +326,7 @@ const Stage2 = (() => {
           c.classList.toggle('s2-card--on', c.dataset.id === form.id)
         );
         State.setAnswer('stage2', { outputForm: form.id });
+        _markUserEdited(wrapper);
         _updatePanel(wrapper);
         _checkComplete();
       });
@@ -324,6 +357,7 @@ const Stage2 = (() => {
           c.classList.toggle('s2-opt-card--on', c.dataset.id === opt.id)
         );
         State.setAnswer('stage2', { optimizationType: opt.id });
+        _markUserEdited(wrapper);
         _updatePanel(wrapper);
         _checkComplete();
       });
@@ -356,6 +390,7 @@ const Stage2 = (() => {
           c.classList.toggle('s2-depth-card--on', c.dataset.id === depth.id)
         );
         State.setAnswer('stage2', { solutionDepth: depth.id });
+        _markUserEdited(wrapper);
         _updatePanel(wrapper);
         _checkComplete();
       });
@@ -608,6 +643,20 @@ const Stage2 = (() => {
     .s2-panel-summary-key { font-family: var(--s2-mono); font-size: .6rem; color: var(--s2-muted); text-transform: uppercase; letter-spacing: 1px; min-width: 38px; padding-top: 1px; }
     .s2-panel-body::-webkit-scrollbar { width: 3px; }
     .s2-panel-body::-webkit-scrollbar-thumb { background: var(--s2-border2); border-radius: 4px; }
+
+    /* Auto-suggest banner (from the optional intake stage) */
+    .s2-autosuggest-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      padding: 12px 16px; background: var(--s2-green-bg); border: 1.5px solid var(--s2-green-b);
+      border-radius: 8px;
+    }
+    .s2-autosuggest-text { font-size: .78rem; color: var(--s2-ink2); line-height: 1.5; flex: 1; min-width: 220px; }
+    .s2-autosuggest-text b { color: var(--s2-ink); }
+    .s2-autosuggest-btn {
+      padding: 6px 14px; border-radius: 6px; font-size: .74rem; cursor: pointer; white-space: nowrap;
+      border: 1.5px solid var(--s2-green); background: var(--s2-surface); color: var(--s2-green);
+    }
+    .s2-autosuggest-btn:hover { background: var(--s2-green-bg); }
 
     @media (max-width: 900px) {
       .s2-shell { flex-direction: column; padding: 16px; }

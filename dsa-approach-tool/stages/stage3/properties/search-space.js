@@ -8,6 +8,9 @@ const SearchSpace = (() => {
     id       : 'searchSpace',
     label    : '3G — Search space shape',
     question : 'When you imagine "searching for the answer" — what does the search space look like?',
+    beginnerPhrasing: {
+      question: 'If you had to describe what you\'re hunting through to find the answer — is it a range of numbers, a tree of yes/no choices, a network of connected states, or a set of ranges/intervals?',
+    },
     why      : 'The shape of the search space directly maps to which traversal or search algorithm applies. A continuous value range → Binary Search. A tree of decisions → Backtracking. A graph of states → BFS/DFS. An interval structure → Sweep Line.',
     answers  : [
       {

@@ -236,6 +236,45 @@
 
   .hidden { display: none !important; }
 
+  /* ── Practice / Contest mode toggle ──────────────────────────────── */
+  .topbar__mode-toggle {
+    display      : flex;
+    border       : 1px solid var(--border-default);
+    border-radius: var(--r-sm);
+    overflow     : hidden;
+    flex-shrink  : 0;
+  }
+  .topbar__mode-btn {
+    font-family   : var(--font-mono);
+    font-size     : .62rem;
+    letter-spacing: .5px;
+    padding       : 5px 10px;
+    border        : none;
+    background    : var(--surface-1);
+    color         : var(--text-muted);
+    cursor        : pointer;
+    transition    : all var(--transition-fast);
+  }
+  .topbar__mode-btn:hover { color: var(--text-secondary); }
+  .topbar__mode-btn + .topbar__mode-btn { border-left: 1px solid var(--border-default); }
+  .topbar__mode-btn--on {
+    color     : var(--cyan);
+    background: rgba(0,212,255,.08);
+  }
+
+  .topbar__skill-select {
+    font-family   : var(--font-mono);
+    font-size     : .62rem;
+    letter-spacing: .3px;
+    padding       : 5px 6px;
+    border        : 1px solid var(--border-default);
+    border-radius : var(--r-sm);
+    background    : var(--surface-1);
+    color         : var(--text-secondary);
+    cursor        : pointer;
+    flex-shrink   : 0;
+  }
+
   /* ── Streak counter in topbar ────────────────────────────────────── */
   .topbar__streak {
     font-family   : var(--font-mono);
@@ -293,6 +332,22 @@
   }
 
   #pm-grid { padding: 8px 10px 12px; }
+
+  /* ── Optional-stages collapse (Contest Mode) ─────────────────────── */
+  .sidebar__optional-toggle {
+    display       : block;
+    width         : 100%;
+    text-align    : left;
+    padding       : 4px 16px 8px;
+    font-family   : var(--font-mono);
+    font-size     : .58rem;
+    letter-spacing: .5px;
+    color         : var(--cyan);
+    background    : none;
+    border        : none;
+    cursor        : pointer;
+  }
+  .sidebar__optional-toggle:hover { text-decoration: underline; }
   </style>
 </head>
 
@@ -369,9 +424,25 @@
         <span class="topbar__streak" id="topbar-streak" aria-live="polite"
               title="Consecutive days with a completed Stage 8 walkthrough"
               style="display:none"></span>
+        <div class="topbar__mode-toggle" id="topbar-mode-toggle" role="group" aria-label="Practice or Contest mode">
+          <button class="topbar__mode-btn" id="topbar-mode-practice" data-mode="practice"
+                  title="Practice Mode — full gating, all stages visible">Practice</button>
+          <button class="topbar__mode-btn" id="topbar-mode-contest" data-mode="contest"
+                  title="Contest Mode — fast path default, ungated code view, optional stages collapsed">Contest</button>
+        </div>
+        <select class="topbar__skill-select" id="topbar-skill-select"
+                title="Skill level — Beginner shows plain-language phrasing on Stage 3+, with a toggle to reveal the formal term">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
         <button class="btn btn--ghost btn--sm" id="topbar-guide-btn"
                 aria-label="Open stage guide" title="What does each stage do?">
           ? Guide
+        </button>
+        <button class="btn btn--ghost btn--sm" id="topbar-insights-btn"
+                aria-label="Open insights" title="Confidence vs. actual outcomes">
+          📊 Insights
         </button>
         <button class="btn btn--ghost btn--sm" id="topbar-save-btn"
                 aria-label="Download session as JSON file" title="Download session">
@@ -393,6 +464,9 @@
       <div class="stage-map" id="stage-map" role="list">
 
         <div class="stage-map__section-label">Analysis Pipeline</div>
+        <button class="sidebar__optional-toggle" id="sidebar-optional-toggle" style="display:none">
+          + Show optional stages
+        </button>
 
         <div class="stage-map__item stage-map__item--active" data-stage="stage0" role="listitem">
           <div class="stage-map__dot">0</div>
@@ -421,7 +495,7 @@
         </div>
         <div class="stage-map__connector"></div>
 
-        <div class="stage-map__item stage-map__item--locked" data-stage="stage2_5" role="listitem">
+        <div class="stage-map__item stage-map__item--locked" data-stage="stage2_5" data-required="false" role="listitem">
           <div class="stage-map__dot">2.5</div>
           <div class="stage-map__label">
             <span class="stage-map__name">Decomposition</span>
@@ -439,7 +513,7 @@
         </div>
         <div class="stage-map__connector"></div>
 
-        <div class="stage-map__item stage-map__item--locked" data-stage="stage3_5" role="listitem">
+        <div class="stage-map__item stage-map__item--locked" data-stage="stage3_5" data-required="false" role="listitem">
           <div class="stage-map__dot">3.5</div>
           <div class="stage-map__label">
             <span class="stage-map__name">Reframing Check</span>
@@ -457,7 +531,7 @@
         </div>
         <div class="stage-map__connector"></div>
 
-        <div class="stage-map__item stage-map__item--locked" data-stage="stage4_5" role="listitem">
+        <div class="stage-map__item stage-map__item--locked" data-stage="stage4_5" data-required="false" role="listitem">
           <div class="stage-map__dot">4.5</div>
           <div class="stage-map__label">
             <span class="stage-map__name">Approach Variant</span>
@@ -592,17 +666,22 @@
 
   <script src="/core/preferences.js"></script>
   <script src="/core/outcomes.js"></script>
+  <script src="/core/outcome-prompt.js"></script>
   <script src="/core/problem-library.js"></script>
   <script src="/core/gate-standard.js"></script>
   <script src="/core/state.js"></script>
   <script src="/core/router.js"></script>
   <script src="/core/renderer.js"></script>
   <script src="/core/guide-panel.js"></script>
+  <script src="/core/insights-panel.js"></script>
 
   <script src="/stages/entry/entry.js"></script>
 
   <script src="/stages/stage0/complexity-table.js"></script>
   <script src="/stages/stage0/stage0.js"></script>
+
+  <script src="/stages/stage5/verifiers/keyword-crosscheck.js"></script>
+  <script src="/stages/intake/intake.js"></script>
 
   <script src="/stages/stage1/input-types.js"></script>
   <script src="/stages/stage1/stage1.js"></script>
@@ -649,7 +728,6 @@
   <script src="/stages/stage5/verifiers/monotonicity-verifier.js"></script>
   <script src="/stages/stage5/verifiers/dp-state-verifier.js"></script>
   <script src="/stages/stage5/verifiers/graph-verifier.js"></script>
-  <script src="/stages/stage5/verifiers/keyword-crosscheck.js"></script>
   <script src="/stages/stage5/stage5.js"></script>
 
   <script src="/stages/stage6/edge-cases/universal-cases.js"></script>
@@ -812,6 +890,79 @@
     });
   })();
 
+  // ── Practice / Contest mode toggle ──────────────────────────────────────
+  function _applyModeToggleUI() {
+    if (typeof Preferences === 'undefined') return;
+    const mode = Preferences.getMode();
+    document.querySelectorAll('.topbar__mode-btn').forEach(btn => {
+      btn.classList.toggle('topbar__mode-btn--on', btn.dataset.mode === mode);
+    });
+  }
+
+  function _applySidebarCollapse() {
+    if (typeof Preferences === 'undefined') return;
+    const isContest = Preferences.getMode() === 'contest';
+    const toggleBtn = document.getElementById('sidebar-optional-toggle');
+    const showOptional = isContest && toggleBtn?.dataset.expanded === 'true';
+
+    document.querySelectorAll('.stage-map__item[data-required="false"]').forEach(item => {
+      const collapse = isContest && !showOptional;
+      item.classList.toggle('hidden', collapse);
+      const connector = item.nextElementSibling;
+      if (connector && connector.classList.contains('stage-map__connector')) {
+        connector.classList.toggle('hidden', collapse);
+      }
+    });
+
+    if (toggleBtn) {
+      toggleBtn.style.display = isContest ? 'block' : 'none';
+      toggleBtn.textContent = showOptional ? '− Hide optional stages' : '+ Show optional stages';
+    }
+  }
+
+  document.getElementById('topbar-mode-toggle')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.topbar__mode-btn');
+    if (!btn) return;
+    const targetMode = btn.dataset.mode;
+    if (typeof Preferences === 'undefined' || targetMode === Preferences.getMode()) return;
+
+    const inProgress = typeof State !== 'undefined' &&
+      State.get()?.currentStage && State.get().currentStage !== 'entry';
+
+    if (inProgress) {
+      const ok = window.confirm(
+        `Switch to ${targetMode === 'contest' ? 'Contest' : 'Practice'} Mode? ` +
+        `This changes stage gating and defaults for the rest of this problem.`
+      );
+      if (!ok) return;
+    }
+
+    Preferences.setMode(targetMode);
+  });
+
+  document.getElementById('sidebar-optional-toggle')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    btn.dataset.expanded = btn.dataset.expanded === 'true' ? 'false' : 'true';
+    _applySidebarCollapse();
+  });
+
+  document.addEventListener('dsa:preferences-changed', (e) => {
+    if (e.detail?.key !== 'mode') return;
+    _applyModeToggleUI();
+    _applySidebarCollapse();
+  });
+
+  _applyModeToggleUI();
+  _applySidebarCollapse();
+
+  // ── Skill level select (Beginner Mode concrete phrasing) ─────────────────
+  (function setupSkillSelect() {
+    const select = document.getElementById('topbar-skill-select');
+    if (!select || typeof Preferences === 'undefined') return;
+    select.value = Preferences.getSkillLevel();
+    select.addEventListener('change', () => Preferences.setSkillLevel(select.value));
+  })();
+
   // ── Sidebar stage map navigation ──────────────────────────────────────
   document.addEventListener('click', (e) => {
     const item = e.target.closest('.stage-map__item');
@@ -831,6 +982,12 @@
   document.getElementById('topbar-guide-btn')
     ?.addEventListener('click', () => {
       if (typeof GuidePanel !== 'undefined') GuidePanel.show();
+    });
+
+  // ── Insights button ────────────────────────────────────────────────────
+  document.getElementById('topbar-insights-btn')
+    ?.addEventListener('click', () => {
+      if (typeof InsightsPanel !== 'undefined') InsightsPanel.show();
     });
 
   // ── Save (download) button ────────────────────────────────────────────
@@ -863,7 +1020,9 @@
   document.getElementById('topbar-reset-btn')
     ?.addEventListener('click', () => {
       if (!window.confirm('Reset this session? All progress will be cleared.')) return;
-      document.dispatchEvent(new CustomEvent('dsa:reset'));
+      const doReset = () => document.dispatchEvent(new CustomEvent('dsa:reset'));
+      if (typeof OutcomePrompt !== 'undefined') OutcomePrompt.show(doReset);
+      else doReset();
     });
 
   // ── dsa: event hooks — update shell UI ───────────────────────────────

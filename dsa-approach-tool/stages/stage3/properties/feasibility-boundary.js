@@ -8,6 +8,9 @@ const FeasibilityBoundary = (() => {
     id       : 'feasibilityBoundary',
     label    : '3C — Feasibility boundary',
     question : 'Is there a value X such that: if X is achievable, then X+1 (or X-1) is also always achievable?',
+    beginnerPhrasing: {
+      question: 'Imagine testing possible answers from smallest to largest. Once one value works, do you expect every bigger value to keep working too — with no flipping back to "no" after a "yes"?',
+    },
     why      : 'This monotonic property means the answer space has a clean boundary — all feasible on one side, all infeasible on the other. Binary Search on Answer exploits exactly this structure to find the boundary in O(log n) checks instead of O(n) or more.',
     answers  : [
       {

@@ -41,7 +41,20 @@ const ProblemLibrary = (() => {
       .slice(0, limit);
   }
 
-  return { getAll, suggestFor };
+  // Problems that exercise a given property at all, regardless of which
+  // value they're tagged with — used for drill suggestions where the user's
+  // weakness is "unsure" answers rather than a specific wrong value, so
+  // there's no single value to match against.
+  async function suggestForProperty(propertyId, opts = {}) {
+    const { limit = 3, exclude = [] } = opts;
+    const all = await _load();
+
+    return all
+      .filter(p => p.tags?.[propertyId] !== undefined && !exclude.includes(p.id))
+      .slice(0, limit);
+  }
+
+  return { getAll, suggestFor, suggestForProperty };
 
 })();
 

@@ -8,6 +8,71 @@ const Stage7 = (() => {
   let _directions        = [];
   let _selectedDirection = null;
   let _activeTab         = 'directions';
+  let _commitRecheck     = null;
+
+  // A variant's complexity class bumped one step — used when Stage 5/6
+  // revealed extra work Stage 4.5's original recheck didn't know about.
+  const COMPLEXITY_STEP_UP = {
+    'o(1)': 'o(logn)', 'o(logn)': 'o(sqrtn)', 'o(sqrtn)': 'o(n)',
+    'o(n)': 'o(nlogn)', 'o(nlogn)': 'o(nlog2n)', 'o(n^2)': 'o(n^2logn)',
+  };
+  const GRADE_ORDER = { safe: 0, warn: 1, tle: 2 };
+
+  // Re-runs Stage 4.5's feasibility check right before commit, incorporating
+  // signals Stage 4.5 couldn't have known about yet: updates requiring a
+  // Fenwick/segment-tree bolt-on (time), and path reconstruction requiring
+  // extra storage (memory). Returns null if there's nothing to compare
+  // against (Stage 4.5 was skipped, or N was never set).
+  function _computeCommitTimeRecheck(state) {
+    const s45 = state.answers?.stage4_5;
+    const s0  = state.answers?.stage0 ?? {};
+    const n   = s0.n;
+    if (!s45?.variantSelected || !n) return null;
+
+    // variantComplexity on the saved answer is a human-readable display
+    // string ("O(states × transitions)") — the machine-readable class
+    // MathUtils needs lives in ComplexityRecheck's own variant map, keyed
+    // by the same variant id Stage 4.5 already recorded.
+    const CR = typeof ComplexityRecheck !== 'undefined' ? ComplexityRecheck : null;
+    const baseClass = CR?.VARIANT_COMPLEXITY_MAP?.[s45.variantSelected];
+    if (!baseClass) return null;
+
+    const originalGrade = s45.recheckResult?.grade ?? 'safe';
+    const timeLimit      = s0.timeLimit ?? 1;
+    const reasons        = [];
+
+    let effectiveClass = baseClass;
+
+    const needsUpdates = state.answers?.stage1?.queryType === 'updates';
+    if (needsUpdates && COMPLEXITY_STEP_UP[effectiveClass]) {
+      effectiveClass = COMPLEXITY_STEP_UP[effectiveClass];
+      reasons.push('Updates require a Fenwick/segment-tree bolt-on — adds a log n factor per operation');
+    }
+
+    let memoryWarning = null;
+    const needsPathRecon = state.answers?.stage2?.solutionDepth === 'reconstruct_path';
+    if (needsPathRecon && typeof MathUtils !== 'undefined') {
+      const extraMB   = MathUtils.bytesToMB(MathUtils.intArrayBytes(n));
+      const memLimit  = s0.memLimit ?? 256;
+      if (extraMB > memLimit * 0.4) {
+        memoryWarning = `Path reconstruction needs ~${MathUtils.formatMB(extraMB)} extra for parent tracking — significant against your ${memLimit}MB limit`;
+        reasons.push(memoryWarning);
+      }
+    }
+
+    if (typeof MathUtils === 'undefined') return null;
+    const ops      = MathUtils.computeOps(n, effectiveClass);
+    const status   = MathUtils.feasibility(ops, timeLimit);
+    const newGrade = status === 'green' ? 'safe' : status === 'yellow' ? 'warn' : 'tle';
+    const downgraded = GRADE_ORDER[newGrade] > GRADE_ORDER[originalGrade];
+
+    if (!downgraded && !memoryWarning) return null; // nothing worth surfacing
+
+    return {
+      originalGrade, newGrade, effectiveClass, reasons, downgraded,
+      memoryWarning, opsDisplay: MathUtils.formatOps(ops),
+    };
+  }
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
@@ -29,6 +94,8 @@ const Stage7 = (() => {
     const score = state.answers?.stage6_5?.score ?? null;
     const band  = score !== null ? _getBandLabel(score) : null;
 
+    _commitRecheck = _computeCommitTimeRecheck(state);
+
     const wrapper = document.createElement('div');
     wrapper.className = 's7-shell';
 
@@ -39,6 +106,8 @@ const Stage7 = (() => {
           Your approach — built from structural analysis, not pattern matching.
           ${band ? `Confidence: ${band} (${score}/100) · ` : ''}${_directions.length} direction(s) identified.
         </div>
+
+        <div id="s7-commit-warning-region"></div>
 
         <!-- Summary strip -->
         <div class="s7-summary-strip" id="s7-summary-strip"></div>
@@ -66,6 +135,7 @@ const Stage7 = (() => {
     _buildSummaryStrip(wrapper, state);
     _buildTabs(wrapper);
     _buildPanels(wrapper, saved);
+    _renderCommitWarning(wrapper, saved);
 
     if (_directions.length > 0 && _selectedDirection) {
       setTimeout(() => _updatePanel(wrapper), 0);
@@ -577,11 +647,53 @@ const Stage7 = (() => {
 
   // ─── COMPLETION ────────────────────────────────────────────────────────────
 
+  // ─── COMMIT-TIME FEASIBILITY WARNING ───────────────────────────────────────
+
+  function _renderCommitWarning(wrapper, saved) {
+    const region = wrapper.querySelector('#s7-commit-warning-region');
+    if (!region) return;
+    region.innerHTML = '';
+
+    if (!_commitRecheck || saved.commitRecheckAcked) return;
+
+    const r = _commitRecheck;
+    const gradeLabel = { safe: 'Safe', warn: 'Borderline', tle: 'TLE' };
+    const banner = document.createElement('div');
+    banner.className = 's7-commit-warning';
+    banner.innerHTML = `
+      <div class="s7-commit-warning-title">
+        ⚠ Feasibility recheck: ${r.downgraded ? `${gradeLabel[r.originalGrade]} → ${gradeLabel[r.newGrade]}` : 'memory risk found'}
+      </div>
+      <div class="s7-commit-warning-detail">
+        Stage 4.5 checked this before Stage 5/6 revealed more. ${r.reasons.join(' ')}
+        ${r.downgraded ? `Recomputed at ${r.effectiveClass}: ${r.opsDisplay} ops.` : ''}
+      </div>
+      <div class="s7-commit-warning-btns">
+        <button class="s7-commit-btn s7-commit-btn--proceed" id="s7-commit-proceed">Proceed anyway</button>
+        <button class="s7-commit-btn s7-commit-btn--reconsider" id="s7-commit-reconsider">← Reconsider — back to Stage 4.5</button>
+      </div>
+    `;
+    region.appendChild(banner);
+
+    banner.querySelector('#s7-commit-proceed').addEventListener('click', () => {
+      State.setAnswer('stage7', { commitRecheckAcked: true });
+      region.innerHTML = '';
+      _checkComplete();
+    });
+    banner.querySelector('#s7-commit-reconsider').addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage4_5' } }));
+    });
+  }
+
   function _checkComplete() {
     const gate = typeof GateStandard !== 'undefined'
       ? GateStandard.report('stage7', GateStandard.evaluate(_selectedDirection ? 1 : 0, 1))
       : { valid: !!_selectedDirection };
-    const valid = _directions.length > 0 && gate.valid;
+
+    const saved = State.getAnswer('stage7') ?? {};
+    const hasUnresolvedWarning = !!_commitRecheck && !saved.commitRecheckAcked;
+
+    const valid = _directions.length > 0 && gate.valid && !hasUnresolvedWarning;
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
     if (valid) {
@@ -646,6 +758,18 @@ const Stage7 = (() => {
     .s7-empty  { font-size: .76rem; color: var(--s7-muted); font-style: italic; padding: 20px; background: var(--s7-surface2); border: 1px dashed var(--s7-border); border-radius: 8px; }
 
     /* Summary strip */
+    .s7-commit-warning {
+      background: var(--s7-warn-bg); border: 1.5px solid var(--s7-warn-b); border-radius: 10px;
+      padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .s7-commit-warning-title { font-size: .86rem; font-weight: 700; color: var(--s7-warn); }
+    .s7-commit-warning-detail { font-size: .78rem; color: var(--s7-ink2); line-height: 1.55; }
+    .s7-commit-warning-btns { display: flex; gap: 10px; margin-top: 2px; }
+    .s7-commit-btn { padding: 7px 16px; border-radius: 7px; font-size: .78rem; font-weight: 600; cursor: pointer; }
+    .s7-commit-btn--proceed { border: 1.5px solid var(--s7-warn-b); background: var(--s7-surface); color: var(--s7-warn); }
+    .s7-commit-btn--proceed:hover { background: var(--s7-warn-bg); }
+    .s7-commit-btn--reconsider { border: 1.5px solid var(--s7-green-b); background: var(--s7-green); color: #fff; }
+    .s7-commit-btn--reconsider:hover { background: #047857; }
     .s7-summary-strip { background: var(--s7-surface); border: 1.5px solid var(--s7-border); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
     .s7-summary-row   { display: flex; align-items: baseline; gap: 12px; padding: 8px 16px; border-bottom: 1px solid rgba(0,0,0,.04); }
     .s7-summary-row:last-of-type { border-bottom: none; }
@@ -775,7 +899,8 @@ const Stage7 = (() => {
 
   function onMount(state) {
     const saved = state.answers?.stage7;
-    if (saved?.selectedDirection || _directions.length > 0) {
+    const hasUnresolvedWarning = !!_commitRecheck && !saved?.commitRecheckAcked;
+    if ((saved?.selectedDirection || _directions.length > 0) && !hasUnresolvedWarning) {
       if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
     }
   }
@@ -785,6 +910,7 @@ const Stage7 = (() => {
     _directions        = [];
     _selectedDirection = null;
     _activeTab         = 'directions';
+    _commitRecheck     = null;
   }
 
   return { render, onMount, cleanup };

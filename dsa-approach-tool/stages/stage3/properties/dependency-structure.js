@@ -8,6 +8,9 @@ const DependencyStructure = (() => {
     id       : 'dependencyStructure',
     label    : '3F — Dependency structure',
     question : 'Do subproblems depend on each other in a circular way, or do dependencies flow in one direction only?',
+    beginnerPhrasing: {
+      question: 'If you solve the smaller pieces first and build up to the full answer, do you ever need a "later" piece to already be solved before an "earlier" one — i.e. do they depend on each other in a loop?',
+    },
     why      : 'Standard DP requires a DAG of dependencies — each subproblem depends only on previously computed ones. If dependencies are circular, standard DP breaks and you need a different formulation.',
     answers  : [
       {

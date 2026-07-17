@@ -10,6 +10,9 @@ const OrderSensitivity = (() => {
     id         : 'orderSensitivity',
     label      : '3A — Order sensitivity',
     question   : 'Does the relative order of elements matter for the answer?',
+    beginnerPhrasing: {
+      question: 'If you shuffled the input into a random order, would your answer change?',
+    },
     why        : 'If order does not matter — you can sort freely. Sorting opens Two Pointer, Greedy, and Binary Search. If order matters — you are locked into the original sequence and must use approaches that respect position.',
     answers    : [
       {

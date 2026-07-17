@@ -30,6 +30,14 @@ const Router = (() => {
       skipIf  : _isFastPath,
     },
     {
+      id      : 'intake',
+      label   : 'Problem Statement',
+      required: false,
+      // Optional on the full walkthrough too — never gates, just skipped
+      // entirely on the fast path (which has its own condensed intake).
+      skipIf  : _isFastPath,
+    },
+    {
       id      : 'stage1',
       label   : 'Input Anatomy',
       required: true,
@@ -297,6 +305,7 @@ const Router = (() => {
 
     const SKIP_REASONS = {
       stage0    : isFast ? 'Fast path — complexity budget skipped' : undefined,
+      intake    : isFast ? 'Fast path — problem-statement intake skipped' : undefined,
       stage1    : isFast ? 'Fast path — input anatomy collected on the Fast Path stage instead' : undefined,
       stage2    : isFast ? 'Fast path — output anatomy collected on the Fast Path stage instead' : undefined,
       fastpath  : 'Full walkthrough chosen — fast path not used',

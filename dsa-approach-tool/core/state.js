@@ -44,6 +44,15 @@ const State = (() => {
         answeredAt     : null,
       },
 
+      // Optional — before Stage 1. Pasted text run through KeywordCrosscheck's
+      // suggestion tables; "Apply" writes into stage1/stage2 with
+      // autoSuggested:true so those stages can flag it until confirmed.
+      intake: {
+        problemText   : null,
+        lastSuggestion: null,
+        answeredAt    : null,
+      },
+
       stage0: {
         n          : null,            // primary input size
         q          : null,            // query count (if applicable)
@@ -60,6 +69,7 @@ const State = (() => {
         inputTypes      : [],         // selected input shape ids
         secondarySignals: [],         // secondary signal ids
         queryType       : null,       // 'none'|'single'|'offline'|'online'|'updates_and_queries'
+        autoSuggested   : false,      // true if inputTypes/queryType came from the intake stage, unconfirmed
         answeredAt      : null,
       },
 
@@ -67,6 +77,7 @@ const State = (() => {
         outputForm        : null,     // output shape id
         optimizationType  : null,     // 'none'|'maximize'|'minimize'|'max_min'|'min_max'|'count'
         solutionDepth     : null,     // 'value_only'|'reconstruct_path'|'count_ways'
+        autoSuggested     : false,    // true if outputForm came from the intake stage, unconfirmed
         answeredAt        : null,
       },
 
@@ -270,7 +281,7 @@ const State = (() => {
   // Clear all answers from a stage onward — used when backtracking
   function clearAnswersFrom(stageId) {
     const ORDER = [
-      'entry','stage0','stage1','stage2','fastpath','stage2_5',
+      'entry','stage0','intake','stage1','stage2','fastpath','stage2_5',
       'stage3','stage3_5','stage4','stage4_5',
       'stage5','stage6','stage6_5','stage7','stage8',
     ];

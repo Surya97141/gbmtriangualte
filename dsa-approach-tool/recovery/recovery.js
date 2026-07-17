@@ -40,6 +40,8 @@ const Recovery = (() => {
     _currentStep = saved.currentStep ?? null;
     _history     = saved.history     ?? [];
 
+    _injectStyles();
+
     // First entry into recovery (no path chosen yet this session) — honor
     // the failure type the user picked in the "What went wrong?" modal
     // instead of showing the path selector a second time.
@@ -55,12 +57,49 @@ const Recovery = (() => {
 
     const wrapper = DomUtils.div({ class: 'recovery' }, [
       _buildIntro(),
+      _buildHistoryHint(state),
       _activePath
         ? _buildStepView()
         : _buildPathSelector(),
-    ]);
+    ].filter(Boolean));
 
     return wrapper;
+  }
+
+  // ─── HISTORY HINT ───────────────────────────────────────────────────────
+  // If this problem's structural profile matches a pattern that has
+  // historically ended in the same failure type, surface it — not a
+  // diagnosis, just a "you've been here before" pointer.
+
+  function _buildHistoryHint(state) {
+    const failureType = state.recoveryEntry?.failureType;
+    if (failureType !== 'wa' && failureType !== 'tle') return null;
+    if (typeof Outcomes === 'undefined') return null;
+
+    const properties = state.answers?.stage3?.properties ?? {};
+    const match = Outcomes.matchHint(properties, failureType);
+    if (!match) return null;
+
+    const propLabel = (id) => ({
+      orderSensitivity: 'Order Sensitivity', subproblemOverlap: 'Subproblem Overlap',
+      feasibilityBoundary: 'Feasibility Boundary', localOptimality: 'Local Optimality',
+      stateSpace: 'State Space', dependencyStructure: 'Dependency Structure', searchSpace: 'Search Space',
+    }[id] ?? id);
+
+    const sharedText = match.sharedProperties.map(propLabel).join(', ');
+    const when = new Date(match.occurredAt).toLocaleDateString();
+
+    return DomUtils.div({ class: 'recovery-history-hint' }, [
+      DomUtils.span({ class: 'recovery-history-hint__icon' }, '↻'),
+      DomUtils.div({ class: 'recovery-history-hint__body' }, [
+        DomUtils.div({ class: 'recovery-history-hint__title' },
+          `You've hit ${failureType === 'wa' ? 'a Wrong Answer' : 'a TLE'} with a similar structure before`
+        ),
+        DomUtils.div({ class: 'recovery-history-hint__detail' },
+          `Shared properties: ${sharedText} — that combination led to ${match.direction?.label ?? 'a similar direction'} failing the same way on ${when}.`
+        ),
+      ]),
+    ]);
   }
 
   // ─── INTRO ─────────────────────────────────────────────────────────────────
@@ -619,6 +658,28 @@ const Recovery = (() => {
     _activePath  = null;
     _currentStep = null;
     _history     = [];
+  }
+
+  // ─── STYLES ──────────────────────────────────────────────────────────────
+  // Scoped to just the history hint — the rest of Recovery Mode's markup
+  // predates any per-stage style injection and is out of scope here.
+
+  function _injectStyles() {
+    if (document.getElementById('recovery-hint-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'recovery-hint-styles';
+    style.textContent = `
+    .recovery-history-hint {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 12px 16px; margin: 12px 0;
+      background: rgba(217,119,6,.07); border: 1.5px solid rgba(217,119,6,.28);
+      border-radius: 10px; font-family: 'DM Sans', system-ui, sans-serif;
+    }
+    .recovery-history-hint__icon { font-size: 1.1rem; color: #a4650c; flex-shrink: 0; margin-top: 1px; }
+    .recovery-history-hint__title { font-size: .84rem; font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
+    .recovery-history-hint__detail { font-size: .76rem; color: #4a4560; line-height: 1.5; }
+    `;
+    document.head.appendChild(style);
   }
 
   // ─── PUBLIC ────────────────────────────────────────────────────────────────

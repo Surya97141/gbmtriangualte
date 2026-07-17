@@ -163,6 +163,7 @@ const Renderer = (() => {
     const MODULE_MAP = {
       entry          : (typeof StageEntry     !== 'undefined') ? StageEntry     : null,
       stage0         : (typeof Stage0         !== 'undefined') ? Stage0         : null,
+      intake         : (typeof StageIntake    !== 'undefined') ? StageIntake    : null,
       stage1         : (typeof Stage1         !== 'undefined') ? Stage1         : null,
       stage2         : (typeof Stage2         !== 'undefined') ? Stage2         : null,
       fastpath       : (typeof StageFastpath  !== 'undefined') ? StageFastpath  : null,

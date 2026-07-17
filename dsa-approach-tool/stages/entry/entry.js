@@ -13,6 +13,11 @@ const StageEntry = (() => {
     _state    = state;
     _selected = state.answers?.entry?.path ?? null;
 
+    // Contest Mode defaults to the fast path — still overridable by picking
+    // "Full walkthrough" below before advancing.
+    const contestDefault = !_selected &&
+      typeof Preferences !== 'undefined' && Preferences.getMode() === 'contest';
+
     _injectStyles();
 
     const wrapper = document.createElement('div');
@@ -44,6 +49,14 @@ const StageEntry = (() => {
     wrapper.querySelectorAll('.se-card').forEach(card => {
       card.addEventListener('click', () => _onSelect(card.dataset.path, wrapper));
     });
+
+    if (contestDefault) {
+      _onSelect('fast', wrapper);
+    } else if (_selected) {
+      wrapper.querySelectorAll('.se-card').forEach(c =>
+        c.classList.toggle('se-card--on', c.dataset.path === _selected)
+      );
+    }
 
     return wrapper;
   }
