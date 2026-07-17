@@ -1,0 +1,133 @@
+{
+  "_comment": "Minimal seed library for Stage 11 drill suggestions (targeted practice for weak structural properties). Each problem is tagged with the Stage 3 property/value combination it best isolates. Statements are original/paraphrased, not copied from any specific judge.",
+  "problems": [
+    {
+      "id": "pl_ship_packages_days",
+      "title": "Minimum Capacity to Ship Packages Within D Days",
+      "statement": "Packages with given weights must ship in order over D days, one load per day up to a capacity limit. Find the minimum capacity that still finishes within D days.",
+      "difficulty": "medium",
+      "primaryDirection": "binary_search_answer",
+      "tags": { "feasibilityBoundary": "yes", "orderSensitivity": "yes" }
+    },
+    {
+      "id": "pl_koko_bananas",
+      "title": "Minimum Eating Speed",
+      "statement": "Given piles of bananas and H hours, find the minimum constant eating speed so all piles are finished within H hours.",
+      "difficulty": "medium",
+      "primaryDirection": "binary_search_answer",
+      "tags": { "feasibilityBoundary": "yes" }
+    },
+    {
+      "id": "pl_interval_scheduling",
+      "title": "Maximum Non-Overlapping Intervals",
+      "statement": "Given a set of intervals, select the maximum number that don't overlap.",
+      "difficulty": "easy",
+      "primaryDirection": "greedy",
+      "tags": { "localOptimality": "yes", "searchSpace": "intervals" }
+    },
+    {
+      "id": "pl_knapsack_01",
+      "title": "0/1 Knapsack",
+      "statement": "Given item weights/values and a capacity, choose a subset (each item used at most once) maximizing value without exceeding capacity.",
+      "difficulty": "medium",
+      "primaryDirection": "dp",
+      "tags": { "localOptimality": "no", "subproblemOverlap": "yes_direct" }
+    },
+    {
+      "id": "pl_coin_change_min",
+      "title": "Minimum Coins to Make Amount",
+      "statement": "Given coin denominations and a target amount, find the fewest coins that sum to it exactly (or report impossible).",
+      "difficulty": "medium",
+      "primaryDirection": "dp",
+      "tags": { "subproblemOverlap": "yes_direct", "localOptimality": "no" }
+    },
+    {
+      "id": "pl_two_sum_sorted",
+      "title": "Pair Sum in a Sorted Array",
+      "statement": "Given a sorted array, find two elements summing to a target using a two-pointer scan.",
+      "difficulty": "easy",
+      "primaryDirection": "two_pointer",
+      "tags": { "orderSensitivity": "no", "searchSpace": "value_range" }
+    },
+    {
+      "id": "pl_lis",
+      "title": "Longest Increasing Subsequence",
+      "statement": "Given an array, find the length of the longest strictly increasing subsequence.",
+      "difficulty": "medium",
+      "primaryDirection": "dp",
+      "tags": { "orderSensitivity": "yes", "subproblemOverlap": "yes_direct" }
+    },
+    {
+      "id": "pl_word_break",
+      "title": "Word Break",
+      "statement": "Given a string and a dictionary of words, determine if the string can be segmented into a space-separated sequence of dictionary words.",
+      "difficulty": "medium",
+      "primaryDirection": "dp",
+      "tags": { "stateSpace": "exponential", "subproblemOverlap": "yes_direct" }
+    },
+    {
+      "id": "pl_n_queens",
+      "title": "N-Queens Placement Count",
+      "statement": "Count the number of ways to place N queens on an N×N board so none attack each other.",
+      "difficulty": "hard",
+      "primaryDirection": "backtracking",
+      "tags": { "searchSpace": "decision_tree", "stateSpace": "exponential" }
+    },
+    {
+      "id": "pl_course_schedule",
+      "title": "Course Schedule Feasibility",
+      "statement": "Given courses with prerequisite pairs, determine whether it's possible to finish all courses (i.e. the prerequisite graph has no cycle).",
+      "difficulty": "medium",
+      "primaryDirection": "graph",
+      "tags": { "dependencyStructure": "dag", "searchSpace": "graph_states" }
+    },
+    {
+      "id": "pl_network_delay",
+      "title": "Network Delay Time",
+      "statement": "Given a weighted directed graph and a source node, find the time for a signal to reach every other node (or -1 if impossible).",
+      "difficulty": "medium",
+      "primaryDirection": "graph",
+      "tags": { "searchSpace": "graph_states", "dependencyStructure": "dag" }
+    },
+    {
+      "id": "pl_merge_intervals",
+      "title": "Merge Overlapping Intervals",
+      "statement": "Given a collection of intervals, merge all overlapping ones and return the resulting non-overlapping set.",
+      "difficulty": "easy",
+      "primaryDirection": "greedy",
+      "tags": { "searchSpace": "intervals", "orderSensitivity": "yes" }
+    },
+    {
+      "id": "pl_longest_substr_k_distinct",
+      "title": "Longest Substring With At Most K Distinct Characters",
+      "statement": "Given a string and an integer K, find the length of the longest substring containing at most K distinct characters.",
+      "difficulty": "medium",
+      "primaryDirection": "two_pointer",
+      "tags": { "orderSensitivity": "no", "stateSpace": "small" }
+    },
+    {
+      "id": "pl_matrix_islands",
+      "title": "Count Islands in a Grid",
+      "statement": "Given a 2D grid of land/water cells, count the number of connected land regions (4-directionally connected).",
+      "difficulty": "easy",
+      "primaryDirection": "graph",
+      "tags": { "searchSpace": "graph_states", "stateSpace": "small" }
+    },
+    {
+      "id": "pl_subset_sum_meet_middle",
+      "title": "Subset Sum for n ≈ 40",
+      "statement": "Given up to ~40 numbers, determine if any subset sums to a target value.",
+      "difficulty": "hard",
+      "primaryDirection": "backtracking",
+      "tags": { "stateSpace": "exponential", "searchSpace": "decision_tree" }
+    },
+    {
+      "id": "pl_edit_distance",
+      "title": "Edit Distance",
+      "statement": "Given two strings, find the minimum number of insert/delete/replace operations to convert one into the other.",
+      "difficulty": "medium",
+      "primaryDirection": "dp",
+      "tags": { "subproblemOverlap": "yes_direct", "dependencyStructure": "dag" }
+    }
+  ]
+}

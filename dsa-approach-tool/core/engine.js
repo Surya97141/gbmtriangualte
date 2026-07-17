@@ -164,6 +164,25 @@ const Engine = (() => {
         break;
       }
 
+      case 'fastpath': {
+        // Fast path replaces Stage 3's structural derivation with the
+        // direction the user already had in mind. Confidence is marked
+        // 'low' since it bypassed structural verification — Stage 5 is
+        // where it actually gets checked.
+        const fp = state.answers?.fastpath ?? {};
+        State.clearDirections();
+        State.addDirection({
+          id          : 'fastpath_direction',
+          family      : fp.directionFamily || 'other',
+          label       : fp.direction || 'Selected via fast path',
+          why         : 'Selected directly via the fast path — structural analysis was skipped.',
+          verifyBefore: 'Confirm this direction still fits once Stage 5 verification runs against it.',
+          wouldFailIf : 'The structural properties this direction assumes turn out not to hold.',
+          confidence  : 'low',
+        });
+        break;
+      }
+
       case 'stage3': {
         const directions = _deriveDirections(state);
         State.clearDirections();

@@ -682,7 +682,14 @@ const Stage3 = (() => {
     const isDPLikely = saved.properties?.subproblemOverlap === 'yes_direct';
     const dpOk       = !isDPLikely || !!saved.dpSubtype;
     const graphOk    = !hasGraph    || !!saved.graphGoal;
-    const valid      = answered >= 5 && dpOk && graphOk;
+
+    // 7 properties is the required-field count here; the DP subtype / graph
+    // goal follow-ups are additional requirements on top (not part of the
+    // 60% count) since they're conditional on what the properties revealed.
+    const propGate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage3', GateStandard.evaluate(answered, 7))
+      : { valid: answered >= 5 };
+    const valid = propGate.valid && dpOk && graphOk;
 
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
@@ -906,7 +913,10 @@ const Stage3 = (() => {
   function onMount(state) {
     const saved   = state.answers?.stage3;
     const answered = Object.keys(saved?.properties ?? {}).length;
-    if (answered >= 5 && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage3', GateStandard.evaluate(answered, 7))
+      : { valid: answered >= 5 };
+    if (gate.valid && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
   }
 
   function cleanup() {

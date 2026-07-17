@@ -102,59 +102,10 @@ const DecompositionChecks = (() => {
     },
   ];
 
-  // ─── REFRAMING QUESTIONS ──────────────────────────────────────────────────
-  // Forced perspective shifts before committing to an approach
-
-  const REFRAME_QUESTIONS = [
-    {
-      id        : 'rq_strip_story',
-      question  : 'If you remove the problem story and keep only the mathematical structure — what does it look like?',
-      purpose   : 'Story can mislead. The math is what matters.',
-      example   : '"Distribute cookies to children" → Assign values from set A to indices in set B to minimize total cost → Assignment problem',
-    },
-    {
-      id        : 'rq_element_as_node',
-      question  : 'What if each element is a node — what would the edges be?',
-      purpose   : 'Reveals hidden graph structure in array or string problems.',
-      example   : 'Word ladder — each word is a node, edge if words differ by one character → BFS shortest path',
-    },
-    {
-      id        : 'rq_state_as_position',
-      question  : 'What if each possible state is a position in a graph — what would transitions be?',
-      purpose   : 'Reveals BFS-on-states structure.',
-      example   : 'Minimum moves to solve puzzle — each board configuration is a node, moves are edges → BFS',
-    },
-    {
-      id        : 'rq_search_for_answer',
-      question  : 'Instead of computing the answer directly — what if you binary searched for it?',
-      purpose   : 'Reveals Binary Search on Answer when direct optimization is hard.',
-      example   : 'Minimum capacity to ship all packages → binary search on capacity, check feasibility greedily',
-    },
-    {
-      id        : 'rq_complement',
-      question  : 'Is counting or finding the complement (invalid cases) easier than the valid cases?',
-      purpose   : 'Complement counting — Total minus Invalid.',
-      example   : 'Strings with at least one vowel → Total strings minus strings with no vowels',
-    },
-    {
-      id        : 'rq_fix_dimension',
-      question  : 'Can you fix one dimension and solve a simpler problem on the remaining dimensions?',
-      purpose   : 'Reveals 2D → 1D dimensional reduction.',
-      example   : 'Maximum sum submatrix → fix top and bottom rows, compress columns, apply Kadane on 1D',
-    },
-    {
-      id        : 'rq_known_pattern',
-      question  : 'Does this problem, restated mathematically, match a known canonical problem?',
-      purpose   : 'Direct reduction to solved problem.',
-      example   : 'Longest chain of words where each word is previous + one character → LIS on word lengths',
-    },
-    {
-      id        : 'rq_offline_possible',
-      question  : 'Can all queries be sorted and processed together offline rather than one at a time?',
-      purpose   : 'Reveals offline algorithm opportunity.',
-      example   : 'Range queries sorted by right endpoint → process left to right, answer queries when right endpoint reached',
-    },
-  ];
+  // Reframing questions used to live here as a second, near-duplicate copy
+  // of the 8-question bank. They now live in one place — see
+  // stages/stage2-5/reframe-questions.js (ReframeQuestions) — asked once,
+  // here at Stage 2.5, and re-surfaced (filtered, not re-asked) at Stage 3.5.
 
   // ─── IMPLICIT STRUCTURE QUICK CHECKS ─────────────────────────────────────
 
@@ -246,14 +197,6 @@ const DecompositionChecks = (() => {
     return PATTERNS.filter(p => !p.isNegative);
   }
 
-  function getReframeQuestions() {
-    return [...REFRAME_QUESTIONS];
-  }
-
-  function getReframeById(id) {
-    return REFRAME_QUESTIONS.find(r => r.id === id) ?? null;
-  }
-
   function getImplicitChecks() {
     return [...IMPLICIT_CHECKS];
   }
@@ -272,21 +215,6 @@ const DecompositionChecks = (() => {
       description: '',
       analyzed   : false,
     }));
-  }
-
-  // Check if a reframe question answer suggests a transformation
-  function getTransformationHint(reframeId, answeredYes) {
-    if (!answeredYes) return null;
-
-    const HINTS = {
-      rq_element_as_node  : 'tr_element_to_node',
-      rq_state_as_position: 'tr_state_to_position',
-      rq_search_for_answer: 'tr_optimization_to_bsearch',
-      rq_complement       : 'tr_counting_to_complement',
-      rq_fix_dimension    : 'tr_2d_to_1d',
-    };
-
-    return HINTS[reframeId] ?? null;
   }
 
   // Estimate if decomposition is likely given stage0/stage1 answers
@@ -332,12 +260,9 @@ const DecompositionChecks = (() => {
     getAllPatterns,
     getPatternById,
     getPositivePatterns,
-    getReframeQuestions,
-    getReframeById,
     getImplicitChecks,
     getTransformationVerification,
     buildSubproblems,
-    getTransformationHint,
     estimateDecompositionLikelihood,
   };
 

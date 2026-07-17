@@ -180,6 +180,22 @@
     color         : var(--text-secondary);
     letter-spacing: .5px;
   }
+  .topbar__gate-badge {
+    font-family   : var(--font-mono);
+    font-size     : .62rem;
+    letter-spacing: .3px;
+    padding       : 2px 8px;
+    border-radius : 20px;
+    border        : 1px solid var(--border-dim);
+    color         : var(--text-muted);
+    white-space   : nowrap;
+    flex-shrink   : 0;
+  }
+  .topbar__gate-badge--ready {
+    color      : var(--pass);
+    border-color: rgba(6,214,160,.35);
+    background : rgba(6,214,160,.07);
+  }
   .topbar__stage-num {
     font-family   : var(--font-mono);
     font-size     : .62rem;
@@ -329,6 +345,7 @@
             <div class="topbar__stage-fill" id="topbar-stage-fill" style="width:0%"></div>
           </div>
           <span class="topbar__stage-name" id="topbar-stage-name">Complexity Budget</span>
+          <span class="topbar__gate-badge" id="topbar-gate-badge" aria-live="polite" style="display:none"></span>
         </div>
       </div>
 
@@ -352,6 +369,10 @@
         <span class="topbar__streak" id="topbar-streak" aria-live="polite"
               title="Consecutive days with a completed Stage 8 walkthrough"
               style="display:none"></span>
+        <button class="btn btn--ghost btn--sm" id="topbar-guide-btn"
+                aria-label="Open stage guide" title="What does each stage do?">
+          ? Guide
+        </button>
         <button class="btn btn--ghost btn--sm" id="topbar-save-btn"
                 aria-label="Download session as JSON file" title="Download session">
           ↓ Save
@@ -569,9 +590,16 @@
   <script src="/utils/confidence-utils.js"></script>
   <script src="/recall/recall-scheduler.js"></script>
 
+  <script src="/core/preferences.js"></script>
+  <script src="/core/outcomes.js"></script>
+  <script src="/core/problem-library.js"></script>
+  <script src="/core/gate-standard.js"></script>
   <script src="/core/state.js"></script>
   <script src="/core/router.js"></script>
   <script src="/core/renderer.js"></script>
+  <script src="/core/guide-panel.js"></script>
+
+  <script src="/stages/entry/entry.js"></script>
 
   <script src="/stages/stage0/complexity-table.js"></script>
   <script src="/stages/stage0/stage0.js"></script>
@@ -582,7 +610,10 @@
   <script src="/stages/stage2/output-types.js"></script>
   <script src="/stages/stage2/stage2.js"></script>
 
+  <script src="/stages/fastpath/fastpath.js"></script>
+
   <script src="/stages/stage2-5/decomposition-checks.js"></script>
+  <script src="/stages/stage2-5/reframe-questions.js"></script>
   <script src="/stages/stage2-5/stage2-5.js"></script>
 
   <script src="/stages/stage3/properties/order-sensitivity.js"></script>
@@ -602,7 +633,6 @@
   <script src="/stages/stage3/stage3.js"></script>
 
   <script src="/stages/stage3-5/transformations/transformation-list.js"></script>
-  <script src="/stages/stage3-5/transformations/reframe-questions.js"></script>
   <script src="/stages/stage3-5/transformations/disguise-checks.js"></script>
   <script src="/stages/stage3-5/stage3-5.js"></script>
 
@@ -797,6 +827,12 @@
     }));
   });
 
+  // ── Guide button ───────────────────────────────────────────────────────
+  document.getElementById('topbar-guide-btn')
+    ?.addEventListener('click', () => {
+      if (typeof GuidePanel !== 'undefined') GuidePanel.show();
+    });
+
   // ── Save (download) button ────────────────────────────────────────────
   document.getElementById('topbar-save-btn')
     ?.addEventListener('click', () => {
@@ -842,8 +878,9 @@
     const stageNameEl = document.getElementById('topbar-stage-name');
 
     if (stageNumEl) {
-      stageNumEl.textContent =
-        'STAGE ' + (stageId ?? '').replace('stage', '').replace('_', '.').toUpperCase();
+      const shortLabels = { entry: 'START', fastpath: 'FAST PATH' };
+      stageNumEl.textContent = shortLabels[stageId]
+        ?? ('STAGE ' + (stageId ?? '').replace('stage', '').replace('_', '.').toUpperCase());
     }
     if (stageNameEl) {
       stageNameEl.textContent = stageName ?? '';
@@ -864,6 +901,27 @@
       container.style.animation = 'none';
       requestAnimationFrame(() => { container.style.animation = ''; });
     }
+
+    // Clear the gate badge on every stage change — the new stage reports
+    // its own status on mount, don't show the previous stage's leftover.
+    const gateBadge = document.getElementById('topbar-gate-badge');
+    if (gateBadge) gateBadge.style.display = 'none';
+  });
+
+  // Gate status updated — the one shared "is this stage ready?" readout,
+  // fed by GateStandard.report() from whichever stage is currently mounted.
+  document.addEventListener('dsa:gate-update', (e) => {
+    const { answered, total, thresholdCount, valid, meetsThreshold, alternateMet, alternateLabel } = e.detail ?? {};
+    const badge = document.getElementById('topbar-gate-badge');
+    if (!badge || total === undefined) return;
+
+    const clearedViaAlt = valid && !meetsThreshold && alternateMet && alternateLabel;
+    const altText = clearedViaAlt ? ` — via ${alternateLabel}` : '';
+    badge.textContent = total > 0
+      ? `${answered}/${total} answered · gate at ${thresholdCount}${altText}`
+      : '';
+    badge.classList.toggle('topbar__gate-badge--ready', !!valid);
+    badge.style.display = total > 0 ? 'inline-block' : 'none';
   });
 
   // Confidence updated — show in topbar

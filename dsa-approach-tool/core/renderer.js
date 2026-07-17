@@ -161,9 +161,11 @@ const Renderer = (() => {
   // For now resolved from global scope
   function _resolveModule(stageId) {
     const MODULE_MAP = {
+      entry          : (typeof StageEntry     !== 'undefined') ? StageEntry     : null,
       stage0         : (typeof Stage0         !== 'undefined') ? Stage0         : null,
       stage1         : (typeof Stage1         !== 'undefined') ? Stage1         : null,
       stage2         : (typeof Stage2         !== 'undefined') ? Stage2         : null,
+      fastpath       : (typeof StageFastpath  !== 'undefined') ? StageFastpath  : null,
       stage2_5       : (typeof Stage2_5       !== 'undefined') ? Stage2_5       : null,
       stage3         : (typeof Stage3         !== 'undefined') ? Stage3         : null,
       stage3_5       : (typeof Stage3_5       !== 'undefined') ? Stage3_5       : null,

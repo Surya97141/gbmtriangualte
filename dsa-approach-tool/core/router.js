@@ -10,31 +10,52 @@ const Router = (() => {
   // All stages in canonical order with metadata
   // skipIf: function(state) → boolean — if true, stage is skipped silently
 
+  // True once the user has chosen the fast path at the entry screen —
+  // Stages 0–4.5 all check this to skip themselves as a block.
+  function _isFastPath(state) {
+    return state.answers?.entry?.path === 'fast';
+  }
+
   const STAGES = [
+    {
+      id      : 'entry',
+      label   : 'Get Started',
+      required: true,
+      skipIf  : null,
+    },
     {
       id      : 'stage0',
       label   : 'Complexity Budget',
       required: true,
-      skipIf  : null,
+      skipIf  : _isFastPath,
     },
     {
       id      : 'stage1',
       label   : 'Input Anatomy',
       required: true,
-      skipIf  : null,
+      skipIf  : _isFastPath,
     },
     {
       id      : 'stage2',
       label   : 'Output Anatomy',
       required: true,
-      skipIf  : null,
+      skipIf  : _isFastPath,
+    },
+    {
+      id      : 'fastpath',
+      label   : 'Fast Path',
+      required: false,
+      // Only shown when the fast path was chosen at entry
+      skipIf  : (state) => !_isFastPath(state),
     },
     {
       id      : 'stage2_5',
       label   : 'Problem Decomposition',
       required: false,
-      // Skip if input is simple single array/string with no query layer
+      // Skip on the fast path, or if input is a simple single array/string
+      // with no query layer
       skipIf  : (state) => {
+        if (_isFastPath(state)) return true;
         const inputTypes = state.answers.stage1?.inputTypes ?? [];
         const queryType  = state.answers.stage1?.queryType;
         const isSimple   = (
@@ -49,15 +70,16 @@ const Router = (() => {
       id      : 'stage3',
       label   : 'Structural Properties',
       required: true,
-      skipIf  : null,
+      skipIf  : _isFastPath,
     },
     {
       id      : 'stage3_5',
       label   : 'Reframing Check',
       required: false,
-      // Skip if confidence from Stage 3 is very high
+      // Skip on the fast path, or if confidence from Stage 3 is very high
       // i.e. all 7 properties answered with certainty and no unsure
       skipIf  : (state) => {
+        if (_isFastPath(state)) return true;
         const props    = state.answers.stage3?.properties ?? {};
         const answered = Object.values(props).filter(v => v && v !== 'unanswered').length;
         const hasUnsure = Object.values(props).some(v => v === 'unsure');
@@ -69,14 +91,15 @@ const Router = (() => {
       id      : 'stage4',
       label   : 'Constraint Interaction',
       required: true,
-      skipIf  : null,
+      skipIf  : _isFastPath,
     },
     {
       id      : 'stage4_5',
       label   : 'Approach Variant',
       required: false,
-      // Skip if no direction has been identified yet
+      // Skip on the fast path, or if no direction has been identified yet
       skipIf  : (state) => {
+        if (_isFastPath(state)) return true;
         return (state.output?.directions ?? []).length === 0;
       },
     },
@@ -179,7 +202,7 @@ const Router = (() => {
 
   // Normal entry — start from Stage 0
   function normalEntry() {
-    return 'stage0';
+    return 'entry';
   }
 
   // Recovery entry — given failure type, return recovery path stage id
@@ -190,14 +213,14 @@ const Router = (() => {
   // Resume entry — given saved state, return stage to resume from
   function resumeEntry(state) {
     const current = state.currentStage;
-    if (!current) return 'stage0';
+    if (!current) return 'entry';
 
     const stage = _getStage(current);
-    if (!stage) return 'stage0';
+    if (!stage) return 'entry';
 
     // If current stage should now be skipped — find next valid
     if (_shouldSkip(stage, state)) {
-      return next(current, state) ?? 'stage0';
+      return next(current, state) ?? 'entry';
     }
 
     return current;
@@ -270,10 +293,18 @@ const Router = (() => {
     const stage = _getStage(stageId);
     if (!stage || !stage.skipIf) return null;
 
+    const isFast = _isFastPath(state);
+
     const SKIP_REASONS = {
-      stage2_5  : 'Simple single-input problem — decomposition not needed',
-      stage3_5  : 'All Stage 3 properties answered with certainty',
-      stage4_5  : 'No candidate directions identified yet',
+      stage0    : isFast ? 'Fast path — complexity budget skipped' : undefined,
+      stage1    : isFast ? 'Fast path — input anatomy collected on the Fast Path stage instead' : undefined,
+      stage2    : isFast ? 'Fast path — output anatomy collected on the Fast Path stage instead' : undefined,
+      fastpath  : 'Full walkthrough chosen — fast path not used',
+      stage2_5  : isFast ? 'Fast path — decomposition skipped' : 'Simple single-input problem — decomposition not needed',
+      stage3    : isFast ? 'Fast path — structural properties skipped' : undefined,
+      stage3_5  : isFast ? 'Fast path — reframing skipped' : 'All Stage 3 properties answered with certainty',
+      stage4    : isFast ? 'Fast path — constraint interaction skipped' : undefined,
+      stage4_5  : isFast ? 'Fast path — approach variant skipped' : 'No candidate directions identified yet',
     };
 
     return _shouldSkip(stage, state)

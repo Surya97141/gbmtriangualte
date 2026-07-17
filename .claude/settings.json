@@ -24,7 +24,24 @@
       "Bash(tee driver-full-output3.log)",
       "Bash(node cdp-inspect.mjs \"document.getElementById\\('topbar-stage-num'\\)?.textContent + ' | ' + document.getElementById\\('topbar-stage-name'\\)?.textContent + ' | nextDisabled=' + document.getElementById\\('btn-next'\\)?.disabled\")",
       "Bash(node --check core/router.js)",
-      "Bash(tee driver-full-output4.log)"
+      "Bash(tee driver-full-output4.log)",
+      "Skill(artifact-design)",
+      "Skill(artifact-design:*)",
+      "Bash(node --check core/guide-panel.js)",
+      "Bash(timeout 60 node cdp-guide-test.mjs)",
+      "Bash(timeout 90 node cdp-fastpath-test.mjs)",
+      "Bash(timeout 60 node cdp-fastpath-test.mjs)",
+      "Bash(cat)",
+      "Bash(timeout 40 node cdp-debug-c.mjs)",
+      "Bash(node --check cdp-debug-c.mjs)",
+      "Bash(node --check stages/stage2-5/stage2-5.js)",
+      "Bash(node --check stages/stage2-5/decomposition-checks.js)",
+      "Bash(node --check stages/stage2-5/reframe-questions.js)",
+      "Bash(node --check stages/stage3-5/stage3-5.js)",
+      "Bash(grep -n \"// Stage 2.5\" stages/stage6-5/stage6-5.js)",
+      "Bash(timeout 60 node cdp-merge-test.mjs)",
+      "Bash(timeout 60 node cdp-gate-test.mjs)",
+      "Bash(sed -i \"s/const btns = \\\\[...document.querySelectorAll\\('.s4-hs-btns .s4-ans-btn\\\\[data-val=\\\\\"no\\\\\"\\\\]:not\\(.s4-ans-btn--on-no\\)'\\)\\\\];\\\\\\\\\\\\\\\\n    btns.slice\\(0, 1\\).forEach\\(b => b.click\\(\\)\\);/const btns2 = [...document.querySelectorAll\\(\\\\\".s4-hs-btns .s4-ans-btn[data-val=\\\\\\\\\\\\\\\\\\\\\"no\\\\\\\\\\\\\\\\\\\\\"]:not\\(.s4-ans-btn--on-no\\)\\\\\"\\)]; btns2.slice\\(0, 1\\).forEach\\(b => b.click\\(\\)\\);/\" cdp-gate-test2.mjs)"
     ],
     "additionalDirectories": [
       "c:\\GBMlookup\\dsa-approach-tool\\stages"

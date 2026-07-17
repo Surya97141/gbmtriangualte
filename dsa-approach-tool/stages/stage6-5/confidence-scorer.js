@@ -60,9 +60,11 @@ const ConfidenceScorer = (() => {
     optimization_type_identified  : 'Optimization type identified',
     solution_depth_identified     : 'Solution depth identified',
 
-    // Stage 2.5
+    // Stage 2.5 — reframe questions are asked here (canonical bank, shared
+    // with Stage 3.5 which filters/re-surfaces the same answers)
     decomposition_checked         : 'Decomposition checked',
     subproblems_identified        : 'Sub-problems identified',
+    reframe_questions_answered    : 'Reframe questions answered',
 
     // Stage 3
     order_sensitivity_answered    : 'Order sensitivity answered',
@@ -77,7 +79,6 @@ const ConfidenceScorer = (() => {
 
     // Stage 3.5
     transformation_check_done     : 'Transformation checked',
-    reframe_questions_answered    : 'Reframe questions answered',
 
     // Stage 4
     constraint_interaction_checked: 'Constraint interaction checked',
@@ -93,6 +94,9 @@ const ConfidenceScorer = (() => {
     // Stage 6
     universal_cases_reviewed      : 'Universal edge cases reviewed',
     type_specific_cases_reviewed  : 'Type-specific cases reviewed',
+
+    // Fast Path
+    fastpath_direction_provided   : 'Direction provided via fast path',
 
     // Penalties
     property_answered_unsure      : 'Unsure answers (penalty per)',
@@ -174,6 +178,7 @@ const ConfidenceScorer = (() => {
       solution_depth_identified     : 'Stage 2 — Output',
       decomposition_checked         : 'Stage 2.5 — Decomp',
       subproblems_identified        : 'Stage 2.5 — Decomp',
+      reframe_questions_answered    : 'Stage 2.5 — Decomp',
       order_sensitivity_answered    : 'Stage 3 — Structure',
       subproblem_overlap_answered   : 'Stage 3 — Structure',
       feasibility_boundary_answered : 'Stage 3 — Structure',
@@ -184,7 +189,6 @@ const ConfidenceScorer = (() => {
       dp_subtype_identified         : 'Stage 3 — Structure',
       graph_goal_identified         : 'Stage 3 — Structure',
       transformation_check_done     : 'Stage 3.5 — Reframe',
-      reframe_questions_answered    : 'Stage 3.5 — Reframe',
       constraint_interaction_checked: 'Stage 4 — Constraints',
       hidden_structure_checked      : 'Stage 4 — Constraints',
       greedy_counterexample_tested  : 'Stage 5 — Verify',

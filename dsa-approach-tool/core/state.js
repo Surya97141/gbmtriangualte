@@ -31,6 +31,19 @@ const State = (() => {
     // ── Answers — one key per stage ───────────────────────────────────────────
     answers: {
 
+      entry: {
+        path      : null,             // 'full' | 'fast'
+        answeredAt: null,
+      },
+
+      fastpath: {
+        inputTypes     : [],          // mirrors stage1.inputTypes
+        outputForm     : null,        // mirrors stage2.outputForm
+        direction      : null,        // free text, or the matched family's label
+        directionFamily: null,        // family id ('greedy'|'dp'|'graph'|...|'other') or null
+        answeredAt     : null,
+      },
+
       stage0: {
         n          : null,            // primary input size
         q          : null,            // query count (if applicable)
@@ -257,7 +270,7 @@ const State = (() => {
   // Clear all answers from a stage onward — used when backtracking
   function clearAnswersFrom(stageId) {
     const ORDER = [
-      'stage0','stage1','stage2','stage2_5',
+      'entry','stage0','stage1','stage2','fastpath','stage2_5',
       'stage3','stage3_5','stage4','stage4_5',
       'stage5','stage6','stage6_5','stage7','stage8',
     ];

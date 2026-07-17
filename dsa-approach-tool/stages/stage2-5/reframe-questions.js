@@ -1,6 +1,10 @@
-// stages/stage3-5/transformations/reframe-questions.js
-// 8 forced perspective shifts applied before committing to any direction
-// Used by: stage3-5.js
+// stages/stage2-5/reframe-questions.js
+// 8 forced perspective shifts — the single canonical reframe question bank.
+// Asked once, here, at Stage 2.5. Stage 3.5 does not re-ask these; it reads
+// the same answers back (state.answers.stage2_5.reframeAnswers) and
+// re-surfaces only the subset relevant to whichever candidate directions
+// Stage 3 produced.
+// Used by: stage2-5.js (asks), stage3-5.js (filters + re-surfaces)
 
 const ReframeQuestions = (() => {
 

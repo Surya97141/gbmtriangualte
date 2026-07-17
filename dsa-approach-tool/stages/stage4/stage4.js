@@ -448,8 +448,14 @@ const Stage4 = (() => {
     const totalHS   = CI?.getHiddenStructures?.()?.length ?? _fallbackHiddenStructures().length;
     const hsAnswered = Object.keys(saved.hiddenStructureAnswers ?? {}).length;
     const interDone  = (saved.interactions ?? []).length > 0;
-    const hiddenDone = hsAnswered >= Math.ceil(totalHS / 2);
-    const valid      = interDone || hiddenDone;
+
+    // Required fields = hidden-structure checks. Selecting at least one
+    // constraint interaction is the explicit alternate path (a genuinely
+    // faster route when the interaction itself already made the answer clear).
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage4', GateStandard.evaluate(hsAnswered, totalHS, interDone), { alternateLabel: 'an interaction selected' })
+      : { valid: interDone || hsAnswered >= Math.ceil(totalHS / 2) };
+    const valid = gate.valid;
 
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
@@ -457,7 +463,7 @@ const Stage4 = (() => {
       document.dispatchEvent(new CustomEvent('dsa:stage-complete', {
         detail: {
           stageId: 'stage4',
-          answers: { ...saved, interactionChecked: true, hiddenStructureChecked: hiddenDone },
+          answers: { ...saved, interactionChecked: true, hiddenStructureChecked: gate.meetsThreshold ?? (hsAnswered >= totalHS) },
         },
       }));
     }
@@ -704,9 +710,11 @@ const Stage4 = (() => {
     const CI        = typeof ConstraintInteractions !== 'undefined' ? ConstraintInteractions : null;
     const totalHS   = CI?.getHiddenStructures?.()?.length ?? _fallbackHiddenStructures().length;
     const hsAnswered = Object.keys(saved?.hiddenStructureAnswers ?? {}).length;
-    if ((saved?.interactions ?? []).length > 0 || hsAnswered >= Math.ceil(totalHS / 2)) {
-      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
-    }
+    const interDone  = (saved?.interactions ?? []).length > 0;
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage4', GateStandard.evaluate(hsAnswered, totalHS, interDone), { alternateLabel: 'an interaction selected' })
+      : { valid: interDone || hsAnswered >= Math.ceil(totalHS / 2) };
+    if (gate.valid && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
   }
 
   function cleanup() {

@@ -487,9 +487,13 @@ const Stage2 = (() => {
   // ─── COMPLETION ────────────────────────────────────────────────────────────
 
   function _checkComplete() {
-    const valid = _selectedForm && _selectedOpt && _selectedDepth;
-    if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(!!valid);
-    if (valid) {
+    const fieldsAnswered = [_selectedForm, _selectedOpt, _selectedDepth].filter(Boolean).length;
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage2', GateStandard.evaluate(fieldsAnswered, 3))
+      : { valid: fieldsAnswered === 3 };
+
+    if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(gate.valid);
+    if (gate.valid) {
       document.dispatchEvent(new CustomEvent('dsa:stage-complete', {
         detail: {
           stageId: 'stage2',
@@ -618,9 +622,12 @@ const Stage2 = (() => {
 
   function onMount(state) {
     const saved = state.answers?.stage2;
-    if (saved?.outputForm && saved?.optimizationType && saved?.solutionDepth) {
-      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
-    }
+    if (!saved) return;
+    const fieldsAnswered = [saved.outputForm, saved.optimizationType, saved.solutionDepth].filter(Boolean).length;
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage2', GateStandard.evaluate(fieldsAnswered, 3))
+      : { valid: fieldsAnswered === 3 };
+    if (gate.valid && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
   }
 
   function cleanup() {

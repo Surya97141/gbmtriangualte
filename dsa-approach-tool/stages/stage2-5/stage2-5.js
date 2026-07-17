@@ -2,7 +2,9 @@
 // Problem Decomposition — cream/white theme, self-contained styles
 // Same pattern as stage0/1/2/3-5
 // Module contract: render(state), onMount(state), cleanup()
-// Data source: DecompositionChecks (stages/stage2-5/decomposition-checks.js)
+// Data sources: DecompositionChecks (patterns/implicit checks) and
+// ReframeQuestions — the canonical reframe question bank, shared with
+// Stage 3.5 which filters and re-surfaces these same answers.
 
 const Stage2_5 = (() => {
 
@@ -28,10 +30,11 @@ const Stage2_5 = (() => {
     _injectStyles();
 
     const DC = typeof DecompositionChecks !== 'undefined' ? DecompositionChecks : null;
+    const RQ = typeof ReframeQuestions    !== 'undefined' ? ReframeQuestions    : null;
 
-    const patterns  = DC?.getAllPatterns?.()      ?? _fallbackPatterns();
-    const reframeQs = DC?.getReframeQuestions?.() ?? _fallbackReframes();
-    const implicit  = DC?.getImplicitChecks?.()   ?? _fallbackImplicit();
+    const patterns  = DC?.getAllPatterns?.() ?? _fallbackPatterns();
+    const reframeQs = RQ?.getAll?.()         ?? _fallbackReframes();
+    const implicit  = DC?.getImplicitChecks?.() ?? _fallbackImplicit();
 
     const stage0Answers = state.answers?.stage0 ?? {};
     const stage1Answers = state.answers?.stage1 ?? {};
@@ -270,7 +273,7 @@ const Stage2_5 = (() => {
     if (!container) return;
     container.innerHTML = '';
 
-    const hints = _collectTransformHints(DC);
+    const hints = _collectTransformHints();
     if (!hints.length) return;
 
     container.innerHTML = '<div class="s25-hints-title">🔄 Transformation signals detected</div>';
@@ -286,10 +289,11 @@ const Stage2_5 = (() => {
     });
   }
 
-  function _collectTransformHints(DC) {
+  function _collectTransformHints() {
+    const RQ = typeof ReframeQuestions !== 'undefined' ? ReframeQuestions : null;
     const hints = [];
     Object.entries(_reframeAnswers).forEach(([qId, val]) => {
-      const hint = DC?.getTransformationHint?.(qId, val === 'yes');
+      const hint = RQ?.getTransformHint?.(qId, val === 'yes');
       if (hint && !hints.includes(hint)) hints.push(hint);
     });
     return hints;
@@ -389,7 +393,8 @@ const Stage2_5 = (() => {
     }
 
     // Reframe progress
-    const totalR = (DC?.getReframeQuestions?.() ?? _fallbackReframes()).length;
+    const RQ     = typeof ReframeQuestions !== 'undefined' ? ReframeQuestions : null;
+    const totalR = RQ?.getTotal?.() ?? _fallbackReframes().length;
     const rAnswered = Object.keys(_reframeAnswers).length;
     const reframeSection = document.createElement('div');
     reframeSection.className = 's25-panel-section';
@@ -400,7 +405,7 @@ const Stage2_5 = (() => {
     body.appendChild(reframeSection);
 
     // Transform hints
-    const hints = _collectTransformHints(DC);
+    const hints = _collectTransformHints();
     if (hints.length) {
       const hintSection = document.createElement('div');
       hintSection.className = 's25-panel-section s25-panel-section--highlight';
@@ -452,7 +457,7 @@ const Stage2_5 = (() => {
       preprocessingStep : _selectedPattern === 'dp_preprocessing' ? (_preprocessingText || null) : null,
       reframeAnswers    : { ..._reframeAnswers },
       implicitAnswers   : { ..._implicitAnswers },
-      transformationHints: _collectTransformHints(DC),
+      transformationHints: _collectTransformHints(),
     });
 
     document.dispatchEvent(new CustomEvent('dsa:answer-update', {
@@ -461,10 +466,13 @@ const Stage2_5 = (() => {
   }
 
   function _checkComplete() {
-    const isComplete = !!_selectedPattern;
-    if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(isComplete);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage2_5', GateStandard.evaluate(_selectedPattern ? 1 : 0, 1))
+      : { valid: !!_selectedPattern };
 
-    if (isComplete) {
+    if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(gate.valid);
+
+    if (gate.valid) {
       const saved = State.getAnswer('stage2_5') ?? {};
       document.dispatchEvent(new CustomEvent('dsa:stage-complete', {
         detail: { stageId: 'stage2_5', answers: saved },
@@ -763,9 +771,10 @@ const Stage2_5 = (() => {
   function onMount(state) {
     const saved = state.answers?.stage2_5;
     if (!saved) return;
-    if (saved.selectedPattern && typeof Renderer !== 'undefined') {
-      Renderer.setNextEnabled(true);
-    }
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage2_5', GateStandard.evaluate(saved.selectedPattern ? 1 : 0, 1))
+      : { valid: !!saved.selectedPattern };
+    if (gate.valid && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
   }
 
   function cleanup() {

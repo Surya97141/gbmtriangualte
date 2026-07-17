@@ -180,6 +180,7 @@ const Stage1 = (() => {
   let _selectedSignals = new Set();
   let _queryType       = null;
   let _state           = null;
+  let _bannerDismissed = false;
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
@@ -196,6 +197,7 @@ const Stage1 = (() => {
     wrapper.innerHTML = `
       <div class="s1-main" id="s1-main">
         <div class="s1-rule">Understand what you are given before thinking about what to do with it.</div>
+        <div id="s1-fastpath-banner-region"></div>
 
         <!-- Input types -->
         <section class="s1-section" id="s1-section-types">
@@ -269,8 +271,51 @@ const Stage1 = (() => {
 
     // Initial panel render
     setTimeout(() => _updatePanel(wrapper), 0);
+    _maybeShowFastPathBanner(wrapper);
 
     return wrapper;
+  }
+
+  // ─── FAST PATH AUTO-DETECT BANNER ───────────────────────────────────────────
+  // Small N + a single-query-ish query type suggests this problem may not
+  // need the full walkthrough. Surfaced, never forced — dismissible, and
+  // only shown while it still applies.
+
+  function _maybeShowFastPathBanner(wrapper) {
+    const region = (wrapper ?? document).querySelector('#s1-fastpath-banner-region');
+    if (!region) return;
+    region.innerHTML = '';
+    if (_bannerDismissed) return;
+
+    const n = _state?.answers?.stage0?.n;
+    const smallN         = typeof n === 'number' && n > 0 && n <= 1000;
+    const singleQueryish = _queryType === 'none' || _queryType === 'one';
+    if (!smallN || !singleQueryish) return;
+
+    const banner = document.createElement('div');
+    banner.className = 's1-fastpath-banner';
+    banner.innerHTML = `
+      <div class="s1-fastpath-banner-text">
+        <b>Small N, single query.</b> If you already know the direction, the
+        fast path skips straight to Verification and Edge Cases.
+      </div>
+      <div class="s1-fastpath-banner-btns">
+        <button class="s1-fastpath-btn s1-fastpath-btn--primary" id="s1-fastpath-switch">Try fast path →</button>
+        <button class="s1-fastpath-btn s1-fastpath-btn--ghost" id="s1-fastpath-dismiss">Dismiss</button>
+      </div>
+    `;
+    region.appendChild(banner);
+
+    banner.querySelector('#s1-fastpath-dismiss').addEventListener('click', () => {
+      _bannerDismissed = true;
+      region.innerHTML = '';
+    });
+
+    banner.querySelector('#s1-fastpath-switch').addEventListener('click', () => {
+      State.setAnswer('entry', { path: 'fast' });
+      State.setAnswer('fastpath', { inputTypes: [..._selectedTypes] });
+      document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'fastpath' } }));
+    });
   }
 
   // ─── TYPE CARD ─────────────────────────────────────────────────────────────
@@ -511,17 +556,24 @@ const Stage1 = (() => {
       detail: { stageId: 'stage1', key: 'inputTypes', value: [..._selectedTypes] }
     }));
 
-    // Check completion
-    const isComplete = _selectedTypes.size > 0 && _queryType !== null;
+    // Check completion — two required fields: an input type picked, a
+    // query type picked.
+    const fieldsAnswered = (_selectedTypes.size > 0 ? 1 : 0) + (_queryType !== null ? 1 : 0);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage1', GateStandard.evaluate(fieldsAnswered, 2))
+      : { valid: fieldsAnswered === 2 };
+
     if (typeof Renderer !== 'undefined') {
-      Renderer.setNextEnabled(isComplete);
+      Renderer.setNextEnabled(gate.valid);
     }
 
-    if (isComplete) {
+    if (gate.valid) {
       document.dispatchEvent(new CustomEvent('dsa:stage-complete', {
         detail: { stageId: 'stage1', answers }
       }));
     }
+
+    _maybeShowFastPathBanner();
   }
 
   // ─── STYLES ────────────────────────────────────────────────────────────────
@@ -999,6 +1051,24 @@ const Stage1 = (() => {
     .s1-panel-body::-webkit-scrollbar-track { background: transparent; }
     .s1-panel-body::-webkit-scrollbar-thumb { background: var(--s1-border2); border-radius: 4px; }
 
+    /* Fast path auto-detect banner */
+    .s1-fastpath-banner {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      padding: 12px 16px; background: var(--s1-amber-bg); border: 1.5px solid var(--s1-amber-border);
+      border-radius: var(--s1-r);
+    }
+    .s1-fastpath-banner-text { font-size: .78rem; color: var(--s1-ink2); line-height: 1.5; flex: 1; min-width: 220px; }
+    .s1-fastpath-banner-text b { color: var(--s1-ink); }
+    .s1-fastpath-banner-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    .s1-fastpath-btn {
+      padding: 6px 14px; border-radius: 6px; font-size: .74rem; cursor: pointer; white-space: nowrap;
+      border: 1.5px solid transparent; transition: border-color .15s, background .15s;
+    }
+    .s1-fastpath-btn--primary { background: var(--s1-accent); color: #fff; }
+    .s1-fastpath-btn--primary:hover { background: #1d4fc4; }
+    .s1-fastpath-btn--ghost { background: transparent; border-color: var(--s1-border2); color: var(--s1-muted); }
+    .s1-fastpath-btn--ghost:hover { border-color: var(--s1-ink2); color: var(--s1-ink); }
+
     /* Responsive — hide panel on small screens */
     @media (max-width: 900px) {
       .s1-shell   { flex-direction: column; padding: 16px; }
@@ -1015,8 +1085,11 @@ const Stage1 = (() => {
   function onMount(state) {
     const saved = state.answers?.stage1;
     if (!saved) return;
-    const isComplete = (saved.inputTypes?.length ?? 0) > 0 && saved.queryType !== null;
-    if (isComplete && typeof Renderer !== 'undefined') {
+    const fieldsAnswered = ((saved.inputTypes?.length ?? 0) > 0 ? 1 : 0) + (saved.queryType !== null ? 1 : 0);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage1', GateStandard.evaluate(fieldsAnswered, 2))
+      : { valid: fieldsAnswered === 2 };
+    if (gate.valid && typeof Renderer !== 'undefined') {
       Renderer.setNextEnabled(true);
     }
   }
@@ -1026,6 +1099,7 @@ const Stage1 = (() => {
     _selectedSignals = new Set();
     _queryType       = null;
     _state           = null;
+    _bannerDismissed = false;
   }
 
   return { render, onMount, cleanup };

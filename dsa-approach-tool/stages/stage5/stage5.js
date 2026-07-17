@@ -627,7 +627,10 @@ const Stage5 = (() => {
   function _checkComplete(activeVerifiers) {
     const saved     = State.getAnswer('stage5') ?? {};
     const doneCount = activeVerifiers.filter(v => _isVerifierDone(v.id, saved)).length;
-    const valid     = doneCount >= Math.ceil(activeVerifiers.length / 2);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage5', GateStandard.evaluate(doneCount, activeVerifiers.length))
+      : { valid: doneCount >= Math.ceil(activeVerifiers.length / 2) };
+    const valid = gate.valid;
 
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
@@ -875,9 +878,10 @@ const Stage5 = (() => {
     const saved           = state.answers?.stage5;
     const activeVerifiers = _getActiveVerifiers(state);
     const doneCount       = activeVerifiers.filter(v => _isVerifierDone(v.id, saved ?? {})).length;
-    if (doneCount >= Math.ceil(activeVerifiers.length / 2)) {
-      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
-    }
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage5', GateStandard.evaluate(doneCount, activeVerifiers.length))
+      : { valid: doneCount >= Math.ceil(activeVerifiers.length / 2) };
+    if (gate.valid && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
   }
 
   function cleanup() {

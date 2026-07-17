@@ -436,6 +436,12 @@ const Stage4_5 = (() => {
       }
     }
 
+    // Not a field-count gate (it's a complexity-safety check) — reported
+    // as 1/1 for the shared badge, same as any single-decision stage.
+    if (typeof GateStandard !== 'undefined') {
+      GateStandard.report('stage4_5', { answered: valid ? 1 : 0, total: 1, thresholdCount: 1, meetsThreshold: valid, alternateMet: false, valid });
+    }
+
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
     if (valid) {
@@ -637,11 +643,12 @@ const Stage4_5 = (() => {
 
   function onMount(state) {
     const saved = state.answers?.stage4_5;
-    if (!saved?.variantSelected) return;
-    const grade = saved.recheckResult?.grade ?? 'safe';
-    if (grade === 'safe' || (grade === 'warn' && saved.overrideDecision)) {
-      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
+    const grade = saved?.recheckResult?.grade ?? 'safe';
+    const valid = !!saved?.variantSelected && (grade === 'safe' || (grade === 'warn' && saved.overrideDecision));
+    if (typeof GateStandard !== 'undefined') {
+      GateStandard.report('stage4_5', { answered: valid ? 1 : 0, total: 1, thresholdCount: 1, meetsThreshold: valid, alternateMet: false, valid });
     }
+    if (valid && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
   }
 
   function cleanup() {

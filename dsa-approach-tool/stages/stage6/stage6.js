@@ -472,8 +472,11 @@ const Stage6 = (() => {
   function _checkComplete(activeCases) {
     const criticalCases   = activeCases.filter(c => c.priority === 'critical');
     const allCriticalDone = criticalCases.every(c => _acknowledged.has(c.id));
-    const halfAllDone     = _acknowledged.size >= Math.ceil(activeCases.length / 2);
-    const valid           = allCriticalDone || halfAllDone;
+
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage6', GateStandard.evaluate(_acknowledged.size, activeCases.length, allCriticalDone), { alternateLabel: 'all Critical cases reviewed' })
+      : { valid: allCriticalDone || _acknowledged.size >= Math.ceil(activeCases.length / 2) };
+    const valid = gate.valid;
 
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
@@ -660,9 +663,11 @@ const Stage6 = (() => {
     const criticalCases = activeCases.filter(c => c.priority === 'critical');
     const savedCases    = saved?.cases ?? [];
     const allCritDone   = criticalCases.every(c => savedCases.includes(c.id));
-    const halfDone      = savedCases.length >= Math.ceil(activeCases.length / 2);
-    if (allCritDone || halfDone) {
-      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage6', GateStandard.evaluate(savedCases.length, activeCases.length, allCritDone), { alternateLabel: 'all Critical cases reviewed' })
+      : { valid: allCritDone || savedCases.length >= Math.ceil(activeCases.length / 2) };
+    if (gate.valid && typeof Renderer !== 'undefined') {
+      Renderer.setNextEnabled(true);
     }
   }
 

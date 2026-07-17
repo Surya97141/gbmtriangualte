@@ -41,6 +41,7 @@ const Stage6_5 = (() => {
     keyword_crosscheck_done      : 3,
     universal_cases_reviewed     : 4,
     type_specific_cases_reviewed : 4,
+    fastpath_direction_provided  : 5,
   };
 
   const PENALTY_MAP = {
@@ -59,14 +60,23 @@ const Stage6_5 = (() => {
     { label: 'Stage 0 — Complexity',    keys: ['complexity_budget_computed','infeasible_classes_eliminated','memory_checked'] },
     { label: 'Stage 1 — Input Anatomy', keys: ['input_type_identified','secondary_signals_noted','query_type_identified'] },
     { label: 'Stage 2 — Output Anatomy',keys: ['output_form_identified','optimization_type_identified','solution_depth_identified'] },
-    { label: 'Stage 2.5 — Decomposition',keys:['decomposition_checked','subproblems_identified'] },
+    { label: 'Stage 2.5 — Decomposition',keys:['decomposition_checked','subproblems_identified','reframe_questions_answered'] },
     { label: 'Stage 3 — Structure',     keys: ['order_sensitivity_answered','subproblem_overlap_answered','feasibility_boundary_answered','local_optimality_answered','state_space_answered','dependency_structure_answered','search_space_answered','dp_subtype_identified','graph_goal_identified'] },
-    { label: 'Stage 3.5 — Reframing',   keys: ['transformation_check_done','reframe_questions_answered'] },
+    { label: 'Stage 3.5 — Reframing',   keys: ['transformation_check_done'] },
     { label: 'Stage 4 — Constraints',   keys: ['constraint_interaction_checked','hidden_structure_checked'] },
+    { label: 'Fast Path — Direction',   keys: ['fastpath_direction_provided'] },
     { label: 'Stage 5 — Verification',  keys: ['greedy_counterexample_tested','monotonicity_verified','dp_state_verified','graph_properties_verified','keyword_crosscheck_done'] },
     { label: 'Stage 6 — Edge Cases',    keys: ['universal_cases_reviewed','type_specific_cases_reviewed'] },
     { label: 'Penalties',               keys: ['property_answered_unsure','verification_skipped','no_counterexample_for_greedy','state_not_verified_for_dp','transformation_skipped','edge_cases_skipped'] },
   ];
+
+  // Groups that correspond to stages the fast path deliberately skips —
+  // shown as one collapsed "skipped" line instead of individual empty/red bars.
+  const FAST_PATH_SKIPPED_GROUPS = new Set([
+    'Stage 0 — Complexity', 'Stage 1 — Input Anatomy', 'Stage 2 — Output Anatomy',
+    'Stage 2.5 — Decomposition', 'Stage 3 — Structure', 'Stage 3.5 — Reframing',
+    'Stage 4 — Constraints',
+  ]);
 
   // Single source of truth lives in confidence-scorer.js
   const BANDS = ConfidenceScorer.SCORE_BANDS;
@@ -335,8 +345,25 @@ const Stage6_5 = (() => {
     stageSec.className = 's65-panel-section';
     stageSec.innerHTML = `<div class="s65-panel-section-title">By stage</div>`;
 
+    const isFastPath = _state?.answers?.entry?.path === 'fast';
     const earnedKeys = new Set(_report.earned.map(e => e.key));
+    let skippedNoteAdded = false;
+
     STAGE_GROUPS.filter(g => g.label !== 'Penalties').forEach(group => {
+      if (isFastPath && FAST_PATH_SKIPPED_GROUPS.has(group.label)) {
+        if (!skippedNoteAdded) {
+          const note = document.createElement('div');
+          note.className = 's65-panel-stage-row s65-panel-stage-row--skipped';
+          note.innerHTML = `
+            <div class="s65-panel-stage-name">Stages 0–4.5</div>
+            <div class="s65-panel-stage-skipped-label">skipped via fast path</div>
+          `;
+          stageSec.appendChild(note);
+          skippedNoteAdded = true;
+        }
+        return;
+      }
+
       const maxPts  = group.keys.reduce((s,k) => s + (SCORE_MAP[k]??0), 0);
       const gotPts  = group.keys.filter(k => earnedKeys.has(k)).reduce((s,k) => s+(SCORE_MAP[k]??0),0);
       if (maxPts === 0) return;
@@ -415,10 +442,16 @@ const Stage6_5 = (() => {
     if (s2.optimizationType)              earn('optimization_type_identified');
     if (s2.solutionDepth)                 earn('solution_depth_identified');
 
-    // Stage 2.5
+    // Stage 2.5 — reframe questions are asked here (the single canonical
+    // bank, shared with Stage 3.5 which only filters/re-surfaces them).
     const s25 = answers.stage2_5 ?? {};
     if (s25.checked || s25.selectedPattern) earn('decomposition_checked');
     if (s25.subproblems?.length)            earn('subproblems_identified');
+    const s25rf = s25.reframeAnswers ?? {};
+    const totalReframe = (typeof ReframeQuestions !== 'undefined' ? ReframeQuestions.getTotal() : 8);
+    if (Object.keys(s25rf).length >= Math.ceil(totalReframe / 2)) {
+      earn('reframe_questions_answered');
+    }
 
     // Stage 3
     const s3    = answers.stage3 ?? {};
@@ -455,7 +488,6 @@ const Stage6_5 = (() => {
     } else {
       deduct('transformation_skipped', PENALTY_MAP.transformation_skipped);
     }
-    if (s35.reframeAnswered) earn('reframe_questions_answered');
 
     // Stage 4
     const s4 = answers.stage4 ?? {};
@@ -508,6 +540,12 @@ const Stage6_5 = (() => {
     if (!s6.universalReviewed && !s6.typeSpecificReviewed && Object.keys(s6).length > 0) {
       deduct('edge_cases_skipped', PENALTY_MAP.edge_cases_skipped);
     }
+
+    // Fast Path — direction supplied directly instead of derived through
+    // Stages 0–4.5. Scored on its own so those stages' groups can be shown
+    // as "skipped" rather than penalized as incomplete.
+    const fp = answers.fastpath ?? {};
+    if (fp.direction) earn('fastpath_direction_provided');
 
     const score       = Math.max(0, Math.min(100, Math.round(total)));
     const suggestions = _buildSuggestions(earned, families, s5, s6);
@@ -690,6 +728,11 @@ const Stage6_5 = (() => {
     .s65-panel-stage-bar--mid  { background: var(--s65-warn); }
     .s65-panel-stage-bar--low  { background: var(--s65-red); }
     .s65-panel-stage-pts    { font-family: var(--s65-mono); font-size: .62rem; color: var(--s65-muted); text-align: right; }
+    .s65-panel-stage-row--skipped { grid-template-columns: 90px 1fr; opacity: .7; }
+    .s65-panel-stage-skipped-label {
+      font-family: var(--s65-mono); font-size: .62rem; letter-spacing: .04em; font-style: italic;
+      color: var(--s65-muted);
+    }
     .s65-panel-sug { display: flex; align-items: flex-start; gap: 7px; font-size: .7rem; color: var(--s65-ink2); padding: 3px 0; }
     .s65-panel-sug-pts { font-family: var(--s65-mono); font-size: .64rem; font-weight: 700; color: var(--s65-green); flex-shrink: 0; min-width: 24px; }
     .s65-panel-sug-text { line-height: 1.4; }

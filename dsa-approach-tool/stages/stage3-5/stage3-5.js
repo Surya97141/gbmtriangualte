@@ -1,6 +1,13 @@
 // stages/stage3-5/stage3-5.js
 // Reframing Check — cream/white theme, self-contained styles
 // Same pattern as stage0/1/2/2-5/3
+//
+// Reframe questions are NOT asked here — Stage 2.5 asks the one canonical
+// bank (ReframeQuestions, stages/stage2-5/reframe-questions.js) and this
+// stage reads the same answers back, filtered to whichever of them are
+// still relevant given Stage 3's candidate directions. Answering or
+// changing one here updates the same shared stage2_5.reframeAnswers record
+// — there's a single source of truth, not a second copy.
 
 const Stage3_5 = (() => {
 
@@ -11,16 +18,45 @@ const Stage3_5 = (() => {
   let _verifyChecklist     = {};
   let _transformationHints = [];
 
+  // A reframe question's transformHint points at the direction family it
+  // would open — used to judge whether it's still worth surfacing once
+  // Stage 3's candidate directions are known. Questions with no hint (pure
+  // framing questions) are always considered relevant.
+  const HINT_FAMILY = {
+    tr_element_to_node        : 'graph',
+    tr_state_to_position      : 'graph',
+    tr_optimization_to_bsearch: 'binary_search',
+    tr_sequence_to_dag        : 'dp',
+    tr_2d_to_1d               : 'dp',
+    tr_counting_to_complement : null, // a technique, not a distinct family
+  };
+
+  // Keep a question if: it was already answered "yes" (worth confirming
+  // now that more is known), it has no transform hint (always relevant),
+  // or its hint points to a family NOT already among the candidates
+  // (it might reveal something the current directions missed).
+  function _filterRelevantReframes(questions, reframeAnswers, directions) {
+    const families = (directions ?? []).map(d => (d.family ?? d.id ?? '').toLowerCase());
+    return questions.filter(q => {
+      if (reframeAnswers?.[q.id] === 'yes') return true;
+      if (!q.transformHint) return true;
+      const family = HINT_FAMILY[q.transformHint];
+      if (family === undefined || family === null) return true;
+      return !families.some(f => f.includes(family));
+    });
+  }
+
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
   function render(state) {
     _state               = state;
     const saved          = state.answers?.stage3_5 ?? {};
+    const s25saved        = state.answers?.stage2_5 ?? {};
     _selectedTransform   = saved.transformationApplied ?? null;
-    _reframeAnswers      = saved.reframeAnswers        ?? {};
+    _reframeAnswers      = { ...(s25saved.reframeAnswers ?? {}) };
     _disguiseAnswers     = saved.disguiseAnswers        ?? {};
     _verifyChecklist     = saved.verifyChecklist        ?? {};
-    _transformationHints = saved.transformationHints    ?? [];
+    _transformationHints = s25saved.transformationHints ?? saved.transformationHints ?? [];
 
     _injectStyles();
 
@@ -37,7 +73,8 @@ const Stage3_5 = (() => {
     const TL  = typeof TransformationList!== 'undefined' ? TransformationList: null;
 
     const disguiseChecks = DC?.getRelevant?.(directions) ?? _fallbackDisguises();
-    const reframeQs      = RQ?.getAll?.()                ?? _fallbackReframes();
+    const reframeQsAll   = RQ?.getAll?.()                ?? _fallbackReframes();
+    const reframeQs      = _filterRelevantReframes(reframeQsAll, _reframeAnswers, directions);
     const suggested      = TL?.getRelevant?.(inputTypes, outputForm, optType) ?? [];
     const allTransforms  = TL?.getAll?.()                ?? _fallbackTransforms();
 
@@ -64,13 +101,13 @@ const Stage3_5 = (() => {
           <div class="s35-disguise-list" id="s35-disguise-list"></div>
         </section>
 
-        <!-- Section 02: Reframe questions -->
+        <!-- Section 02: Reframe questions (carried over from Stage 2.5) -->
         <section class="s35-section">
           <div class="s35-section-header">
             <span class="s35-section-num">02</span>
             <div>
               <div class="s35-section-title">Forced perspective shifts</div>
-              <div class="s35-section-sub">Answer each — a "yes" may reveal a transformation</div>
+              <div class="s35-section-sub">Carried over from Stage 2.5, filtered to what's still relevant now that a direction is known — update any if your thinking changed</div>
             </div>
           </div>
           <div class="s35-reframe-list" id="s35-reframe-list"></div>
@@ -116,7 +153,7 @@ const Stage3_5 = (() => {
     `;
 
     _buildDisguiseList(wrapper, disguiseChecks, saved);
-    _buildReframeList(wrapper, reframeQs, saved);
+    _buildReframeList(wrapper, reframeQs);
     _buildTransformSection(wrapper, suggested, allTransforms, saved);
 
     if (_selectedTransform && _selectedTransform !== 'none') {
@@ -194,12 +231,17 @@ const Stage3_5 = (() => {
 
   // ─── REFRAME LIST ──────────────────────────────────────────────────────────
 
-  function _buildReframeList(wrapper, questions, saved) {
+  function _buildReframeList(wrapper, questions) {
     const list = wrapper.querySelector('#s35-reframe-list');
     if (!list) return;
 
+    if (!questions.length) {
+      list.innerHTML = `<div class="s35-reframe-empty">Nothing left to reconsider here — your Stage 2.5 answers already cover this direction.</div>`;
+      return;
+    }
+
     questions.forEach(q => {
-      const answer = saved.reframeAnswers?.[q.id] ?? null;
+      const answer = _reframeAnswers[q.id] ?? null;
       const row = document.createElement('div');
       row.className = `s35-reframe-row ${answer ? 's35-reframe-row--answered' : ''}`;
       row.id = `s35-rr-${q.id}`;
@@ -235,25 +277,22 @@ const Stage3_5 = (() => {
       if (ex) ex.classList.toggle('s35-hidden', value !== 'yes');
     }
 
-    // Transformation hints
-    const RQ = typeof ReframeQuestions !== 'undefined' ? ReframeQuestions : null;
-    const hint = RQ?.getTransformHint?.(questionId, value === 'yes');
-    if (hint && !_transformationHints.includes(hint)) {
-      _transformationHints.push(hint);
-    } else if (value === 'no') {
-      const hintForThis = RQ?.getTransformHint?.(questionId, true);
-      if (hintForThis) _transformationHints = _transformationHints.filter(h => h !== hintForThis);
-    }
+    // Recompute the full hint list from scratch so it's correct regardless
+    // of edit order — reframeAnswers is the single shared source of truth,
+    // there's no separate stage3_5 copy to keep in sync.
+    const RQ     = typeof ReframeQuestions !== 'undefined' ? ReframeQuestions : null;
+    const RQall  = RQ?.getAll?.() ?? _fallbackReframes();
+    _transformationHints = [...new Set(
+      RQall
+        .map(q => RQ?.getTransformHint?.(q.id, _reframeAnswers[q.id] === 'yes'))
+        .filter(Boolean)
+    )];
 
-    const RQall      = RQ?.getAll?.() ?? _fallbackReframes();
-    const allAnswered = RQall.every(q => _reframeAnswers[q.id]);
-
-    State.setAnswer('stage3_5', {
+    State.setAnswer('stage2_5', {
       reframeAnswers     : { ..._reframeAnswers },
       transformationHints: [..._transformationHints],
-      reframeAnswered    : allAnswered,
-      checked            : true,
     });
+    State.setAnswer('stage3_5', { checked: true });
 
     _renderTransformHints(wrapper);
     _updatePanel(wrapper);
@@ -511,7 +550,8 @@ const Stage3_5 = (() => {
     const RQ        = typeof ReframeQuestions !== 'undefined' ? ReframeQuestions : null;
     const TL        = typeof TransformationList!== 'undefined'? TransformationList: null;
     const totalD    = DC?.getTotal?.()  ?? _fallbackDisguises().length;
-    const totalR    = RQ?.getTotal?.()  ?? _fallbackReframes().length;
+    const relevantQs = _filterRelevantReframes(RQ?.getAll?.() ?? _fallbackReframes(), _reframeAnswers, _state?.output?.directions ?? []);
+    const rAnsweredRelevant = relevantQs.filter(q => _reframeAnswers[q.id]).length;
     const triggeredD = Object.entries(_disguiseAnswers).filter(([,v]) => v === 'yes');
     const yesR       = Object.entries(_reframeAnswers).filter(([,v]) => v === 'yes');
 
@@ -525,8 +565,8 @@ const Stage3_5 = (() => {
         <span class="s35-panel-prog-count">${dAnswered} / ${totalD}</span>
       </div>
       <div class="s35-panel-prog-row">
-        <span class="s35-panel-prog-label">Reframe questions</span>
-        <span class="s35-panel-prog-count">${rAnswered} / ${totalR}</span>
+        <span class="s35-panel-prog-label">Reframe (relevant now)</span>
+        <span class="s35-panel-prog-count">${rAnsweredRelevant} / ${relevantQs.length}</span>
       </div>
     `;
     body.appendChild(progSec);
@@ -599,32 +639,27 @@ const Stage3_5 = (() => {
       body.appendChild(sec);
     }
 
-    // Completion gate
-    const saved      = State.getAnswer('stage3_5') ?? {};
-    const enoughR    = rAnswered >= Math.ceil(totalR / 2);
-    const isReady    = enoughR && !!saved.transformationApplied;
+    // Completion gate — reframe answering was already satisfied at Stage
+    // 2.5; the only thing this stage itself gates on is the transform
+    // decision (disguise checks and any reframe updates here are informational).
+    const saved   = State.getAnswer('stage3_5') ?? {};
+    const isReady = !!saved.transformationApplied;
     const gate = document.createElement('div');
     gate.className = `s35-panel-gate ${isReady ? 's35-panel-gate--ready' : ''}`;
-    if (isReady) {
-      gate.textContent = '✓ Ready to proceed to Stage 4';
-    } else {
-      const needs = [];
-      if (!enoughR) needs.push(`${Math.ceil(totalR/2) - rAnswered} more reframe answer${Math.ceil(totalR/2) - rAnswered !== 1 ? 's' : ''}`);
-      if (!saved.transformationApplied) needs.push('transform decision');
-      gate.textContent = `Need: ${needs.join(', ')}`;
-    }
+    gate.textContent = isReady
+      ? '✓ Ready to proceed to Stage 4'
+      : 'Need: transform decision';
     body.appendChild(gate);
   }
 
   // ─── COMPLETION ────────────────────────────────────────────────────────────
 
   function _checkComplete() {
-    const saved      = State.getAnswer('stage3_5') ?? {};
-    const RQ         = typeof ReframeQuestions !== 'undefined' ? ReframeQuestions : null;
-    const totalR     = RQ?.getTotal?.() ?? _fallbackReframes().length;
-    const rAnswered  = Object.keys(saved.reframeAnswers ?? {}).length;
-    const enoughR    = rAnswered >= Math.ceil(totalR / 2);
-    const valid      = enoughR && !!saved.transformationApplied;
+    const saved = State.getAnswer('stage3_5') ?? {};
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage3_5', GateStandard.evaluate(saved.transformationApplied ? 1 : 0, 1))
+      : { valid: !!saved.transformationApplied };
+    const valid = gate.valid;
 
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
@@ -632,7 +667,7 @@ const Stage3_5 = (() => {
       document.dispatchEvent(new CustomEvent('dsa:stage-complete', {
         detail: {
           stageId: 'stage3_5',
-          answers: { ...saved, checked: true, reframeAnswered: rAnswered >= totalR, disguiseChecked: true },
+          answers: { ...saved, checked: true, disguiseChecked: true },
         },
       }));
     }
@@ -758,6 +793,10 @@ const Stage3_5 = (() => {
     .s35-reframe-q       { font-size: .86rem; font-weight: 500; color: var(--s35-ink); line-height: 1.4; }
     .s35-reframe-purpose { font-size: .71rem; color: var(--s35-muted); margin-top: 2px; line-height: 1.4; }
     .s35-reframe-example { font-size: .74rem; color: var(--s35-ink2); background: var(--s35-blue-bg); border: 1px solid var(--s35-blue-b); border-radius: 7px; padding: 7px 10px; line-height: 1.5; }
+    .s35-reframe-empty {
+      font-size: .8rem; color: var(--s35-muted); font-style: italic; text-align: center;
+      padding: 18px 12px; background: var(--s35-surface); border: 1px dashed var(--s35-border2); border-radius: 10px;
+    }
 
     /* Transform hints */
     .s35-hints-title { font-size: .8rem; font-weight: 600; color: var(--s35-violet); margin-bottom: 8px; margin-top: 10px; }
@@ -862,11 +901,11 @@ const Stage3_5 = (() => {
   function onMount(state) {
     const saved = state.answers?.stage3_5;
     if (!saved) return;
-    const RQ       = typeof ReframeQuestions !== 'undefined' ? ReframeQuestions : null;
-    const totalR   = RQ?.getTotal?.() ?? _fallbackReframes().length;
-    const rCount   = Object.keys(saved.reframeAnswers ?? {}).length;
-    if (rCount >= Math.ceil(totalR / 2) && saved.transformationApplied) {
-      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage3_5', GateStandard.evaluate(saved.transformationApplied ? 1 : 0, 1))
+      : { valid: !!saved.transformationApplied };
+    if (gate.valid && typeof Renderer !== 'undefined') {
+      Renderer.setNextEnabled(true);
     }
   }
 

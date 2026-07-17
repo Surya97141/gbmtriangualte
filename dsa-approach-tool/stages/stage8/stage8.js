@@ -407,6 +407,14 @@ const Stage8 = (() => {
     const label = wrapper.querySelector('#s8-progress-label');
     if (fill)  fill.style.width = `${pct}%`;
     if (label) label.textContent = `${done} / ${total} understood`;
+
+    // Every chunk must be understood by design — no partial credit here,
+    // so this intentionally does not go through GateStandard's 60% rule.
+    // Still reported for the shared badge, at its own full-total threshold.
+    if (typeof GateStandard !== 'undefined') {
+      const valid = total > 0 && done === total;
+      GateStandard.report('stage8', { answered: done, total, thresholdCount: total, meetsThreshold: valid, alternateMet: false, valid });
+    }
   }
 
   // ─── STATE PERSISTENCE ─────────────────────────────────────────────────────

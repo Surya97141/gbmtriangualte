@@ -492,9 +492,13 @@ const Stage0 = (() => {
   // ─── COMPLETION ────────────────────────────────────────────────────────────
 
   function _checkComplete() {
-    const valid = _n && _n > 0;
-    if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(!!valid);
-    if (valid) {
+    const hasN = !!(_n && _n > 0);
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage0', GateStandard.evaluate(hasN ? 1 : 0, 1))
+      : { valid: hasN };
+
+    if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(gate.valid);
+    if (gate.valid) {
       document.dispatchEvent(new CustomEvent('dsa:stage-complete', {
         detail: { stageId: 'stage0', answers: State.getAnswer('stage0') }
       }));
@@ -676,8 +680,10 @@ const Stage0 = (() => {
   // ─── LIFECYCLE ─────────────────────────────────────────────────────────────
 
   function onMount(state) {
-    if (state.answers?.stage0?.n) {
-      if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
+    const hasN = !!state.answers?.stage0?.n;
+    if (hasN && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
+    if (typeof GateStandard !== 'undefined') {
+      GateStandard.report('stage0', GateStandard.evaluate(hasN ? 1 : 0, 1));
     }
   }
 

@@ -578,7 +578,10 @@ const Stage7 = (() => {
   // ─── COMPLETION ────────────────────────────────────────────────────────────
 
   function _checkComplete() {
-    const valid = _directions.length > 0 && !!_selectedDirection;
+    const gate = typeof GateStandard !== 'undefined'
+      ? GateStandard.report('stage7', GateStandard.evaluate(_selectedDirection ? 1 : 0, 1))
+      : { valid: !!_selectedDirection };
+    const valid = _directions.length > 0 && gate.valid;
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
     if (valid) {
