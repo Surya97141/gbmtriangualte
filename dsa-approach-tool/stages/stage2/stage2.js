@@ -556,14 +556,14 @@ const Stage2 = (() => {
     style.id = 's2-styles';
     style.textContent = `
     .s2-shell {
-      --s2-bg: #111d17;
-      --s2-surface: #1e3229;
-      --s2-surface2: #1a2b23;
+      --s2-bg: var(--void);
+      --s2-surface: var(--surface-0);
+      --s2-surface2: var(--surface-1);
       --s2-border: rgba(232,223,200,.10);
       --s2-border2: rgba(232,223,200,.16);
-      --s2-ink: #ede4cf;
-      --s2-ink2: #c4b89c;
-      --s2-muted: #7d8f80;
+      --s2-ink: var(--text-primary);
+      --s2-ink2: var(--text-secondary);
+      --s2-muted: var(--text-muted);
       --s2-blue: #e8b93f;
       --s2-blue-bg: rgba(232,185,63,.14);
       --s2-blue-b: rgba(232,185,63,.35);
@@ -633,7 +633,7 @@ const Stage2 = (() => {
 
     /* Side panel */
     .s2-panel { width: 268px; flex-shrink: 0; background: var(--s2-surface); border: 1.5px solid var(--s2-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s2-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s2-border); background: #16251e; }
+    .s2-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s2-border); background: var(--surface-3); }
     .s2-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s2-ink); }
     .s2-panel-sub    { font-size: .66rem; color: var(--s2-muted); margin-top: 2px; }
     .s2-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 18px; }

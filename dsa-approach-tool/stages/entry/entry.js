@@ -200,8 +200,8 @@ const StageEntry = (() => {
     style.id = 'se-styles';
     style.textContent = `
     .se-shell {
-      --se-bg: #111d17; --se-surface: #1e3229; --se-border: rgba(232,223,200,.10); --se-border2: rgba(232,223,200,.16);
-      --se-ink: #ede4cf; --se-ink2: #c4b89c; --se-muted: #7d8f80; --se-accent: #e8b93f;
+      --se-bg: var(--void); --se-surface: var(--surface-0); --se-border: rgba(232,223,200,.10); --se-border2: rgba(232,223,200,.16);
+      --se-ink: var(--text-primary); --se-ink2: var(--text-secondary); --se-muted: var(--text-muted); --se-accent: #e8b93f;
       --se-accent-bg: rgba(232,185,63,.14); --se-accent-b: rgba(232,185,63,.35);
       display: flex; flex-direction: column; gap: 32px; max-width: 760px; margin: 0 auto;
       padding: 60px 28px; background: var(--se-bg); min-height: 100%;

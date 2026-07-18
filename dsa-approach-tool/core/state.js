@@ -56,6 +56,9 @@ const State = (() => {
       intake: {
         interpretation: null,
         lastSuggestion: null,
+        // Phase 4.6 — optional live gut-check: { level, note, fellBack? }.
+        // Purely informational; never gates a stage or feeds the score.
+        calibration   : null,
         answeredAt    : null,
       },
 

@@ -296,8 +296,8 @@ const GuidePanel = (() => {
     .gp-overlay--in { opacity: 1; }
 
     .gp-panel {
-      --gp-bg: #111d17; --gp-surface: #1e3229; --gp-surface-2: #213b2f;
-      --gp-ink: #ede4cf; --gp-ink2: #c4b89c; --gp-muted: #7d8f80;
+      --gp-bg: var(--void); --gp-surface: var(--surface-0); --gp-surface-2: var(--surface-2);
+      --gp-ink: var(--text-primary); --gp-ink2: var(--text-secondary); --gp-muted: var(--text-muted);
       --gp-border: rgba(232,223,200,.14); --gp-border2: rgba(232,223,200,.26);
       --gp-accent: #e8b93f; --gp-accent-ink: #c99a2e; --gp-accent-bg: rgba(232,185,63,.14); --gp-accent-b: rgba(232,185,63,.35);
       --gp-green: #5cc98a; --gp-green-bg: rgba(92,201,138,.14); --gp-green-b: rgba(92,201,138,.35);

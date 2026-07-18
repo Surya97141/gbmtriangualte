@@ -509,14 +509,14 @@ const Stage2_5 = (() => {
     style.textContent = `
 
     .s25-shell {
-      --s25-bg: #111d17;
-      --s25-surface: #1e3229;
-      --s25-surface2: #1a2b23;
+      --s25-bg: var(--void);
+      --s25-surface: var(--surface-0);
+      --s25-surface2: var(--surface-1);
       --s25-border: rgba(232,223,200,.10);
       --s25-border2: rgba(232,223,200,.16);
-      --s25-ink: #ede4cf;
-      --s25-ink2: #c4b89c;
-      --s25-muted: #7d8f80;
+      --s25-ink: var(--text-primary);
+      --s25-ink2: var(--text-secondary);
+      --s25-muted: var(--text-muted);
       --s25-accent: #e8b93f;
       --s25-accent-bg: rgba(232,185,63,.14);
       --s25-accent-b: rgba(232,185,63,.35);

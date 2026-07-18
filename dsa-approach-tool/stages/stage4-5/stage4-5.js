@@ -280,6 +280,14 @@ const Stage4_5 = (() => {
       `<div class="s45-wo-item">⚠ ${w}</div>`
     ).join('');
 
+    // Phase 4.5 — static "learn more" link, only when a URL was actually
+    // verified against the source site (see pattern-resources.js). No link
+    // shown at all is more honest than a guessed one that might 404.
+    const learnUrl  = typeof PatternResources !== 'undefined' ? PatternResources.getUrl(variant.id) : null;
+    const learnHTML = learnUrl
+      ? `<a class="s45-learn-more" href="${learnUrl}" target="_blank" rel="noopener noreferrer">Learn more ↗</a>`
+      : '';
+
     card.innerHTML = `
       <div class="s45-variant-check">✓</div>
       <div class="s45-variant-name">${variant.label}</div>
@@ -290,9 +298,11 @@ const Stage4_5 = (() => {
       </div>
       ${whenHTML ? `<div class="s45-variant-when">${whenHTML}</div>` : ''}
       ${woHTML ? `<div class="s45-variant-wos">${woHTML}</div>` : ''}
+      ${learnHTML}
     `;
 
     card.addEventListener('click', () => _onVariantSelect(variant.id, n, tl, CR, wrapper));
+    card.querySelector('.s45-learn-more')?.addEventListener('click', (e) => e.stopPropagation());
     return card;
   }
 
@@ -569,14 +579,14 @@ const Stage4_5 = (() => {
     style.id = 's45-styles';
     style.textContent = `
     .s45-shell {
-      --s45-bg: #111d17;
-      --s45-surface: #1e3229;
-      --s45-surface2: #1a2b23;
+      --s45-bg: var(--void);
+      --s45-surface: var(--surface-0);
+      --s45-surface2: var(--surface-1);
       --s45-border: rgba(232,223,200,.10);
       --s45-border2: rgba(232,223,200,.16);
-      --s45-ink: #ede4cf;
-      --s45-ink2: #c4b89c;
-      --s45-muted: #7d8f80;
+      --s45-ink: var(--text-primary);
+      --s45-ink2: var(--text-secondary);
+      --s45-muted: var(--text-muted);
       --s45-blue: #e8b93f;
       --s45-blue-bg: rgba(232,185,63,.14);
       --s45-blue-b: rgba(232,185,63,.35);
@@ -643,6 +653,8 @@ const Stage4_5 = (() => {
     .s45-variant-wos  { display: flex; flex-direction: column; gap: 4px; }
     .s45-wo-item      { font-size: .7rem; color: var(--s45-warn); padding: 4px 8px; background: var(--s45-warn-bg); border: 1px solid var(--s45-warn-b); border-radius: 5px; line-height: 1.4; }
     .s45-no-variants  { font-size: .76rem; color: var(--s45-muted); padding: 14px; background: var(--s45-surface2); border: 1px solid var(--s45-border); border-radius: 8px; line-height: 1.6; }
+    .s45-learn-more   { align-self: flex-start; font-size: .68rem; color: var(--s45-blue); text-decoration: none; }
+    .s45-learn-more:hover { text-decoration: underline; }
     .s45-fallback-honest       { display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--s45-surface2); border: 1.5px dashed var(--s45-border2); border-radius: 10px; }
     .s45-fallback-honest__title { font-size: .92rem; font-weight: 700; color: var(--s45-ink); }
     .s45-fallback-honest__body  { font-size: .82rem; color: var(--s45-ink2); line-height: 1.6; }
@@ -673,7 +685,7 @@ const Stage4_5 = (() => {
 
     /* Side panel */
     .s45-panel { width: 268px; flex-shrink: 0; background: var(--s45-surface); border: 1.5px solid var(--s45-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s45-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s45-border); background: #16251e; }
+    .s45-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s45-border); background: var(--surface-3); }
     .s45-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s45-ink); }
     .s45-panel-sub    { font-size: .66rem; color: var(--s45-muted); margin-top: 2px; }
     .s45-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

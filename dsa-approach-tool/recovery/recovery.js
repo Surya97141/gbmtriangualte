@@ -679,8 +679,8 @@ const Recovery = (() => {
       border-radius: 10px; font-family: 'DM Sans', system-ui, sans-serif;
     }
     .recovery-history-hint__icon { font-size: 1.1rem; color: #e8944a; flex-shrink: 0; margin-top: 1px; }
-    .recovery-history-hint__title { font-size: .84rem; font-weight: 700; color: #ede4cf; margin-bottom: 3px; }
-    .recovery-history-hint__detail { font-size: .76rem; color: #c4b89c; line-height: 1.5; }
+    .recovery-history-hint__title { font-size: .84rem; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+    .recovery-history-hint__detail { font-size: .76rem; color: var(--text-secondary); line-height: 1.5; }
     `;
     document.head.appendChild(style);
   }

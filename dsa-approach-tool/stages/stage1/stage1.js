@@ -625,13 +625,13 @@ const Stage1 = (() => {
 
     /* ── Cream/white theme tokens ────────────────────────────────────── */
     .s1-shell {
-      --s1-bg      : #111d17;
-      --s1-surface: #1e3229;
+      --s1-bg      : var(--void);
+      --s1-surface: var(--surface-0);
       --s1-border: rgba(232,223,200,.10);
       --s1-border2: rgba(232,223,200,.16);
-      --s1-ink: #ede4cf;
-      --s1-ink2: #c4b89c;
-      --s1-muted: #7d8f80;
+      --s1-ink: var(--text-primary);
+      --s1-ink2: var(--text-secondary);
+      --s1-muted: var(--text-muted);
       --s1-accent: #e8b93f;
       --s1-accent-bg: rgba(232,185,63,.14);
       --s1-accent-border: rgba(232,185,63,.35);
@@ -832,7 +832,7 @@ const Stage1 = (() => {
       user-select  : none;
     }
 
-    .s1-signal-row:hover  { border-color: var(--s1-border2); background: #1a2b23; }
+    .s1-signal-row:hover  { border-color: var(--s1-border2); background: var(--surface-1); }
     .s1-signal-row--on    { border-color: var(--s1-green); background: var(--s1-green-bg); }
 
     .s1-signal-row input[type="checkbox"] {
@@ -941,7 +941,7 @@ const Stage1 = (() => {
     .s1-panel-header {
       padding      : 14px 16px 12px;
       border-bottom: 1px solid var(--s1-border);
-      background   : #16251e;
+      background   : var(--surface-3);
     }
 
     .s1-panel-title {

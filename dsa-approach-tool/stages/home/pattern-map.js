@@ -197,11 +197,11 @@ const PatternMap = (() => {
     }
 
     .pm-card--locked {
-      background : #16251e;
+      background : var(--surface-3);
       border-color: rgba(232,223,200,.12);
     }
     .pm-card--unlocked {
-      background  : #1e3229;
+      background  : var(--surface-0);
       border-color: rgba(232,185,63,.28);
       border-left : 3px solid #e8b93f;
     }
@@ -236,8 +236,8 @@ const PatternMap = (() => {
       font-weight: 500;
       line-height: 1.35;
     }
-    .pm-card--locked   .pm-card-name { color: #7d8f80; }
-    .pm-card--unlocked .pm-card-name { color: #ede4cf; }
+    .pm-card--locked   .pm-card-name { color: var(--text-muted, #9caa9f); }
+    .pm-card--unlocked .pm-card-name { color: var(--text-primary, #ede4cf); }
 
     .pm-tooltip {
       position  : absolute;
@@ -245,7 +245,7 @@ const PatternMap = (() => {
       left      : 50%;
       transform : translateX(-50%) translateY(3px);
       background: #0a130f;
-      color     : #ede4cf;
+      color     : var(--text-primary);
       font-size : .66rem;
       line-height: 1.4;
       padding   : 5px 9px;
@@ -268,7 +268,7 @@ const PatternMap = (() => {
 
     .pm-empty {
       font-size: .76rem;
-      color    : #7d8f80;
+      color    : var(--text-muted, #9caa9f);
       padding  : 16px;
       grid-column: 1 / -1;
     }

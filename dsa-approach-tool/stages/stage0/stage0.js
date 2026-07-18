@@ -542,14 +542,14 @@ const Stage0 = (() => {
     style.id = 's0-styles';
     style.textContent = `
     .s0-shell {
-      --s0-bg: #111d17;
-      --s0-surface: #1e3229;
-      --s0-surface2: #1a2b23;
+      --s0-bg: var(--void);
+      --s0-surface: var(--surface-0);
+      --s0-surface2: var(--surface-1);
       --s0-border: rgba(232,223,200,.10);
       --s0-border2: rgba(232,223,200,.16);
-      --s0-ink: #ede4cf;
-      --s0-ink2: #c4b89c;
-      --s0-muted: #7d8f80;
+      --s0-ink: var(--text-primary);
+      --s0-ink2: var(--text-secondary);
+      --s0-muted: var(--text-muted);
       --s0-blue: #e8b93f;
       --s0-blue-bg: rgba(232,185,63,.14);
       --s0-blue-b: rgba(232,185,63,.35);
@@ -642,7 +642,7 @@ const Stage0 = (() => {
 
     /* Side panel */
     .s0-panel { width: 268px; flex-shrink: 0; background: var(--s0-surface); border: 1.5px solid var(--s0-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s0-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s0-border); background: #16251e; }
+    .s0-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s0-border); background: var(--surface-3); }
     .s0-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s0-ink); }
     .s0-panel-sub    { font-size: .66rem; color: var(--s0-muted); margin-top: 2px; }
     .s0-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 18px; }

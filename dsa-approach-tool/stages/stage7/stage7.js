@@ -10,6 +10,11 @@ const Stage7 = (() => {
   let _activeTab         = 'directions';
   let _commitRecheck     = null;
 
+  // Phase 4.9 — generated exit synthesis. Cloud-only, one call per session,
+  // never overwrites the static comparison — it renders alongside it.
+  let _generatedSynthesis  = null;
+  let _synthesisGenerating = false;
+
   // A variant's complexity class bumped one step — used when Stage 5/6
   // revealed extra work Stage 4.5's original recheck didn't know about.
   // Maps a variant's base complexity class to what it becomes once the
@@ -95,6 +100,7 @@ const Stage7 = (() => {
 
     _selectedDirection = saved.selectedDirection ?? _directions[0]?.id ?? null;
     _activeTab         = 'directions';
+    _generatedSynthesis = saved.generatedSynthesis ?? null;
 
     State.setAnswer('stage7', {
       directions       : _directions,
@@ -210,11 +216,10 @@ const Stage7 = (() => {
   // Shows the user's own typed interpretation from Intake (Phase 1.0) next to
   // what their own completed stages actually confirmed. Only appears when
   // Intake was used (Fast Path skips it entirely — nothing to compare
-  // against). This is a static build from already-computed session data, not
-  // an LLM-generated synthesis — Phase 4.9 would replace this with a
-  // generated comparison prose; no LLM integration exists anywhere in this
-  // codebase yet, so nothing here is faked. Framed as the user's own
-  // reasoning arriving somewhere, never as "the correct answer you missed."
+  // against). Static build from already-computed session data — this is the
+  // required fallback and always renders regardless of whether Phase 4.9's
+  // live synthesis is available. Framed as the user's own reasoning arriving
+  // somewhere, never as "the correct answer you missed."
   function _buildExitSynthesis(wrapper, state) {
     const region = wrapper.querySelector('#s7-exit-synthesis');
     if (!region) return;
@@ -227,6 +232,7 @@ const Stage7 = (() => {
 
     const SB = typeof SummaryBuilder !== 'undefined' ? SummaryBuilder : null;
     const summary = SB?.build?.(state) ?? _fallbackSummary(state);
+    const llmReady = typeof LLMClient !== 'undefined' && LLMClient.isConfigured('synthesis');
 
     region.innerHTML = `
       <div class="s7-synthesis">
@@ -248,8 +254,84 @@ const Stage7 = (() => {
           </div>
         </div>
         <div class="s7-synthesis-note">Not the "correct" answer you missed — where your own reasoning, tested stage by stage, actually landed.</div>
+        ${llmReady ? `<button class="s7-synthesis-gen-btn" id="s7-synthesis-gen-btn">✨ Generate a personalized reflection</button>` : ''}
+        <div id="s7-synthesis-generated"></div>
       </div>
     `;
+
+    region.querySelector('#s7-synthesis-gen-btn')
+      ?.addEventListener('click', () => _onGenerateSynthesis(region, interpretation, summary));
+
+    _renderGeneratedSynthesis(region);
+  }
+
+  // Phase 4.9 — one live call, Sonnet 4.6, always hosted regardless of the
+  // Settings backend toggle (exit synthesis needs a stronger model than the
+  // cheap tier). This never replaces the static comparison above — it's an
+  // optional addition rendered alongside it, and failure just means the
+  // button stays available to retry, nothing breaks.
+  async function _onGenerateSynthesis(region, interpretation, summary) {
+    if (_synthesisGenerating) return;
+    _synthesisGenerating = true;
+    _renderGeneratedSynthesis(region);
+
+    const confirmed = [
+      summary.input ? `Input: ${summary.input}` : null,
+      summary.output ? `Output: ${summary.output}` : null,
+      summary.structure ? `Structure confirmed: ${summary.structure}` : null,
+      summary.direction ? `Direction confirmed: ${summary.direction}` : null,
+    ].filter(Boolean).join('\n');
+
+    const result = await LLMClient.complete({
+      system: [
+        'You write a short, warm end-of-session reflection for a DSA problem-solving tool.',
+        'The user typed their own first interpretation of a problem, then worked through a',
+        'structured walkthrough that confirmed specific facts about it.',
+        '',
+        'Write 2-4 sentences that connect what they first thought to what their own work',
+        'confirmed — framed as their own reasoning arriving somewhere, NEVER as "here is the',
+        'correct answer you were missing." Do not correct or grade their initial interpretation.',
+        'Do not state or name a specific algorithm, data structure, or technique — describe the',
+        'structural facts in plain language instead (e.g. describe what the input/output/',
+        'structure imply, don\'t name the algorithm they point to).',
+        'Plain prose, no headers, no bullet points, second person ("you").',
+      ].join('\n'),
+      prompt: `Their initial interpretation:\n"${interpretation}"\n\nWhat their own work confirmed:\n${confirmed}`,
+      tier: 'synthesis',
+      maxTokens: 300,
+    });
+
+    _synthesisGenerating = false;
+
+    if (!result.ok) {
+      _generatedSynthesis = { error: result.message ?? 'Could not generate a reflection right now.' };
+    } else if (LLMClient.containsPatternNameLeak(result.text)) {
+      _generatedSynthesis = { error: 'Generated reflection didn\'t meet this tool\'s rules — showing the plain comparison above instead.' };
+    } else {
+      _generatedSynthesis = { text: result.text };
+    }
+
+    State.setAnswer('stage7', { generatedSynthesis: _generatedSynthesis });
+    _renderGeneratedSynthesis(region);
+  }
+
+  function _renderGeneratedSynthesis(region) {
+    const target = region.querySelector('#s7-synthesis-generated');
+    if (!target) return;
+
+    if (_synthesisGenerating) {
+      target.innerHTML = `<div class="s7-synthesis-generated s7-synthesis-generated--pending">Reflecting on your session…</div>`;
+      return;
+    }
+    if (!_generatedSynthesis) {
+      target.innerHTML = '';
+      return;
+    }
+    if (_generatedSynthesis.error) {
+      target.innerHTML = `<div class="s7-synthesis-generated s7-synthesis-generated--error">${_escapeS7(_generatedSynthesis.error)}</div>`;
+      return;
+    }
+    target.innerHTML = `<div class="s7-synthesis-generated">${_escapeS7(_generatedSynthesis.text)}</div>`;
   }
 
   function _escapeS7(str) {
@@ -788,14 +870,14 @@ const Stage7 = (() => {
     style.id = 's7-styles';
     style.textContent = `
     .s7-shell {
-      --s7-bg: #111d17;
-      --s7-surface: #1e3229;
-      --s7-surface2: #1a2b23;
+      --s7-bg: var(--void);
+      --s7-surface: var(--surface-0);
+      --s7-surface2: var(--surface-1);
       --s7-border: rgba(232,223,200,.10);
       --s7-border2: rgba(232,223,200,.16);
-      --s7-ink: #ede4cf;
-      --s7-ink2: #c4b89c;
-      --s7-muted: #7d8f80;
+      --s7-ink: var(--text-primary);
+      --s7-ink2: var(--text-secondary);
+      --s7-muted: var(--text-muted);
       --s7-blue: #e8b93f;
       --s7-blue-bg: rgba(232,185,63,.14);
       --s7-blue-b: rgba(232,185,63,.35);
@@ -854,6 +936,14 @@ const Stage7 = (() => {
     .s7-synthesis-list strong { color: var(--s7-ink2); font-weight: 600; }
     .s7-synthesis-note    { font-size: .74rem; color: var(--s7-muted); line-height: 1.5; }
     @media (max-width: 720px) { .s7-synthesis-cols { flex-direction: column; } .s7-synthesis-arrow { transform: rotate(90deg); } }
+    .s7-synthesis-gen-btn {
+      align-self: flex-start; padding: 8px 16px; border-radius: 8px; border: 1.5px solid var(--s7-blue-b);
+      background: var(--s7-surface2); color: var(--s7-ink); font-size: .78rem; font-weight: 600; cursor: pointer;
+    }
+    .s7-synthesis-gen-btn:hover { border-color: var(--s7-blue); }
+    .s7-synthesis-generated { font-size: .84rem; color: var(--s7-ink); line-height: 1.65; padding: 12px 14px; background: var(--s7-surface2); border-left: 3px solid var(--s7-blue-b); border-radius: 0 8px 8px 0; }
+    .s7-synthesis-generated--pending { color: var(--s7-muted); font-style: italic; }
+    .s7-synthesis-generated--error   { color: var(--s7-muted); font-size: .76rem; border-left-color: var(--s7-warn-b, var(--s7-blue-b)); }
 
     /* Tabs */
     .s7-tab-bar { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -941,7 +1031,7 @@ const Stage7 = (() => {
 
     /* Aside panel */
     .s7-panel-aside { width: 268px; flex-shrink: 0; background: var(--s7-surface); border: 1.5px solid var(--s7-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s7-panel-aside-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s7-border); background: #16251e; }
+    .s7-panel-aside-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s7-border); background: var(--surface-3); }
     .s7-panel-aside-title  { font-size: .82rem; font-weight: 700; color: var(--s7-ink); }
     .s7-panel-aside-sub    { font-size: .66rem; color: var(--s7-muted); margin-top: 2px; }
     .s7-panel-aside-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
@@ -990,6 +1080,8 @@ const Stage7 = (() => {
     _selectedDirection = null;
     _activeTab         = 'directions';
     _commitRecheck     = null;
+    _generatedSynthesis  = null;
+    _synthesisGenerating = false;
   }
 
   return { render, onMount, cleanup, _computeCommitTimeRecheck };

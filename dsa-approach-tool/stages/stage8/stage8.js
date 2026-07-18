@@ -530,13 +530,16 @@ const Stage8 = (() => {
     const style = document.createElement('style');
     style.id = 's8-styles';
     style.textContent = `
-    /* Token inheritance — fall back to literals when global :root vars absent */
+    /* Phase 5.1 — these now point at theme.css's real shared vars (the
+       generic --ink/--bg/--surface/--muted names below were never actually
+       defined anywhere; the fallback literals were silently doing all the
+       work, same as hardcoding — this makes it genuinely theme-reactive). */
     .s8-shell {
-      --s8-ink      : var(--ink, #ede4cf);
-      --s8-bg       : var(--bg, #111d17);
-      --s8-surface  : var(--surface, #1e3229);
+      --s8-ink      : var(--text-primary, #ede4cf);
+      --s8-bg       : var(--void, #111d17);
+      --s8-surface  : var(--surface-0, #1e3229);
       --s8-border   : var(--border, rgba(232,223,200,.16));
-      --s8-muted    : var(--muted, #7d8f80);
+      --s8-muted    : var(--text-muted, #9caa9f);
       --s8-green    : var(--green, #5cc98a);
       --s8-green-bg : var(--green-bg, rgba(92,201,138,.14));
       --s8-mono     : var(--font-mono, 'Space Mono', monospace);
@@ -903,7 +906,7 @@ const Stage8 = (() => {
       left          : 50%;
       transform     : translateX(-50%);
       background    : #0a130f;
-      color         : #ede4cf;
+      color         : var(--text-primary);
       padding       : 10px 20px;
       border-radius : 8px;
       font-size     : .77rem;

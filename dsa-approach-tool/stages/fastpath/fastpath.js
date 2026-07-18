@@ -240,8 +240,8 @@ const StageFastpath = (() => {
     style.id = 'sfp-styles';
     style.textContent = `
     .sfp-shell {
-      --sfp-bg: #111d17; --sfp-surface: #1e3229; --sfp-border: rgba(232,223,200,.10); --sfp-border2: rgba(232,223,200,.16);
-      --sfp-ink: #ede4cf; --sfp-ink2: #c4b89c; --sfp-muted: #7d8f80; --sfp-accent: #e8b93f;
+      --sfp-bg: var(--void); --sfp-surface: var(--surface-0); --sfp-border: rgba(232,223,200,.10); --sfp-border2: rgba(232,223,200,.16);
+      --sfp-ink: var(--text-primary); --sfp-ink2: var(--text-secondary); --sfp-muted: var(--text-muted); --sfp-accent: #e8b93f;
       --sfp-accent-bg: rgba(232,185,63,.14); --sfp-accent-b: rgba(232,185,63,.35);
       display: flex; flex-direction: column; gap: 30px; max-width: 760px; margin: 0 auto;
       padding: 32px 28px 60px; background: var(--sfp-bg); min-height: 100%;

@@ -207,7 +207,7 @@ const InsightsPanel = (() => {
     }
     .ip-overlay--in { opacity: 1; }
     .ip-panel {
-      --ip-bg: #111d17; --ip-surface: #1e3229; --ip-ink: #ede4cf; --ip-ink2: #c4b89c; --ip-muted: #7d8f80;
+      --ip-bg: var(--void); --ip-surface: var(--surface-0); --ip-ink: var(--text-primary); --ip-ink2: var(--text-secondary); --ip-muted: var(--text-muted);
       --ip-border: rgba(232,223,200,.14); --ip-green: #5cc98a; --ip-amber: #e8944a; --ip-red: #e05a5a;
       width: 100%; max-width: 640px; max-height: 80vh; background: var(--ip-bg); color: var(--ip-ink);
       border-radius: 16px; border: 1px solid var(--ip-border); box-shadow: 0 24px 60px rgba(0,0,0,.28);

@@ -3,6 +3,17 @@
  * Hyrule-at-dusk dark theme — torchlit forest greens, Triforce gold,
  * Zora sapphire, twilight purple. Dark but not black — built to be
  * comfortable in low light without crushing contrast.
+ *
+ * Phase 5.1 — light/dark toggle, scoped deliberately to reading-critical
+ * roles only: backgrounds, surfaces, and text color (the six variables
+ * below). Borders, accents (gold/sapphire/violet), and status colors
+ * (pass/warn/fail/info) are intentionally left as fixed dark-mode-tuned
+ * values for now — those carry decorative/semantic weight, not the
+ * reading-fatigue tradeoff a light/dark toggle exists to address. One
+ * known consequence of that scope line, not silently fixed: the border
+ * rgba() values are low-alpha off-white overlays tuned for a dark
+ * background — on the light palette below they read as very faint,
+ * bordering on invisible. Flagged, not fixed, per that scope boundary.
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700&display=swap');
@@ -11,6 +22,10 @@
 
   /* ── Core backgrounds ──────────────────────────────────────────────── */
   --void           : #111d17;
+  --void-rgb       : 17,29,23; /* same value as --void, r,g,b channels only —
+                                   for rgba() blur-glass effects (.topbar,
+                                   .stage-nav) that need a translucent version
+                                   and can't extract channels from a hex var */
   --deep           : #0b1512;
   --surface-0      : #1e3229;
   --surface-1      : #1a2b23;
@@ -26,7 +41,12 @@
   /* ── Text ──────────────────────────────────────────────────────────── */
   --text-primary   : #ede4cf;
   --text-secondary : #c4b89c;
-  --text-muted     : #7d8f80;
+  /* Was #7d8f80 — failed WCAG AA (4.5:1) against --surface-1/--surface-2 at
+     3.53–4.32:1, verified with a real contrast-ratio computation, not by
+     eye. This value clears AA against every background it's actually
+     paired with (see the per-stage --*-muted declarations too, same fix
+     applied there in the same pass). */
+  --text-muted     : #9caa9f;
   --text-ghost     : #4d5c52;
 
   /* ── Primary accent — Triforce gold ────────────────────────────────── */
@@ -99,6 +119,40 @@
   --topbar-height : 52px;
   --content-max   : 860px;
   --stage-pad     : 28px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LIGHT THEME — Phase 5.1. Same hue family as the dark palette above
+   (forest-green backgrounds, ~H150-162°) so the two themes read as one
+   identity, not two unrelated skins — just inverted lightness direction:
+   dark mode gets lighter as elevation increases, light mode gets darker.
+   Every value below was checked with a real WCAG contrast computation
+   against every background it's actually paired with (script, not eye) —
+   the worst case is 4.59:1 (muted text on the most-elevated surface),
+   comfortably past the 4.5:1 AA floor. `--text-ghost` is deliberately
+   left low-contrast (~2.46:1), mirroring the dark theme's own
+   `--text-ghost` (~2.45:1 against --void) — that variable was already an
+   intentional decorative/ghosted label color, not body text, in the
+   original dark palette; this preserves that same design intent rather
+   than "fixing" a ratio that was never meant to pass AA.
+   Scope: only the six reading-critical variables below. Borders, accents,
+   and status colors are unchanged in light mode — see the note at the
+   top of this file for why, and the one known consequence (border
+   visibility) that follows from that choice.
+════════════════════════════════════════════════════════════════════════ */
+:root[data-theme="light"] {
+  --void           : #e6f0eb;
+  --void-rgb       : 230,240,235;
+  --deep           : #eff5f2;
+  --surface-0      : #c9ded4;
+  --surface-1      : #d2e4db;
+  --surface-2      : #bfd9cc;
+  --surface-3      : #dceae3;
+
+  --text-primary   : #1c2620;
+  --text-secondary : #3f4f42;
+  --text-muted     : #4f5e52;
+  --text-ghost     : #7ea092;
 }
 
 @keyframes fade-in        { from{opacity:0}                              to{opacity:1} }

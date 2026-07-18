@@ -779,14 +779,14 @@ const Stage5 = (() => {
     style.id = 's5-styles';
     style.textContent = `
     .s5-shell {
-      --s5-bg: #111d17;
-      --s5-surface: #1e3229;
-      --s5-surface2: #1a2b23;
+      --s5-bg: var(--void);
+      --s5-surface: var(--surface-0);
+      --s5-surface2: var(--surface-1);
       --s5-border: rgba(232,223,200,.10);
       --s5-border2: rgba(232,223,200,.16);
-      --s5-ink: #ede4cf;
-      --s5-ink2: #c4b89c;
-      --s5-muted: #7d8f80;
+      --s5-ink: var(--text-primary);
+      --s5-ink2: var(--text-secondary);
+      --s5-muted: var(--text-muted);
       --s5-blue: #e8b93f;
       --s5-blue-bg: rgba(232,185,63,.14);
       --s5-blue-b: rgba(232,185,63,.35);
@@ -914,7 +914,7 @@ const Stage5 = (() => {
 
     /* Side panel */
     .s5-panel { width: 268px; flex-shrink: 0; background: var(--s5-surface); border: 1.5px solid var(--s5-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s5-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s5-border); background: #16251e; }
+    .s5-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s5-border); background: var(--surface-3); }
     .s5-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s5-ink); }
     .s5-panel-sub    { font-size: .66rem; color: var(--s5-muted); margin-top: 2px; }
     .s5-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

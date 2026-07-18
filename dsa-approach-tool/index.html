@@ -7,6 +7,22 @@
   <meta name="theme-color" content="#111d17">
   <title>DSA Approach Tool</title>
 
+  <!-- Phase 5.1 — apply the saved theme before any CSS paints, so a light-
+       mode user never sees a flash of the dark default. Deliberately a
+       tiny standalone read (not core/preferences.js, which loads later as
+       a regular script) — same localStorage key/shape Preferences.js uses,
+       kept in sync manually since this one has to run synchronously and
+       first. -->
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem('dsa_preferences_v1');
+        var theme = raw && JSON.parse(raw).theme;
+        if (theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+      } catch (e) { /* localStorage unavailable or corrupt — fall through to dark default */ }
+    })();
+  </script>
+
   <link rel="stylesheet" href="/assets/css/theme.css">
   <link rel="stylesheet" href="/assets/css/base.css">
   <link rel="stylesheet" href="/assets/css/components.css">
@@ -471,6 +487,10 @@
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
         </select>
+        <button class="btn btn--ghost btn--sm" id="topbar-theme-btn"
+                aria-label="Toggle light/dark theme" title="Switch between dark and light">
+          <span id="topbar-theme-icon">☀</span>
+        </button>
         <button class="btn btn--ghost btn--sm" id="topbar-guide-btn"
                 aria-label="Open stage guide" title="What does each stage do?">
           ? Guide
@@ -478,6 +498,10 @@
         <button class="btn btn--ghost btn--sm" id="topbar-insights-btn"
                 aria-label="Open insights" title="Confidence vs. actual outcomes">
           📊 Insights
+        </button>
+        <button class="btn btn--ghost btn--sm" id="topbar-settings-btn"
+                aria-label="Open settings" title="Optional LLM-assisted features">
+          ⚙ Settings
         </button>
         <button class="btn btn--ghost btn--sm" id="topbar-save-btn"
                 aria-label="Download session as JSON file" title="Download session">
@@ -700,6 +724,7 @@
   <script src="/recall/recall-scheduler.js"></script>
 
   <script src="/core/preferences.js"></script>
+  <script src="/core/llm-client.js"></script>
   <script src="/core/outcomes.js"></script>
   <script src="/core/outcome-prompt.js"></script>
   <script src="/core/problem-library.js"></script>
@@ -709,6 +734,7 @@
   <script src="/core/renderer.js"></script>
   <script src="/core/guide-panel.js"></script>
   <script src="/core/insights-panel.js"></script>
+  <script src="/core/settings-panel.js"></script>
 
   <script src="/stages/entry/entry.js"></script>
 
@@ -767,6 +793,7 @@
   <script src="/stages/stage4-5/variants/game-theory-variants.js"></script>
   <script src="/stages/stage4-5/variants/range-query-variants.js"></script>
   <script src="/stages/stage4-5/variants/complexity-recheck.js"></script>
+  <script src="/stages/stage4-5/variants/pattern-resources.js"></script>
   <script src="/stages/stage4-5/stage4-5.js"></script>
 
   <script src="/stages/stage5/verifiers/greedy-verifier.js"></script>
@@ -1008,6 +1035,27 @@
     select.addEventListener('change', () => Preferences.setSkillLevel(select.value));
   })();
 
+  // ── Theme toggle (Phase 5.1) ──────────────────────────────────────────────
+  (function setupThemeToggle() {
+    const btn  = document.getElementById('topbar-theme-btn');
+    const icon = document.getElementById('topbar-theme-icon');
+    if (!btn || !icon || typeof Preferences === 'undefined') return;
+
+    const applyIcon = (theme) => {
+      // Icon shows what you'd switch TO, matching the mode-toggle's
+      // convention elsewhere of labeling the action, not the current state.
+      icon.textContent = theme === 'light' ? '☾' : '☀';
+      btn.title = theme === 'light' ? 'Switch to dark' : 'Switch to light';
+    };
+
+    applyIcon(Preferences.getTheme());
+    btn.addEventListener('click', () => {
+      const next = Preferences.getTheme() === 'light' ? 'dark' : 'light';
+      Preferences.setTheme(next);
+      applyIcon(next);
+    });
+  })();
+
   // ── Sidebar stage map navigation ──────────────────────────────────────
   document.addEventListener('click', (e) => {
     const item = e.target.closest('.stage-map__item');
@@ -1027,6 +1075,12 @@
   document.getElementById('topbar-guide-btn')
     ?.addEventListener('click', () => {
       if (typeof GuidePanel !== 'undefined') GuidePanel.show();
+    });
+
+  // ── Settings button ────────────────────────────────────────────────────
+  document.getElementById('topbar-settings-btn')
+    ?.addEventListener('click', () => {
+      if (typeof SettingsPanel !== 'undefined') SettingsPanel.show();
     });
 
   // ── Insights button ────────────────────────────────────────────────────

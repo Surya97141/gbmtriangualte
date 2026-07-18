@@ -892,14 +892,14 @@ const Stage3 = (() => {
     style.id = 's3-styles';
     style.textContent = `
     .s3-shell {
-      --s3-bg: #111d17;
-      --s3-surface: #1e3229;
-      --s3-surface2: #1a2b23;
+      --s3-bg: var(--void);
+      --s3-surface: var(--surface-0);
+      --s3-surface2: var(--surface-1);
       --s3-border: rgba(232,223,200,.10);
       --s3-border2: rgba(232,223,200,.16);
-      --s3-ink: #ede4cf;
-      --s3-ink2: #c4b89c;
-      --s3-muted: #7d8f80;
+      --s3-ink: var(--text-primary);
+      --s3-ink2: var(--text-secondary);
+      --s3-muted: var(--text-muted);
       --s3-blue: #e8b93f;
       --s3-blue-bg: rgba(232,185,63,.14);
       --s3-blue-b: rgba(232,185,63,.35);
@@ -1124,7 +1124,7 @@ const Stage3 = (() => {
 
     /* Side panel */
     .s3-panel { width: 268px; flex-shrink: 0; background: var(--s3-surface); border: 1.5px solid var(--s3-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s3-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s3-border); background: #16251e; }
+    .s3-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s3-border); background: var(--surface-3); }
     .s3-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s3-ink); }
     .s3-panel-sub    { font-size: .66rem; color: var(--s3-muted); margin-top: 2px; }
     .s3-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

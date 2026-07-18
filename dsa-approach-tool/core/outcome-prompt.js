@@ -80,7 +80,7 @@ const OutcomePrompt = (() => {
       display: flex; align-items: center; justify-content: center; padding: 24px;
     }
     .op-modal {
-      --op-bg: #1e3229; --op-ink: #ede4cf; --op-muted: #7d8f80; --op-border: rgba(232,223,200,.18);
+      --op-bg: var(--surface-0); --op-ink: var(--text-primary); --op-muted: var(--text-muted); --op-border: rgba(232,223,200,.18);
       width: 100%; max-width: 420px; background: var(--op-bg); border-radius: 14px;
       padding: 22px 22px 18px; box-shadow: 0 20px 50px rgba(0,0,0,.25);
       font-family: 'DM Sans', system-ui, sans-serif; color: var(--op-ink);
@@ -92,7 +92,7 @@ const OutcomePrompt = (() => {
     .op-option {
       display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
       padding: 10px 14px; border-radius: 9px; border: 1.5px solid var(--op-border);
-      background: #1a2b23; cursor: pointer; text-align: left;
+      background: var(--surface-1); cursor: pointer; text-align: left;
       transition: border-color .15s, background .15s;
     }
     .op-option:hover { border-color: rgba(232,185,63,.4); background: rgba(232,185,63,.10); }
@@ -101,7 +101,7 @@ const OutcomePrompt = (() => {
     .op-option--green .op-option-label  { color: #5cc98a; }
     .op-option--red .op-option-label    { color: #e05a5a; }
     .op-option--amber .op-option-label  { color: #e8944a; }
-    .op-option--muted .op-option-label  { color: #7d8f80; }
+    .op-option--muted .op-option-label  { color: var(--text-muted); }
     .op-skip {
       align-self: center; margin-top: 2px; background: none; border: none; cursor: pointer;
       font-size: .74rem; color: var(--op-muted); text-decoration: underline;

@@ -549,14 +549,14 @@ const Stage4 = (() => {
     style.id = 's4-styles';
     style.textContent = `
     .s4-shell {
-      --s4-bg: #111d17;
-      --s4-surface: #1e3229;
-      --s4-surface2: #1a2b23;
+      --s4-bg: var(--void);
+      --s4-surface: var(--surface-0);
+      --s4-surface2: var(--surface-1);
       --s4-border: rgba(232,223,200,.10);
       --s4-border2: rgba(232,223,200,.16);
-      --s4-ink: #ede4cf;
-      --s4-ink2: #c4b89c;
-      --s4-muted: #7d8f80;
+      --s4-ink: var(--text-primary);
+      --s4-ink2: var(--text-secondary);
+      --s4-muted: var(--text-muted);
       --s4-blue: #e8b93f;
       --s4-blue-bg: rgba(232,185,63,.14);
       --s4-blue-b: rgba(232,185,63,.35);
@@ -668,7 +668,7 @@ const Stage4 = (() => {
 
     /* Side panel */
     .s4-panel { width: 268px; flex-shrink: 0; background: var(--s4-surface); border: 1.5px solid var(--s4-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s4-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s4-border); background: #16251e; }
+    .s4-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s4-border); background: var(--surface-3); }
     .s4-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s4-ink); }
     .s4-panel-sub    { font-size: .66rem; color: var(--s4-muted); margin-top: 2px; }
     .s4-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
