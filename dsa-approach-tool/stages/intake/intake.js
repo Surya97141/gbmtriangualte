@@ -1,11 +1,29 @@
 // stages/intake/intake.js
-// Optional "paste problem statement" entry point, shown before Stage 1.
-// Runs the same keyword-matching approach the Stage 5 Keyword Cross-Check
-// verifier uses (KeywordCrosscheck, extended with input-type/output-form/
-// query-type signal tables) to suggest Stage 1 and Stage 2's answers.
-// Suggestions are written into stage1/stage2 clearly flagged as
-// auto-suggested — Stage 1/2 show a banner until the user confirms or
-// changes them. Nothing here is required; Next is always enabled.
+// Phase 1.0 — the FIRST "Truths First" moment, before Stage 3's narrower
+// structural-property one. Asks the user what THEY think the problem is
+// about, in their own words — not a paste box for the raw statement. This
+// used to ask the user to paste the problem statement verbatim and only
+// ran keyword-matching over it; that framing is gone. The same keyword
+// matcher (KeywordCrosscheck) still runs as a secondary, clearly optional
+// aid over whatever the user typed, to suggest Stage 1/2 answers — genuine,
+// deterministic signal extraction, not a stated pattern/algorithm name, so
+// it doesn't conflict with the hard rule below.
+//
+// Hard rule (Phase 1.0): nothing on this screen ever states a pattern or
+// algorithm name back to the user — only input/output/query-type signals,
+// which is what the existing suggestion tables were already scoped to.
+//
+// Phase 4.6 (not built yet — no LLM integration exists anywhere in this
+// codebase, and wiring one is a provider/cost/security decision beyond this
+// pass) would read `interpretation` here to calibrate a confidence signal.
+// Until that exists, no confidence signal is fabricated — the roadmap's own
+// "required fallback" for that call failing/timing out is to default to
+// Medium confidence (Full Walkthrough) anyway, which is simply what happens
+// today by not skipping any stage on the strength of unverified text.
+//
+// `interpretation` is stored verbatim for Stage 7/8's exit synthesis
+// (Phase 1.8) — the user's own words, referenced later, never corrected here.
+// Nothing here is required; Next is always enabled.
 // Module contract: render(state), onMount(state), cleanup()
 
 const StageIntake = (() => {
@@ -31,15 +49,15 @@ const StageIntake = (() => {
     online: 'Multiple — online', updates: 'Updates + queries',
   };
 
-  let _state       = null;
-  let _problemText = '';
-  let _suggestion  = null; // { inputTypes: [...], outputForm: {...}|null, queryType: {...} }
+  let _state          = null;
+  let _interpretation = '';
+  let _suggestion     = null; // { inputTypes: [...], outputForm: {...}|null, queryType: {...} }
 
   function render(state) {
     _state = state;
     const saved = state.answers?.intake ?? {};
-    _problemText = saved.problemText ?? '';
-    _suggestion  = saved.lastSuggestion ?? null;
+    _interpretation = saved.interpretation ?? '';
+    _suggestion     = saved.lastSuggestion ?? null;
 
     _injectStyles();
 
@@ -47,15 +65,16 @@ const StageIntake = (() => {
     wrapper.className = 'sin-shell';
     wrapper.innerHTML = `
       <div class="sin-rule">
-        Optional — paste the problem statement and this can pre-fill Stage 1 and Stage 2 for you.
-        Nothing here is required; skip straight to Stage 1 if you'd rather answer directly.
+        Before anything else — what do you actually think, before any stage tells you?
+        Nothing here is required or graded; skip straight to Stage 1 if you'd rather answer directly.
       </div>
 
       <section class="sin-section">
-        <div class="sin-section-title">Problem statement</div>
+        <div class="sin-section-title">What do you think this problem is about? Type it in your own words.</div>
+        <div class="sin-section-hint">No need to name an algorithm or pattern — just what you notice about it.</div>
         <textarea id="sin-text" class="sin-textarea" rows="8"
-                  placeholder="Paste the problem statement here...">${_escape(_problemText)}</textarea>
-        <button class="sin-scan-btn" id="sin-scan-btn">Scan for suggestions</button>
+                  placeholder="e.g. I think we need to find the smallest way to connect everything without going in a circle...">${_escape(_interpretation)}</textarea>
+        <button class="sin-scan-btn" id="sin-scan-btn">Also check for structural signals (optional)</button>
       </section>
 
       <section class="sin-section" id="sin-results" style="${_suggestion ? '' : 'display:none'}"></section>
@@ -63,8 +82,8 @@ const StageIntake = (() => {
 
     wrapper.querySelector('#sin-scan-btn').addEventListener('click', () => _onScan(wrapper));
     wrapper.querySelector('#sin-text').addEventListener('input', (e) => {
-      _problemText = e.target.value;
-      State.setAnswer('intake', { problemText: _problemText });
+      _interpretation = e.target.value;
+      State.setAnswer('intake', { interpretation: _interpretation });
     });
 
     if (_suggestion) _renderResults(wrapper);
@@ -73,11 +92,11 @@ const StageIntake = (() => {
   }
 
   function _onScan(wrapper) {
-    if (!_problemText.trim()) return;
+    if (!_interpretation.trim()) return;
     const KC = typeof KeywordCrosscheck !== 'undefined' ? KeywordCrosscheck : null;
-    _suggestion = KC?.suggestAll?.(_problemText) ?? { inputTypes: [], outputForm: null, queryType: { queryType: 'none', matchedKeywords: [] } };
+    _suggestion = KC?.suggestAll?.(_interpretation) ?? { inputTypes: [], outputForm: null, queryType: { queryType: 'none', matchedKeywords: [] } };
 
-    State.setAnswer('intake', { problemText: _problemText, lastSuggestion: _suggestion });
+    State.setAnswer('intake', { interpretation: _interpretation, lastSuggestion: _suggestion });
 
     const results = wrapper.querySelector('#sin-results');
     if (results) results.style.display = '';
@@ -201,9 +220,9 @@ const StageIntake = (() => {
   }
 
   function cleanup() {
-    _state       = null;
-    _problemText = '';
-    _suggestion  = null;
+    _state          = null;
+    _interpretation = '';
+    _suggestion     = null;
   }
 
   // ─── STYLES ────────────────────────────────────────────────────────────────
@@ -228,6 +247,7 @@ const StageIntake = (() => {
     }
     .sin-section { display: flex; flex-direction: column; gap: 10px; }
     .sin-section-title { font-size: .82rem; font-weight: 700; color: var(--sin-ink); }
+    .sin-section-hint  { font-size: .74rem; color: var(--sin-muted); margin-top: -6px; }
     .sin-textarea {
       width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--sin-border2);
       background: var(--sin-surface); font-family: 'DM Sans', sans-serif; font-size: .84rem; color: var(--sin-ink);

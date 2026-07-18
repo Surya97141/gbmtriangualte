@@ -200,6 +200,7 @@ const Stage1 = (() => {
     wrapper.innerHTML = `
       <div class="s1-main" id="s1-main">
         <div class="s1-rule">Understand what you are given before thinking about what to do with it.</div>
+        ${_isBeginnerMode() ? `<div class="s1-beginner-note">If more than one input type looks plausible, pick your best guess — you can come back and change it once later stages make it clearer.</div>` : ''}
         <div id="s1-autosuggest-banner-region"></div>
         <div id="s1-fastpath-banner-region"></div>
 
@@ -608,6 +609,11 @@ const Stage1 = (() => {
     _renderAutoSuggestBanner();
   }
 
+  // Phase 1.6 — same beginner-mode check already used by stage3.js/stage6-5.js.
+  function _isBeginnerMode() {
+    return typeof Preferences !== 'undefined' && Preferences.getSkillLevel() === 'beginner';
+  }
+
   // ─── STYLES ────────────────────────────────────────────────────────────────
 
   function _injectStyles() {
@@ -673,6 +679,10 @@ const Stage1 = (() => {
       border         : 1px solid var(--s1-border);
       border-left    : 3px solid var(--s1-accent);
       border-radius  : 0 var(--s1-r) var(--s1-r) 0;
+    }
+    .s1-beginner-note {
+      font-size: .78rem; color: var(--s1-ink); padding: 10px 14px;
+      background: var(--s1-green-bg); border: 1px solid var(--s1-green-border); border-radius: 8px; line-height: 1.55;
     }
 
     /* ── Sections ────────────────────────────────────────────────────── */

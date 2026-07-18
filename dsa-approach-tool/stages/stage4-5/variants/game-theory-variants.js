@@ -100,7 +100,9 @@ bool firstPlayerWins = (nimResult != 0);
   function getRelevant(directions = []) {
     const isGameTheoryDirection = directions.some(d =>
       (d.family ?? '').includes('game_theory') ||
-      (d.id     ?? '').includes('game_theory')
+      (d.family ?? '').includes('backtracking') ||
+      (d.id     ?? '').includes('game_theory') ||
+      (d.id     ?? '').includes('backtracking')
     );
     if (!isGameTheoryDirection) return [];
     return getAll();

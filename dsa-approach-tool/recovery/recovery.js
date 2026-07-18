@@ -89,14 +89,17 @@ const Recovery = (() => {
     const sharedText = match.sharedProperties.map(propLabel).join(', ');
     const when = new Date(match.occurredAt).toLocaleDateString();
 
+    // Phase 1.4 — this surfaces a past failure, so it needs to read like a
+    // friend saying "remember this one, let's look together," never like a
+    // scoreboard citing a prior loss. Same structural data, warmer framing.
     return DomUtils.div({ class: 'recovery-history-hint' }, [
       DomUtils.span({ class: 'recovery-history-hint__icon' }, '↻'),
       DomUtils.div({ class: 'recovery-history-hint__body' }, [
         DomUtils.div({ class: 'recovery-history-hint__title' },
-          `You've hit ${failureType === 'wa' ? 'a Wrong Answer' : 'a TLE'} with a similar structure before`
+          `You've seen this shape before — a ${failureType === 'wa' ? 'Wrong Answer' : 'TLE'} on ${when}`
         ),
         DomUtils.div({ class: 'recovery-history-hint__detail' },
-          `Shared properties: ${sharedText} — that combination led to ${match.direction?.label ?? 'a similar direction'} failing the same way on ${when}.`
+          `Shared properties: ${sharedText} — that combination tripped up ${match.direction?.label ?? 'a similar direction'} last time too. Worth double-checking those specifically before moving on.`
         ),
       ]),
     ]);
@@ -108,10 +111,10 @@ const Recovery = (() => {
     return DomUtils.div({ class: 'recovery-intro' }, [
       DomUtils.div({ class: 'stage-intro' }, [
         DomUtils.div({ class: 'stage-intro__rule' },
-          'Recovery Mode — systematic diagnosis for stuck problems'
+          'Recovery Mode — let\'s figure out what happened, together'
         ),
         DomUtils.div({ class: 'stage-intro__sub' },
-          'Select what went wrong. Answer each question to narrow the issue.'
+          'Getting stuck is normal, not a setback. Select what went wrong and we\'ll work through it step by step.'
         ),
       ]),
     ]);

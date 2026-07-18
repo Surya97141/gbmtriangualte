@@ -124,6 +124,9 @@ const Stage7 = (() => {
         <!-- Summary strip -->
         <div class="s7-summary-strip" id="s7-summary-strip"></div>
 
+        <!-- Phase 1.8 — exit synthesis, only shown when Intake was used -->
+        <div id="s7-exit-synthesis"></div>
+
         <!-- Tab bar -->
         <div class="s7-tab-bar" id="s7-tab-bar"></div>
 
@@ -145,6 +148,7 @@ const Stage7 = (() => {
     `;
 
     _buildSummaryStrip(wrapper, state);
+    _buildExitSynthesis(wrapper, state);
     _buildTabs(wrapper);
     _buildPanels(wrapper, saved);
     _renderCommitWarning(wrapper, saved);
@@ -200,6 +204,57 @@ const Stage7 = (() => {
     const dir     = dirs[0]?.label ?? '—';
 
     return { complexity: `n=${n} · safe: ${safe||'—'}`, input: inputs, output, structure: props, direction: dir };
+  }
+
+  // ─── EXIT SYNTHESIS (Phase 1.8) ─────────────────────────────────────────────
+  // Shows the user's own typed interpretation from Intake (Phase 1.0) next to
+  // what their own completed stages actually confirmed. Only appears when
+  // Intake was used (Fast Path skips it entirely — nothing to compare
+  // against). This is a static build from already-computed session data, not
+  // an LLM-generated synthesis — Phase 4.9 would replace this with a
+  // generated comparison prose; no LLM integration exists anywhere in this
+  // codebase yet, so nothing here is faked. Framed as the user's own
+  // reasoning arriving somewhere, never as "the correct answer you missed."
+  function _buildExitSynthesis(wrapper, state) {
+    const region = wrapper.querySelector('#s7-exit-synthesis');
+    if (!region) return;
+
+    const interpretation = state.answers?.intake?.interpretation;
+    if (!interpretation || !interpretation.trim()) {
+      region.innerHTML = '';
+      return;
+    }
+
+    const SB = typeof SummaryBuilder !== 'undefined' ? SummaryBuilder : null;
+    const summary = SB?.build?.(state) ?? _fallbackSummary(state);
+
+    region.innerHTML = `
+      <div class="s7-synthesis">
+        <div class="s7-synthesis-title">Your reasoning, arriving somewhere</div>
+        <div class="s7-synthesis-cols">
+          <div class="s7-synthesis-col">
+            <div class="s7-synthesis-label">What you thought, at the start</div>
+            <div class="s7-synthesis-quote">"${_escapeS7(interpretation)}"</div>
+          </div>
+          <div class="s7-synthesis-arrow">→</div>
+          <div class="s7-synthesis-col">
+            <div class="s7-synthesis-label">What your own work confirmed</div>
+            <ul class="s7-synthesis-list">
+              <li><strong>Input:</strong> ${_escapeS7(summary.input ?? '—')}</li>
+              <li><strong>Output:</strong> ${_escapeS7(summary.output ?? '—')}</li>
+              <li><strong>Structure:</strong> ${_escapeS7(summary.structure ?? '—')}</li>
+              <li><strong>Direction:</strong> ${_escapeS7(summary.direction ?? '—')}</li>
+            </ul>
+          </div>
+        </div>
+        <div class="s7-synthesis-note">Not the "correct" answer you missed — where your own reasoning, tested stage by stage, actually landed.</div>
+      </div>
+    `;
+  }
+
+  function _escapeS7(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   // ─── TABS ──────────────────────────────────────────────────────────────────
@@ -787,6 +842,18 @@ const Stage7 = (() => {
     .s7-summary-row:last-of-type { border-bottom: none; }
     .s7-summary-label { font-family: var(--s7-mono); font-size: .6rem; letter-spacing: 1px; text-transform: uppercase; color: var(--s7-muted); min-width: 80px; flex-shrink: 0; }
     .s7-summary-value { font-size: .8rem; color: var(--s7-ink); font-weight: 500; line-height: 1.4; }
+
+    .s7-synthesis        { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; background: var(--s7-surface); border: 1.5px solid var(--s7-blue-b); border-radius: 10px; }
+    .s7-synthesis-title   { font-size: .84rem; font-weight: 700; color: var(--s7-ink); }
+    .s7-synthesis-cols    { display: flex; align-items: stretch; gap: 16px; }
+    .s7-synthesis-col     { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .s7-synthesis-arrow   { align-self: center; font-size: 1.1rem; color: var(--s7-muted); flex-shrink: 0; }
+    .s7-synthesis-label   { font-family: var(--s7-mono); font-size: .6rem; letter-spacing: 1px; text-transform: uppercase; color: var(--s7-muted); }
+    .s7-synthesis-quote   { font-size: .82rem; color: var(--s7-ink2); line-height: 1.6; font-style: italic; padding: 10px 12px; background: var(--s7-surface2); border-left: 3px solid var(--s7-blue-b); border-radius: 0 8px 8px 0; white-space: pre-wrap; word-break: break-word; }
+    .s7-synthesis-list    { list-style: none; display: flex; flex-direction: column; gap: 5px; font-size: .8rem; color: var(--s7-ink); line-height: 1.5; }
+    .s7-synthesis-list strong { color: var(--s7-ink2); font-weight: 600; }
+    .s7-synthesis-note    { font-size: .74rem; color: var(--s7-muted); line-height: 1.5; }
+    @media (max-width: 720px) { .s7-synthesis-cols { flex-direction: column; } .s7-synthesis-arrow { transform: rotate(90deg); } }
 
     /* Tabs */
     .s7-tab-bar { display: flex; flex-wrap: wrap; gap: 6px; }

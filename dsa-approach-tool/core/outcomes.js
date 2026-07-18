@@ -88,6 +88,73 @@ const Outcomes = (() => {
     );
   }
 
+  // Phase 1.5 — narrative calibration trend: is the user's own confidence
+  // self-assessment getting more accurate over time? Splits banded outcomes
+  // chronologically into an earlier and a recent half, and reports the pass
+  // rate shift for whichever band has enough samples in both halves to say
+  // something real. Returns null rather than a weak/noisy claim when there
+  // isn't enough data — this only ever states something backed by the
+  // recorded outcomes, never a fabricated or assumed trend.
+  function calibrationTrend(minPerHalf = 3) {
+    const list = _loadAll()
+      .filter(e => e.confidence?.level && e.outcome)
+      .sort((a, b) => a.recordedAt - b.recordedAt);
+
+    if (list.length < minPerHalf * 2) return null;
+
+    const mid    = Math.floor(list.length / 2);
+    const earlier = list.slice(0, mid);
+    const recent  = list.slice(mid);
+
+    function ratesByBand(entries) {
+      const bands = {};
+      entries.forEach(e => {
+        const b = e.confidence.level;
+        if (!bands[b]) bands[b] = { pass: 0, total: 0 };
+        bands[b].total++;
+        if (e.outcome === 'passed') bands[b].pass++;
+      });
+      return bands;
+    }
+
+    const earlierBands = ratesByBand(earlier);
+    const recentBands  = ratesByBand(recent);
+
+    // Prefer whichever band has the most combined samples across both
+    // halves, among bands with enough data in EACH half to compare.
+    let best = null;
+    ['medium', 'low', 'high'].forEach(band => {
+      const e = earlierBands[band], r = recentBands[band];
+      if (!e || !r || e.total < minPerHalf || r.total < minPerHalf) return;
+      const combined = e.total + r.total;
+      if (!best || combined > best.combined) {
+        best = { band, combined, earlier: e, recent: r };
+      }
+    });
+    if (!best) return null;
+
+    const earlierRate = Math.round((best.earlier.pass / best.earlier.total) * 100);
+    const recentRate  = Math.round((best.recent.pass  / best.recent.total)  * 100);
+
+    // Describe the actual gap between the two halves rather than assuming
+    // any fixed window like "three weeks" — that's only true if the data
+    // happens to span that long.
+    const spanMs   = recent[0].recordedAt - earlier[0].recordedAt;
+    const spanDays = Math.max(1, Math.round(spanMs / (1000 * 60 * 60 * 24)));
+    const spanLabel = spanDays >= 14
+      ? `${Math.round(spanDays / 7)} weeks ago`
+      : spanDays >= 2 ? `${spanDays} days ago` : 'Recently';
+
+    const delta = recentRate - earlierRate;
+    const trendPhrase = delta >= 15
+      ? 'Your gut is getting more honest.'
+      : delta <= -15
+        ? 'Worth slowing down and double-checking that instinct lately — it\'s drifted a bit.'
+        : 'Your gut\'s holding steady.';
+
+    return { band: best.band, earlierRate, recentRate, spanLabel, trendPhrase, delta };
+  }
+
   // Which structural property VALUES most often preceded a WA or TLE.
   function riskyPropertyValues(minSamples = 2) {
     const failed = _loadAll().filter(e => e.outcome === 'wa' || e.outcome === 'tle');
@@ -160,7 +227,7 @@ const Outcomes = (() => {
 
   return {
     record, getAll, clear,
-    passRateByBand, riskyPropertyValues, weakestProperties, matchHint,
+    passRateByBand, calibrationTrend, riskyPropertyValues, weakestProperties, matchHint,
   };
 
 })();

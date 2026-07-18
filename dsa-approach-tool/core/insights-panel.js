@@ -61,6 +61,18 @@ const InsightsPanel = (() => {
 
     const bandRates = typeof Outcomes !== 'undefined' ? Outcomes.passRateByBand() : {};
     const risky     = typeof Outcomes !== 'undefined' ? Outcomes.riskyPropertyValues() : [];
+    const trend     = typeof Outcomes !== 'undefined' ? Outcomes.calibrationTrend() : null;
+
+    // ── Narrative calibration sentence (Phase 1.5) ──────────────────────────
+    // A plain-language read of the same band data below, not a new metric —
+    // only rendered when there's enough data in both an earlier and a recent
+    // window to say something real (see Outcomes.calibrationTrend).
+    if (trend) {
+      const narrative = document.createElement('div');
+      narrative.className = 'ip-narrative';
+      narrative.innerHTML = `${trend.spanLabel}, when you felt <strong>${trend.band}</strong> confidence, you were right ${trend.earlierRate}% of the time. Now you're right ${trend.recentRate}% of the time. ${trend.trendPhrase}`;
+      body.appendChild(narrative);
+    }
 
     // ── Pass rate vs band ──────────────────────────────────────────────────
     const bandSection = document.createElement('section');
@@ -213,6 +225,12 @@ const InsightsPanel = (() => {
       background: var(--ip-surface); color: var(--ip-muted); cursor: pointer; flex-shrink: 0;
     }
     .ip-body { overflow-y: auto; padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 24px; }
+    .ip-narrative {
+      font-size: .88rem; line-height: 1.6; color: var(--ip-ink2); padding: 14px 16px;
+      background: linear-gradient(135deg, rgba(92,201,138,.10), rgba(232,185,63,.06));
+      border: 1px solid var(--ip-border); border-radius: 10px; margin-bottom: -8px;
+    }
+    .ip-narrative strong { color: var(--ip-ink); font-weight: 700; text-transform: capitalize; }
     .ip-empty { font-size: .82rem; color: var(--ip-muted); font-style: italic; padding: 8px 0; }
     .ip-section { display: flex; flex-direction: column; gap: 8px; }
     .ip-section-title { font-size: .84rem; font-weight: 700; margin-bottom: 4px; }

@@ -128,7 +128,9 @@ sort(events.begin(), events.end());`,
   function getRelevant(directions = []) {
     const isGSDirection = directions.some(d =>
       (d.family ?? '').includes('geometry_sweep') ||
-      (d.id     ?? '').includes('geometry_sweep')
+      (d.family ?? '').includes('divide_conquer') ||
+      (d.id     ?? '').includes('geometry_sweep') ||
+      (d.id     ?? '').includes('divide_conquer')
     );
     if (!isGSDirection) return [];
     return getAll();

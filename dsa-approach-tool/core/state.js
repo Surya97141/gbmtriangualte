@@ -44,11 +44,17 @@ const State = (() => {
         answeredAt     : null,
       },
 
-      // Optional — before Stage 1. Pasted text run through KeywordCrosscheck's
-      // suggestion tables; "Apply" writes into stage1/stage2 with
-      // autoSuggested:true so those stages can flag it until confirmed.
+      // Optional — before Stage 1. Phase 1.0's first "Truths First" moment:
+      // the user's own typed interpretation of the problem, in their own
+      // words, never a pasted statement. Run through KeywordCrosscheck's
+      // suggestion tables as a secondary/optional aid; "Apply" writes into
+      // stage1/stage2 with autoSuggested:true so those stages can flag it
+      // until confirmed. `interpretation` itself is kept verbatim for
+      // Stage 7/8's exit synthesis (Phase 1.8) — it's never fed back to the
+      // user as "the correct answer," only shown alongside what they later
+      // confirmed through the stages they actually completed.
       intake: {
-        problemText   : null,
+        interpretation: null,
         lastSuggestion: null,
         answeredAt    : null,
       },

@@ -37,8 +37,8 @@ const ConfidenceScorer = (() => {
       icon   : '✗',
       color  : 'red',
       action : 'backtrack',
-      message: 'Too many assumptions remain unverified. Risk of WA or TLE is high.',
-      detail : 'The structural analysis is incomplete. Return to the suggested stage and re-analyze before coding.',
+      message: 'Several assumptions are still unverified — that\'s what this stage is for catching. Risk of WA or TLE is high until they\'re checked.',
+      detail : 'The structural analysis isn\'t finished yet, which is normal this early. Head back to the suggested stage to fill the gaps before coding.',
     },
   ];
 
@@ -105,6 +105,7 @@ const ConfidenceScorer = (() => {
     state_not_verified_for_dp     : 'DP state not verified (penalty)',
     transformation_skipped        : 'Reframing skipped (penalty)',
     edge_cases_skipped            : 'Edge cases skipped (penalty)',
+    fallback_path_used            : 'No confident family match — fallback used (penalty)',
   };
 
   // ─── SCORE BAND LOOKUP ────────────────────────────────────────────────────
@@ -207,6 +208,7 @@ const ConfidenceScorer = (() => {
       'state_not_verified_for_dp',
       'transformation_skipped',
       'edge_cases_skipped',
+      'fallback_path_used',
     ]);
 
     const allItems = [

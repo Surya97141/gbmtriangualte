@@ -145,6 +145,30 @@ test('_computeReport: Fast Path with nothing verified stays low, not artificiall
   assert.ok(report.score < 65, `expected an unverified Fast Path run to stay below Medium Confidence, got ${report.score}`);
 });
 
+// Phase 2.2 — a session that went through Stage 4.5's honest "no confident
+// family match" fallback (stage4-5.js sets answers.stage4_5.usedFallback)
+// must never reach High Confidence, even when everything else about the
+// walkthrough is otherwise fully verified.
+test('_computeReport: usedFallback caps an otherwise-High-Confidence walkthrough below the High band', () => {
+  const state = highConfidenceState();
+  state.answers.stage4_5 = { usedFallback: true };
+  const report = Stage6_5._computeReport(state);
+  assert.ok(report.score <= 84, `expected fallback path to cap score at or below 84 (Medium ceiling), got ${report.score}`);
+  assert.ok(
+    report.deducted.some(d => d.key === 'fallback_path_used'),
+    `expected a fallback_path_used penalty in the breakdown, got ${JSON.stringify(report.deducted)}`
+  );
+});
+
+test('_computeReport: usedFallback=false (or absent) does not cap a High Confidence walkthrough', () => {
+  const report = Stage6_5._computeReport(highConfidenceState());
+  assert.ok(report.score >= 85, `expected the unmodified high-confidence fixture to stay >=85, got ${report.score}`);
+  assert.ok(
+    !report.deducted.some(d => d.key === 'fallback_path_used'),
+    'did not expect a fallback_path_used penalty when usedFallback was never set'
+  );
+});
+
 // ─── _computeCommitTimeRecheck (Stage 7) ────────────────────────────────────
 
 function stage7BaseState(variantSelected, n = 3000, queryType = 'updates') {

@@ -59,6 +59,8 @@ const Stage5 = (() => {
           ${activeVerifiers.length} verifier(s) active based on your candidate directions.
         </div>
 
+        <div id="s5-contradiction-banner"></div>
+
         <!-- Tab bar -->
         <div class="s5-tab-bar" id="s5-tab-bar"></div>
 
@@ -81,9 +83,53 @@ const Stage5 = (() => {
 
     _buildTabs(wrapper, activeVerifiers, saved);
     _buildPanels(wrapper, activeVerifiers, saved);
+    _renderContradictionBanner(wrapper, saved);
     setTimeout(() => _updatePanel(wrapper, activeVerifiers, saved), 0);
 
     return wrapper;
+  }
+
+  // ─── PREMISE CONTRADICTION (Phase 1.0b) ─────────────────────────────────────
+  // A verification challenge can fail in a way that only means "budget a
+  // little more" (e.g. a borderline complexity recheck) or in a way that
+  // means the whole direction's core assumption was wrong (greedy provably
+  // never holds here; the feasibility function isn't monotone). The latter
+  // needs a hard stop back to Stage 3 — not a soft warning that first
+  // surfaces at Stage 7, by which point the user has built on a broken
+  // premise for several more stages. Applies even on Fast Path, even if
+  // Stage 3 was originally skipped — jumpTo renders it regardless.
+
+  function _hasPremiseContradiction(saved) {
+    const vs = saved?.verifierStates ?? {};
+    if (vs.greedy?.verdict === 'found') return 'greedy';
+    if (vs.monotonicity?.verdict === 'no') return 'monotonicity';
+    return null;
+  }
+
+  function _renderContradictionBanner(wrapper, saved) {
+    const el = wrapper.querySelector('#s5-contradiction-banner');
+    if (!el) return;
+
+    const contradiction = _hasPremiseContradiction(saved);
+    if (!contradiction) {
+      el.innerHTML = '';
+      return;
+    }
+
+    const reason = contradiction === 'greedy'
+      ? 'The counter-example you found means greedy never holds here — that\'s not a detail to patch, it contradicts the direction itself.'
+      : 'A non-monotone feasibility function means Binary Search on Answer doesn\'t apply here — that\'s not a detail to patch, it contradicts the direction itself.';
+
+    el.innerHTML = `
+      <div class="s5-contradiction">
+        <div class="s5-contradiction__title">⚠ This verification contradicts the chosen direction</div>
+        <div class="s5-contradiction__body">${reason} Continuing past this stage would mean building on a premise you've already disproven — go back and re-derive the direction instead.</div>
+        <button class="s5-contradiction__btn" id="s5-contradiction-back-btn">← Go back to Stage 3 now</button>
+      </div>
+    `;
+    el.querySelector('#s5-contradiction-back-btn')?.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage3' } }));
+    });
   }
 
   // ─── TABS ──────────────────────────────────────────────────────────────────
@@ -514,6 +560,7 @@ const Stage5 = (() => {
       }
     }
 
+    _renderContradictionBanner(wrapper, saved);
     _updatePanel(wrapper, activeVerifiers, saved);
     _checkComplete(activeVerifiers);
   }
@@ -620,6 +667,27 @@ const Stage5 = (() => {
       ? '✓ Ready to proceed to Stage 6'
       : `Complete ${needed - doneCount} more verifier${needed - doneCount !== 1 ? 's' : ''} to proceed`;
     body.appendChild(gate);
+
+    // Phase 1.7 — mid-flow fast-forward. Only offered once real verification
+    // has actually run here in Stage 5 (isReady), never earlier — jumping
+    // straight to the confidence gate having never picked a direction (4.5)
+    // or tested it (5) would defeat the point of those stages existing.
+    // This skips only the remaining OPTIONAL depth (Stage 6 edge cases) —
+    // Stage 6.5's confidence gate itself is never bypassed, it's still the
+    // very next stage rendered.
+    // Never offer the fast-forward while a verification challenge has
+    // contradicted the current direction's core premise (Phase 1.0b) —
+    // jumping ahead from a disproven direction is exactly the false
+    // confidence this stage exists to catch.
+    if (isReady && !_hasPremiseContradiction(saved)) {
+      const jumpBtn = document.createElement('button');
+      jumpBtn.className = 's5-panel-jump-btn';
+      jumpBtn.textContent = 'Feeling confident now? Jump ahead →';
+      jumpBtn.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage6_5' } }));
+      });
+      body.appendChild(jumpBtn);
+    }
   }
 
   // ─── COMPLETION ────────────────────────────────────────────────────────────
@@ -630,7 +698,10 @@ const Stage5 = (() => {
     const gate = typeof GateStandard !== 'undefined'
       ? GateStandard.report('stage5', GateStandard.evaluate(doneCount, activeVerifiers.length))
       : { valid: doneCount >= Math.ceil(activeVerifiers.length / 2) };
-    const valid = gate.valid;
+    // Phase 1.0b — a contradicted premise blocks Next regardless of how
+    // many other verifiers were completed; the fix is going back to Stage 3,
+    // not completing unrelated checks around the broken assumption.
+    const valid = gate.valid && !_hasPremiseContradiction(saved);
 
     if (typeof Renderer !== 'undefined') Renderer.setNextEnabled(valid);
 
@@ -861,6 +932,23 @@ const Stage5 = (() => {
     .s5-panel-progress-label { font-size: .68rem; color: var(--s5-muted); }
     .s5-panel-gate { padding: 10px 12px; border-radius: 8px; font-size: .74rem; font-weight: 500; text-align: center; background: var(--s5-surface2); border: 1.5px solid var(--s5-border); color: var(--s5-muted); }
     .s5-panel-gate--ready { background: var(--s5-green-bg); border-color: var(--s5-green-b); color: var(--s5-green); }
+    .s5-contradiction {
+      display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; margin-bottom: 4px;
+      background: var(--s5-red-bg); border: 1.5px solid var(--s5-red-b); border-radius: 10px;
+    }
+    .s5-contradiction__title { font-size: .88rem; font-weight: 700; color: var(--s5-red); }
+    .s5-contradiction__body  { font-size: .8rem; color: var(--s5-ink); line-height: 1.6; }
+    .s5-contradiction__btn   {
+      align-self: flex-start; padding: 9px 16px; font-size: .8rem; font-weight: 700; color: #fff;
+      background: var(--s5-red); border: none; border-radius: 8px; cursor: pointer;
+    }
+    .s5-contradiction__btn:hover { filter: brightness(1.08); }
+    .s5-panel-jump-btn {
+      width: 100%; padding: 9px 10px; margin-top: -4px; font-size: .74rem; font-weight: 600;
+      color: var(--s5-muted); background: transparent; border: 1.5px dashed var(--s5-border2);
+      border-radius: 8px; cursor: pointer; transition: color .12s, border-color .12s;
+    }
+    .s5-panel-jump-btn:hover { color: var(--s5-ink); border-color: var(--s5-blue, #5b9bd5); }
     .s5-panel-body::-webkit-scrollbar { width: 3px; }
     .s5-panel-body::-webkit-scrollbar-thumb { background: var(--s5-border2); border-radius: 4px; }
 
@@ -875,13 +963,15 @@ const Stage5 = (() => {
   // ─── LIFECYCLE ─────────────────────────────────────────────────────────────
 
   function onMount(state) {
-    const saved           = state.answers?.stage5;
+    const saved           = state.answers?.stage5 ?? {};
     const activeVerifiers = _getActiveVerifiers(state);
-    const doneCount       = activeVerifiers.filter(v => _isVerifierDone(v.id, saved ?? {})).length;
+    const doneCount       = activeVerifiers.filter(v => _isVerifierDone(v.id, saved)).length;
     const gate = typeof GateStandard !== 'undefined'
       ? GateStandard.report('stage5', GateStandard.evaluate(doneCount, activeVerifiers.length))
       : { valid: doneCount >= Math.ceil(activeVerifiers.length / 2) };
-    if (gate.valid && typeof Renderer !== 'undefined') Renderer.setNextEnabled(true);
+    if (gate.valid && !_hasPremiseContradiction(saved) && typeof Renderer !== 'undefined') {
+      Renderer.setNextEnabled(true);
+    }
   }
 
   function cleanup() {

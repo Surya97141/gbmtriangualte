@@ -208,6 +208,7 @@ const Stage2 = (() => {
           What you must produce constrains the approach as much as what you are given.
           Output form, optimization type, and solution depth each eliminate different families.
         </div>
+        ${_isBeginnerMode() ? `<div class="s2-beginner-note">These three questions look similar but aren't — take them one at a time. There's no penalty for changing an earlier answer once a later one makes it click.</div>` : ''}
         <div id="s2-autosuggest-banner-region"></div>
 
         <!-- Section 01: Output form -->
@@ -542,6 +543,11 @@ const Stage2 = (() => {
     }
   }
 
+  // Phase 1.6 — same beginner-mode check already used by stage3.js/stage6-5.js.
+  function _isBeginnerMode() {
+    return typeof Preferences !== 'undefined' && Preferences.getSkillLevel() === 'beginner';
+  }
+
   // ─── STYLES ────────────────────────────────────────────────────────────────
 
   function _injectStyles() {
@@ -581,6 +587,7 @@ const Stage2 = (() => {
     }
     .s2-main { flex: 1; display: flex; flex-direction: column; gap: 36px; min-width: 0; }
     .s2-rule { font-family: var(--s2-mono); font-size: .71rem; color: var(--s2-muted); padding: 10px 16px; background: var(--s2-surface); border: 1px solid var(--s2-border); border-left: 3px solid var(--s2-blue); border-radius: 0 8px 8px 0; line-height: 1.6; }
+    .s2-beginner-note { font-size: .78rem; color: var(--s2-ink); padding: 10px 14px; background: var(--s2-green-bg); border: 1px solid var(--s2-green-b); border-radius: 8px; line-height: 1.55; }
 
     /* Sections */
     .s2-section { display: flex; flex-direction: column; gap: 14px; }

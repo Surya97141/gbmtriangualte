@@ -40,6 +40,7 @@ const Stage0 = (() => {
           Rule: Calculate ACTUAL operation count — not just Big-O notation.
           Enter constraints. Infeasible classes are eliminated immediately.
         </div>
+        ${_isBeginnerMode() ? `<div class="s0-beginner-note">Taking extra time here is normal — there's no clock, and getting a rough estimate down is more important than getting it exactly right on the first try.</div>` : ''}
 
         <!-- Section 01: Constraints -->
         <section class="s0-section">
@@ -528,6 +529,11 @@ const Stage0 = (() => {
     return man === '1.0' ? `10^${exp}` : `${man}×10^${exp}`;
   }
 
+  // Phase 1.6 — same beginner-mode check already used by stage3.js/stage6-5.js.
+  function _isBeginnerMode() {
+    return typeof Preferences !== 'undefined' && Preferences.getSkillLevel() === 'beginner';
+  }
+
   // ─── STYLES ────────────────────────────────────────────────────────────────
 
   function _injectStyles() {
@@ -569,6 +575,7 @@ const Stage0 = (() => {
     }
     .s0-main { flex: 1; display: flex; flex-direction: column; gap: 32px; min-width: 0; }
     .s0-rule { font-family: var(--s0-mono); font-size: .71rem; color: var(--s0-muted); padding: 10px 16px; background: var(--s0-surface); border: 1px solid var(--s0-border); border-left: 3px solid var(--s0-blue); border-radius: 0 8px 8px 0; line-height: 1.6; }
+    .s0-beginner-note { font-size: .78rem; color: var(--s0-ink); padding: 10px 14px; background: var(--s0-green-bg); border: 1px solid var(--s0-green-b); border-radius: 8px; line-height: 1.55; }
 
     /* Sections */
     .s0-section { display: flex; flex-direction: column; gap: 14px; }

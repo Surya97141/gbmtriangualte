@@ -51,6 +51,7 @@ const Stage6_5 = (() => {
     state_not_verified_for_dp   : -4,
     transformation_skipped      : -2,
     edge_cases_skipped          : -5,
+    fallback_path_used          : -15,
   };
 
   // Single source of truth lives in confidence-scorer.js
@@ -67,7 +68,7 @@ const Stage6_5 = (() => {
     { label: 'Fast Path — Direction',   keys: ['fastpath_direction_provided'] },
     { label: 'Stage 5 — Verification',  keys: ['greedy_counterexample_tested','monotonicity_verified','dp_state_verified','graph_properties_verified','keyword_crosscheck_done'] },
     { label: 'Stage 6 — Edge Cases',    keys: ['universal_cases_reviewed','type_specific_cases_reviewed'] },
-    { label: 'Penalties',               keys: ['property_answered_unsure','verification_skipped','no_counterexample_for_greedy','state_not_verified_for_dp','transformation_skipped','edge_cases_skipped'] },
+    { label: 'Penalties',               keys: ['property_answered_unsure','verification_skipped','no_counterexample_for_greedy','state_not_verified_for_dp','transformation_skipped','edge_cases_skipped','fallback_path_used'] },
   ];
 
   // Groups that correspond to stages the fast path deliberately skips —
@@ -574,6 +575,17 @@ const Stage6_5 = (() => {
     const fp = answers.fastpath ?? {};
     if (fp.direction) earn('fastpath_direction_provided');
 
+    // Phase 2.2 — Stage 4.5's honest "no confident family match" fallback
+    // (see stage4-5.js's _fallbackGeneralVariants replacement) means the
+    // direction was never actually classified, just guessed at. A session
+    // that took that path must never register as High Confidence, no
+    // matter how thoroughly the rest of the checklist was completed —
+    // an opinion formed on an unverified classification isn't proof.
+    const usedFallback = !!answers.stage4_5?.usedFallback;
+    if (usedFallback) {
+      deduct('fallback_path_used', PENALTY_MAP.fallback_path_used);
+    }
+
     let score = Math.max(0, Math.min(100, Math.round(total)));
 
     // Fast-path sessions can only ever earn points from the Fast Path,
@@ -594,6 +606,12 @@ const Stage6_5 = (() => {
       if (achievableMax > 0) {
         score = Math.max(0, Math.min(100, Math.round((total / achievableMax) * 100)));
       }
+    }
+
+    // Hard ceiling, independent of the point math above — a capped-but-
+    // still-high total should never round back into the High band.
+    if (usedFallback) {
+      score = Math.min(score, ConfidenceScorer.SCORE_BANDS.find(b => b.level === 'medium').max);
     }
 
     const suggestions = _buildSuggestions(earned, families, s5, s6);

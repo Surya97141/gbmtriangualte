@@ -435,7 +435,7 @@ const Stage3 = (() => {
     if (answerId === 'unsure') {
       const el = document.createElement('div');
       el.className = 's3-unsure-warn';
-      el.innerHTML = `⚠ Unsure answers reduce confidence score. Try to determine before proceeding.`;
+      el.innerHTML = `Marking this "unsure" is honest, not a mistake — it just means the confidence score can't count it as verified yet. Come back to it with the "Not sure?" walkthrough above whenever you're ready.`;
       container.appendChild(el);
       return;
     }

@@ -186,6 +186,10 @@ const Stage4_5 = (() => {
         variants = GTV.getRelevant?.(directions) ?? GTV.getAll?.() ?? [];
       } else if (family.includes('range_query') && RQV) {
         variants = RQV.getRelevant?.(directions) ?? RQV.getAll?.() ?? [];
+      } else if (family.includes('backtracking') && GTV) {
+        variants = GTV.getRelevant?.(directions) ?? GTV.getAll?.() ?? [];
+      } else if (family.includes('divide_conquer') && GSV) {
+        variants = GSV.getRelevant?.(directions) ?? GSV.getAll?.() ?? [];
       }
 
       if (variants.length) {
@@ -193,9 +197,38 @@ const Stage4_5 = (() => {
       }
     });
 
-    // If no matched variants, use fallback set
+    // No matched variants — this used to fall back to six hardcoded,
+    // confidently-styled guesses (BFS/DFS/1D DP/2D DP/Binary Search on
+    // Answer/Sort+Greedy) regardless of whether any of them actually fit.
+    // Phase 2.1: never dress up a guess as a real match. Say so plainly and
+    // route back to Stage 3's Truths First box instead of showing named
+    // techniques that were never actually verified against this problem.
     if (!familyVariants.length) {
-      familyVariants.push({ dir: { label: 'General' }, variants: _fallbackGeneralVariants() });
+      _logFallbackTelemetry(directions);
+      State.setAnswer('stage4_5', { usedFallback: true });
+
+      area.innerHTML = `
+        <div class="s45-fallback-honest">
+          <div class="s45-fallback-honest__title">This doesn't match a pattern I have deep coverage for yet.</div>
+          <div class="s45-fallback-honest__body">
+            Guessing at named techniques without evidence isn't more useful than no answer at all.
+            Go back and write down what you actually know for certain about this problem —
+            that's the more reliable next step from here.
+          </div>
+          <button class="s45-fallback-honest__btn" id="s45-fallback-back-btn">← Back to Truths First (Stage 3)</button>
+        </div>
+      `;
+      const backBtn = area.querySelector('#s45-fallback-back-btn');
+      if (backBtn) {
+        backBtn.addEventListener('click', () => {
+          document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage3' } }));
+        });
+      }
+      return;
+    }
+
+    if (saved.usedFallback) {
+      State.setAnswer('stage4_5', { usedFallback: false });
     }
 
     familyVariants.forEach(({ dir, variants }) => {
@@ -508,15 +541,24 @@ const Stage4_5 = (() => {
     ];
   }
 
-  function _fallbackGeneralVariants() {
-    return [
-      { id: 'fallback_bfs',         label: 'BFS',                    tagline: 'Level-by-level traversal, shortest path unweighted', complexity: 'O(V+E)',       when: ['Shortest path (unweighted)', 'Level order traversal'], watchOut: ['Does not work for weighted graphs'] },
-      { id: 'fallback_dfs',         label: 'DFS',                    tagline: 'Go deep before backtracking',                        complexity: 'O(V+E)',       when: ['Connected components', 'Cycle detection', 'Topo sort'], watchOut: ['May stack overflow on very deep graphs — use iterative'] },
-      { id: 'fallback_dp_1d',       label: '1D DP (linear)',         tagline: 'dp[i] depends on dp[i-1] or earlier states',         complexity: 'O(n)',         when: ['Fibonacci-style', 'Max subarray', 'Coin change'], watchOut: ['Define state precisely before coding'] },
-      { id: 'fallback_dp_2d',       label: '2D DP (quadratic)',      tagline: 'dp[i][j] — two index dimensions',                    complexity: 'O(n²)',        when: ['LCS, Edit Distance', 'Interval DP', 'Matrix DP'], watchOut: ['O(n²) — check if n ≤ 5000 at most'] },
-      { id: 'fallback_binary_search',label: 'Binary Search on Answer',tagline: 'Search on answer space, check feasibility',          complexity: 'O(n log n)',   when: ['Minimize max / maximize min', 'Feasibility monotone'], watchOut: ['Must verify feasibility function is monotone'] },
-      { id: 'fallback_sort_greedy', label: 'Sort + Greedy',          tagline: 'Sort by key, then apply local greedy rule',           complexity: 'O(n log n)',   when: ['Interval problems', 'Job scheduling'], watchOut: ['Verify greedy with exchange argument'] },
-    ];
+  // Phase 2.3 — local telemetry on how often the fallback (no real family
+  // match) fires. No external service; this is purely so a future pass can
+  // see which families to build real coverage for next, same discipline as
+  // core/outcomes.js's localStorage-backed log.
+  function _logFallbackTelemetry(directions) {
+    const KEY = 'dsa_fallback_telemetry_v1';
+    const MAX_ENTRIES = 200;
+    try {
+      const raw   = localStorage.getItem(KEY);
+      const list  = raw ? JSON.parse(raw) : [];
+      list.push({
+        at: Date.now(),
+        attemptedFamilies: directions.map(d => d.family ?? d.id ?? 'unknown'),
+      });
+      localStorage.setItem(KEY, JSON.stringify(list.slice(-MAX_ENTRIES)));
+    } catch (e) {
+      console.warn('[Stage4_5] fallback telemetry log failed:', e);
+    }
   }
 
   // ─── STYLES ────────────────────────────────────────────────────────────────
@@ -601,6 +643,11 @@ const Stage4_5 = (() => {
     .s45-variant-wos  { display: flex; flex-direction: column; gap: 4px; }
     .s45-wo-item      { font-size: .7rem; color: var(--s45-warn); padding: 4px 8px; background: var(--s45-warn-bg); border: 1px solid var(--s45-warn-b); border-radius: 5px; line-height: 1.4; }
     .s45-no-variants  { font-size: .76rem; color: var(--s45-muted); padding: 14px; background: var(--s45-surface2); border: 1px solid var(--s45-border); border-radius: 8px; line-height: 1.6; }
+    .s45-fallback-honest       { display: flex; flex-direction: column; gap: 12px; padding: 20px; background: var(--s45-surface2); border: 1.5px dashed var(--s45-border2); border-radius: 10px; }
+    .s45-fallback-honest__title { font-size: .92rem; font-weight: 700; color: var(--s45-ink); }
+    .s45-fallback-honest__body  { font-size: .82rem; color: var(--s45-ink2); line-height: 1.6; }
+    .s45-fallback-honest__btn   { align-self: flex-start; padding: 9px 16px; font-size: .8rem; font-weight: 600; color: var(--s45-ink); background: var(--s45-surface); border: 1.5px solid var(--s45-border2); border-radius: 8px; cursor: pointer; }
+    .s45-fallback-honest__btn:hover { border-color: var(--s45-gold, #e8b93f); }
 
     /* Recheck */
     .s45-recheck-placeholder { font-family: var(--s45-mono); font-size: .72rem; color: var(--s45-muted); text-align: center; padding: 20px; background: var(--s45-surface2); border: 1.5px dashed var(--s45-border); border-radius: 9px; }
