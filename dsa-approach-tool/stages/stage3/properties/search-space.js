@@ -120,12 +120,21 @@ const SearchSpace = (() => {
     ],
   };
 
+  // See order-sensitivity.js for the rationale behind this heuristic.
+  const SELF_CHECK_SIGNALS = {
+    value_range  : ['range of numbers', 'binary search on', 'search for the right value', 'value in a range'],
+    decision_tree: ['tree of choices', 'tree of decisions', 'branch', 'backtrack', 'choose a or b'],
+    graph_states : ['graph of states', 'each configuration', 'states are nodes', 'bfs', 'dfs'],
+    intervals    : ['interval', 'overlapping range', 'sweep line', 'ranges'],
+  };
+
   function getProperty()     { return { ...PROPERTY }; }
   function getTestCases()    { return [...TEST_CASES]; }
   function getVerification() { return { ...VERIFICATION }; }
+  function getSelfCheckSignals() { return SELF_CHECK_SIGNALS; }
   function getAnswerById(id) { return PROPERTY.answers.find(a => a.id === id) ?? null; }
 
-  return { getProperty, getTestCases, getVerification, getAnswerById };
+  return { getProperty, getTestCases, getVerification, getSelfCheckSignals, getAnswerById };
 
 })();
 

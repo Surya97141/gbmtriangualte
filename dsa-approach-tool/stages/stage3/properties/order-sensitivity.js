@@ -109,6 +109,19 @@ const OrderSensitivity = (() => {
     },
   ];
 
+  // ─── SELF-CHECK SIGNALS ────────────────────────────────────────────────────
+  // Deliberately crude keyword heuristic — NOT an understanding check. Used
+  // only to detect whether the user's own freeform "Truths First" text (see
+  // truths-first.js) already touched this property's territory, and, if a
+  // direction is unambiguous, whether it lines up with the guided answer they
+  // go on to pick. False negatives (missing a real observation phrased
+  // unusually) are expected and fine — this only ever adds encouragement, it
+  // never blocks or contradicts the guided question.
+  const SELF_CHECK_SIGNALS = {
+    yes: ['order matters', 'position matters', 'can\'t reorder', 'cannot reorder', 'contiguous', 'shuffl', 'sequence matters', 'depends on position', 'depends on order'],
+    no : ['order doesn\'t matter', 'order does not matter', 'can sort', 'sort first', 'sort freely', 'any order', 'doesn\'t matter what order', 'unordered'],
+  };
+
   // ─── VERIFICATION PROMPT ───────────────────────────────────────────────────
 
   const VERIFICATION = {
@@ -128,6 +141,7 @@ const OrderSensitivity = (() => {
   function getProperty()     { return { ...PROPERTY }; }
   function getTestCases()    { return [...TEST_CASES]; }
   function getVerification() { return { ...VERIFICATION }; }
+  function getSelfCheckSignals() { return SELF_CHECK_SIGNALS; }
 
   function getAnswerById(id) {
     return PROPERTY.answers.find(a => a.id === id) ?? null;
@@ -153,6 +167,7 @@ const OrderSensitivity = (() => {
     getProperty,
     getTestCases,
     getVerification,
+    getSelfCheckSignals,
     getAnswerById,
     getImpact,
     sortingIsSafe,

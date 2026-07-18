@@ -89,9 +89,16 @@ const DependencyStructure = (() => {
     ],
   };
 
+  // See order-sensitivity.js for the rationale behind this heuristic.
+  const SELF_CHECK_SIGNALS = {
+    dag     : ['one direction', 'one-directional', 'no cycle', 'no cycles', 'topological', 'strictly smaller', 'strictly decreasing'],
+    circular: ['circular', 'depends on each other', 'depends on b which depends on a', 'cycle', 'loop back'],
+  };
+
   function getProperty()     { return { ...PROPERTY }; }
   function getTestCases()    { return [...TEST_CASES]; }
   function getVerification() { return { ...VERIFICATION }; }
+  function getSelfCheckSignals() { return SELF_CHECK_SIGNALS; }
   function getAnswerById(id) { return PROPERTY.answers.find(a => a.id === id) ?? null; }
   function isDAG(id)         { return id === 'dag';      }
   function isCircular(id)    { return id === 'circular'; }
@@ -100,6 +107,7 @@ const DependencyStructure = (() => {
     getProperty,
     getTestCases,
     getVerification,
+    getSelfCheckSignals,
     getAnswerById,
     isDAG,
     isCircular,

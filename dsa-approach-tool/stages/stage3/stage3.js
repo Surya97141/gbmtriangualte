@@ -8,6 +8,9 @@ const Stage3 = (() => {
   let _answers   = {};
   let _dpSubtype = null;
   let _graphGoal = null;
+  let _truthsText  = '';
+  let _selfCheck   = {}; // propId -> { touched, matchedAnswerId } from TruthsFirst.analyze
+  let _flaredProps = new Set(); // props whose self-derived-insight flare has already shown once
 
   const PROPERTY_MODULES = {
     orderSensitivity    : typeof OrderSensitivity    !== 'undefined' ? OrderSensitivity    : null,
@@ -37,8 +40,12 @@ const Stage3 = (() => {
     _answers   = { ...(saved.properties ?? {}) };
     _dpSubtype = saved.dpSubtype ?? null;
     _graphGoal = saved.graphGoal ?? null;
+    _truthsText  = saved.truthsFirst ?? '';
+    _selfCheck   = (typeof TruthsFirst !== 'undefined') ? TruthsFirst.analyze(_truthsText, PROPERTY_MODULES) : {};
+    _flaredProps = new Set();
 
     _injectStyles();
+    if (typeof TruthsFirst !== 'undefined') TruthsFirst.injectStyles();
 
     const wrapper = document.createElement('div');
     wrapper.className = 's3-shell';
@@ -60,15 +67,19 @@ const Stage3 = (() => {
         <!-- Progress strip -->
         <div class="s3-progress-strip" id="s3-progress-strip"></div>
 
+        <!-- Section 00: Truths First (mounted below via TruthsFirst.renderBox) -->
+        <div id="s3tf-mount"></div>
+
         <!-- Section 01: Property questions -->
-        <section class="s3-section">
+        <section class="s3-section" id="s3-guided-wrap">
           <div class="s3-section-header">
             <span class="s3-section-num">01</span>
             <div>
               <div class="s3-section-title">Seven structural property questions</div>
-              <div class="s3-section-sub">Answer at least 5 — the algorithm family emerges from your answers</div>
+              <div class="s3-section-sub">Confirm what you noticed yourself, and check the rest — the algorithm family emerges from your answers</div>
             </div>
           </div>
+          <div class="s3-guided-lock-banner" id="s3-guided-lock-banner">🔒 Write your own observations above first — this unlocks automatically.</div>
           <div class="s3-prop-list" id="s3-prop-list"></div>
         </section>
 
@@ -111,13 +122,49 @@ const Stage3 = (() => {
     `;
 
     _buildProgressStrip(wrapper, saved);
+    _mountTruthsFirst(wrapper);
     _buildPropList(wrapper, saved);
     _buildDPContent(wrapper, saved);
     _buildGraphContent(wrapper, saved, hasGraph);
+    _refreshGuidedLock(wrapper);
 
     setTimeout(() => _updatePanel(wrapper), 0);
 
     return wrapper;
+  }
+
+  // ─── TRUTHS FIRST (Phase 1.1/1.2/1.3) ──────────────────────────────────────
+
+  function _mountTruthsFirst(wrapper) {
+    const mount = wrapper.querySelector('#s3tf-mount');
+    if (!mount || typeof TruthsFirst === 'undefined') return;
+
+    const box = TruthsFirst.renderBox(_truthsText, (text) => {
+      _truthsText = text;
+      State.setAnswer('stage3', { truthsFirst: text });
+      const wasUnlocked = !wrapper.querySelector('#s3-guided-wrap')?.classList.contains('s3-guided-locked');
+      _refreshGuidedLock(wrapper);
+      const isUnlocked = !wrapper.querySelector('#s3-guided-wrap')?.classList.contains('s3-guided-locked');
+      // Recompute self-check + re-render property blocks only at the moment
+      // the guided section actually unlocks (not on every keystroke) — this
+      // is the user's own unaided attempt, so their badges shouldn't shift
+      // live while they're still typing it.
+      if (isUnlocked && !wasUnlocked) {
+        _selfCheck = TruthsFirst.analyze(_truthsText, PROPERTY_MODULES);
+        const list = wrapper.querySelector('#s3-prop-list');
+        if (list) { list.innerHTML = ''; _buildPropList(wrapper, State.getAnswer('stage3') ?? {}); }
+      }
+    });
+    mount.appendChild(box);
+  }
+
+  function _refreshGuidedLock(wrapper) {
+    const guidedWrap = wrapper.querySelector('#s3-guided-wrap');
+    const banner     = wrapper.querySelector('#s3-guided-lock-banner');
+    if (!guidedWrap) return;
+    const unlocked = TruthsFirst?.isSubstantive?.(_truthsText) ?? true;
+    guidedWrap.classList.toggle('s3-guided-locked', !unlocked);
+    if (banner) banner.style.display = unlocked ? 'none' : 'flex';
   }
 
   // ─── PROGRESS STRIP ────────────────────────────────────────────────────────
@@ -245,6 +292,14 @@ const Stage3 = (() => {
         </aside>
       ` : '';
 
+      const showSelfCheck = (typeof TruthsFirst !== 'undefined') && TruthsFirst.isSubstantive(_truthsText);
+      const check = _selfCheck[propId];
+      const badgeHTML = showSelfCheck
+        ? (check?.touched
+            ? `<div class="s3-selfcheck-badge s3-selfcheck-badge--touched">✓ You noticed this yourself</div>`
+            : `<div class="s3-selfcheck-badge s3-selfcheck-badge--missed">Not mentioned yet — that's fine, this is why we check</div>`)
+        : '';
+
       const verification = mod.getVerification?.();
       const whyHatchHTML = verification ? `
         <button class="s3-why-hatch-btn" id="s3-why-hatch-btn-${propId}" aria-expanded="false">
@@ -264,6 +319,7 @@ const Stage3 = (() => {
         <div class="s3-prop-num">${idx + 1}</div>
         <div class="s3-prop-content">
           ${questionHTML}
+          ${badgeHTML}
           <div class="s3-prop-why"><span class="s3-why-label">Why this matters:</span> ${prop.why}</div>
           ${whyHatchHTML}
           <div class="s3-ans-grid">${optionsHTML}</div>
@@ -331,6 +387,7 @@ const Stage3 = (() => {
       _renderImpact(impactEl, mod2?.getProperty?.() ?? {}, answerId);
     }
 
+    _maybeShowInsightFlare(propId, answerId, block);
     _refreshProgressStrip(wrapper);
 
     // Show/hide DP section
@@ -342,6 +399,25 @@ const Stage3 = (() => {
     State.setAnswer('stage3', { properties: { ..._answers } });
     _updatePanel(wrapper);
     _checkComplete();
+  }
+
+  // Phase 1.3 — a distinct, one-time celebration when the guided answer the
+  // user just clicked matches what their own unaided freeform text already
+  // pointed at (per TruthsFirst's deliberately-conservative signal match).
+  // This is "you found it yourself," not "you got the right answer" — kept
+  // separate from the numeric confidence score entirely.
+  function _maybeShowInsightFlare(propId, answerId, block) {
+    if (!block || _flaredProps.has(propId)) return;
+    const check = _selfCheck[propId];
+    if (!check?.touched || check.matchedAnswerId !== answerId) return;
+
+    _flaredProps.add(propId);
+    const impactEl = block.querySelector(`#s3-impact-${propId}`);
+    if (!impactEl) return;
+    const flare = document.createElement('div');
+    flare.className = 's3-insight-flare';
+    flare.innerHTML = `<span class="s3-insight-flare-icon">✦</span><span>You found this yourself, before we even asked.</span>`;
+    impactEl.prepend(flare);
   }
 
   function _renderImpact(container, prop, answerId) {
@@ -1109,6 +1185,9 @@ const Stage3 = (() => {
     _answers   = {};
     _dpSubtype = null;
     _graphGoal = null;
+    _truthsText  = '';
+    _selfCheck   = {};
+    _flaredProps = new Set();
   }
 
   return { render, onMount, cleanup };

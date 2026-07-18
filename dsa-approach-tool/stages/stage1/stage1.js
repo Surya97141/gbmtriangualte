@@ -143,6 +143,9 @@ const Stage1 = (() => {
     { id: 'geometry',     text: 'Input is 2D points / coordinates',            tag: 'geometry',          opens: 'Convex Hull. Sweep Line. Distance calculations — watch floating point.' },
     { id: 'parent_array', text: 'Array where a[i] = parent of node i',        tag: 'implicit_structure', opens: 'Build tree from parent array. Tree DP applies.' },
     { id: 'next_state',   text: 'Array where a[i] = next state from i',       tag: 'implicit_structure', opens: 'Functional graph — rho structure with cycles. Each node has out-degree 1. ⚠ Do not confuse with general directed graph' },
+    { id: 'heap_priority',text: 'Need the running min/max as elements are added/removed', tag: 'values', opens: 'Priority Queue / Heap — O(log n) per insert, O(1) peek at min/max.' },
+    { id: 'hashing',      text: 'Need fast existence, count, or grouping lookups', tag: 'values',       opens: 'Hash Map / Hash Set — O(1) average lookup instead of scanning.' },
+    { id: 'game_theory',  text: 'Two players alternate turns — determine the outcome under optimal play', tag: 'game', opens: 'Backtracking with memoized game states, or Minimax. Look for a Sprague-Grundy structure if it decomposes into independent sub-games.' },
   ];
 
   const QUERY_TYPES = [

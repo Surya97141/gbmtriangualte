@@ -24,10 +24,19 @@ const Stage4_5 = (() => {
     const graphProps = state.answers?.stage3?.graphProperties ?? {};
     const n          = state.answers?.stage0?.n               ?? 0;
 
-    const BSV = typeof BinarySearchVariants !== 'undefined' ? BinarySearchVariants : null;
-    const DPV = typeof DPVariants           !== 'undefined' ? DPVariants           : null;
-    const GV  = typeof GraphVariants        !== 'undefined' ? GraphVariants        : null;
-    const CR  = typeof ComplexityRecheck    !== 'undefined' ? ComplexityRecheck    : null;
+    const BSV   = typeof BinarySearchVariants   !== 'undefined' ? BinarySearchVariants   : null;
+    const DPV   = typeof DPVariants             !== 'undefined' ? DPVariants             : null;
+    const GV    = typeof GraphVariants          !== 'undefined' ? GraphVariants          : null;
+    const CR    = typeof ComplexityRecheck      !== 'undefined' ? ComplexityRecheck      : null;
+    const TPV   = typeof TwoPointerVariants     !== 'undefined' ? TwoPointerVariants     : null;
+    const SWV   = typeof SlidingWindowVariants  !== 'undefined' ? SlidingWindowVariants  : null;
+    const GRV   = typeof GreedyVariants         !== 'undefined' ? GreedyVariants         : null;
+    const STRV  = typeof StringVariants         !== 'undefined' ? StringVariants         : null;
+    const MATHV = typeof MathVariants           !== 'undefined' ? MathVariants           : null;
+    const DSV   = typeof DataStructureVariants  !== 'undefined' ? DataStructureVariants  : null;
+    const GSV   = typeof GeometrySweepVariants  !== 'undefined' ? GeometrySweepVariants  : null;
+    const GTV   = typeof GameTheoryVariants     !== 'undefined' ? GameTheoryVariants     : null;
+    const RQV   = typeof RangeQueryVariants     !== 'undefined' ? RangeQueryVariants     : null;
 
     const wrapper = document.createElement('div');
     wrapper.className = 's45-shell';
@@ -101,7 +110,7 @@ const Stage4_5 = (() => {
     }
 
     // Build variant area
-    _buildVariantArea(wrapper, directions, dpSubtype, graphGoal, graphProps, saved, n, BSV, DPV, GV, CR);
+    _buildVariantArea(wrapper, directions, dpSubtype, graphGoal, graphProps, saved, n, BSV, DPV, GV, CR, TPV, SWV, GRV, STRV, MATHV, DSV, GSV, GTV, RQV);
 
     // Restore recheck if variant was saved
     if (saved.variantSelected && saved.recheckResult) {
@@ -139,7 +148,7 @@ const Stage4_5 = (() => {
 
   // ─── VARIANT AREA ──────────────────────────────────────────────────────────
 
-  function _buildVariantArea(wrapper, directions, dpSubtype, graphGoal, graphProps, saved, n, BSV, DPV, GV, CR) {
+  function _buildVariantArea(wrapper, directions, dpSubtype, graphGoal, graphProps, saved, n, BSV, DPV, GV, CR, TPV, SWV, GRV, STRV, MATHV, DSV, GSV, GTV, RQV) {
     const area = wrapper.querySelector('#s45-variant-area');
     if (!area) return;
 
@@ -159,10 +168,24 @@ const Stage4_5 = (() => {
         variants = DPV.getRelevant?.(directions, dpSubtype) ?? DPV.getAll?.() ?? [];
       } else if (family.includes('graph') && GV) {
         variants = GV.getRelevant?.(directions, graphGoal, graphProps) ?? GV.getAll?.() ?? [];
-      } else if (family.includes('greedy')) {
-        variants = _fallbackGreedyVariants();
-      } else if (family.includes('two_pointer')) {
-        variants = _fallbackTwoPointerVariants();
+      } else if (family.includes('greedy') && GRV) {
+        variants = GRV.getRelevant?.(directions) ?? GRV.getAll?.() ?? [];
+      } else if (family.includes('two_pointer') && TPV) {
+        variants = TPV.getRelevant?.(directions) ?? TPV.getAll?.() ?? [];
+      } else if (family.includes('sliding_window') && SWV) {
+        variants = SWV.getRelevant?.(directions) ?? SWV.getAll?.() ?? [];
+      } else if (family.includes('string') && STRV) {
+        variants = STRV.getRelevant?.(directions) ?? STRV.getAll?.() ?? [];
+      } else if (family.includes('math') && MATHV) {
+        variants = MATHV.getRelevant?.(directions) ?? MATHV.getAll?.() ?? [];
+      } else if (family.includes('data_structure') && DSV) {
+        variants = DSV.getRelevant?.(directions) ?? DSV.getAll?.() ?? [];
+      } else if (family.includes('geometry_sweep') && GSV) {
+        variants = GSV.getRelevant?.(directions) ?? GSV.getAll?.() ?? [];
+      } else if (family.includes('game_theory') && GTV) {
+        variants = GTV.getRelevant?.(directions) ?? GTV.getAll?.() ?? [];
+      } else if (family.includes('range_query') && RQV) {
+        variants = RQV.getRelevant?.(directions) ?? RQV.getAll?.() ?? [];
       }
 
       if (variants.length) {
@@ -457,31 +480,31 @@ const Stage4_5 = (() => {
   // ─── FALLBACKS & HELPERS ───────────────────────────────────────────────────
 
   function _getAllVariants() {
-    const BSV = typeof BinarySearchVariants !== 'undefined' ? BinarySearchVariants : null;
-    const DPV = typeof DPVariants           !== 'undefined' ? DPVariants           : null;
-    const GV  = typeof GraphVariants        !== 'undefined' ? GraphVariants        : null;
+    const BSV   = typeof BinarySearchVariants   !== 'undefined' ? BinarySearchVariants   : null;
+    const DPV   = typeof DPVariants             !== 'undefined' ? DPVariants             : null;
+    const GV    = typeof GraphVariants          !== 'undefined' ? GraphVariants          : null;
+    const TPV   = typeof TwoPointerVariants     !== 'undefined' ? TwoPointerVariants     : null;
+    const SWV   = typeof SlidingWindowVariants  !== 'undefined' ? SlidingWindowVariants  : null;
+    const GRV   = typeof GreedyVariants         !== 'undefined' ? GreedyVariants         : null;
+    const STRV  = typeof StringVariants         !== 'undefined' ? StringVariants         : null;
+    const MATHV = typeof MathVariants           !== 'undefined' ? MathVariants           : null;
+    const DSV   = typeof DataStructureVariants  !== 'undefined' ? DataStructureVariants  : null;
+    const GSV   = typeof GeometrySweepVariants  !== 'undefined' ? GeometrySweepVariants  : null;
+    const GTV   = typeof GameTheoryVariants     !== 'undefined' ? GameTheoryVariants     : null;
+    const RQV   = typeof RangeQueryVariants     !== 'undefined' ? RangeQueryVariants     : null;
     return [
-      ...(BSV?.getAll?.() ?? []),
-      ...(DPV?.getAll?.() ?? []),
-      ...(GV?.getAll?.()  ?? []),
-      ..._fallbackGreedyVariants(),
-      ..._fallbackTwoPointerVariants(),
-    ];
-  }
-
-  function _fallbackGreedyVariants() {
-    return [
-      { id: 'greedy_sort_end',    label: 'Sort by end time (Activity Selection)', tagline: 'Sort intervals by end time, greedily pick non-overlapping', complexity: 'O(n log n)', when: ['Interval scheduling', 'Meeting rooms'], watchOut: ['Only works when sorting by END time, not start'] },
-      { id: 'greedy_ratio',       label: 'Greedy by ratio (Fractional Knapsack)', tagline: 'Pick items with highest value/weight ratio first',          complexity: 'O(n log n)', when: ['Fractional knapsack', 'Bandwidth allocation'], watchOut: ['0/1 knapsack requires DP — greedy fails'] },
-      { id: 'greedy_exchange',    label: 'Exchange argument greedy',               tagline: 'Prove optimal by showing any swap worsens result',           complexity: 'O(n log n)', when: ['Job scheduling', 'String ordering'], watchOut: ['Must formally verify exchange argument'] },
-    ];
-  }
-
-  function _fallbackTwoPointerVariants() {
-    return [
-      { id: 'two_ptr_opposite',   label: 'Two pointers — opposite ends', tagline: 'Left from start, right from end, converge',  complexity: 'O(n)',       when: ['Two sum in sorted array', 'Palindrome check'], watchOut: ['Array must be sorted or work with unsorted structure'] },
-      { id: 'two_ptr_same_dir',   label: 'Two pointers — same direction (Sliding Window)', tagline: 'Both move right, window expands/shrinks', complexity: 'O(n)', when: ['Longest substring with condition', 'Min subarray sum ≥ k'], watchOut: ['Window validity must be monotone — shrinking left always valid'] },
-      { id: 'two_ptr_merge',      label: 'Two pointers — merge two sorted arrays', tagline: 'i on array A, j on array B, advance smaller',  complexity: 'O(n+m)',  when: ['Merge sorted arrays', 'Intersection of two sorted arrays'], watchOut: ['Both arrays must be sorted'] },
+      ...(BSV?.getAll?.()   ?? []),
+      ...(DPV?.getAll?.()   ?? []),
+      ...(GV?.getAll?.()    ?? []),
+      ...(TPV?.getAll?.()   ?? []),
+      ...(SWV?.getAll?.()   ?? []),
+      ...(GRV?.getAll?.()   ?? []),
+      ...(STRV?.getAll?.()  ?? []),
+      ...(MATHV?.getAll?.() ?? []),
+      ...(DSV?.getAll?.()   ?? []),
+      ...(GSV?.getAll?.()   ?? []),
+      ...(GTV?.getAll?.()   ?? []),
+      ...(RQV?.getAll?.()   ?? []),
     ];
   }
 

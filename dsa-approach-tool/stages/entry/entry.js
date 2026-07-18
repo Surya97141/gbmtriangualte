@@ -40,8 +40,8 @@ const StageEntry = (() => {
         <div class="se-card" data-path="fast" id="se-card-fast">
           <div class="se-card-check">✓</div>
           <div class="se-card-label">I already know the direction</div>
-          <div class="se-card-desc">Confirm input type, output type, and the approach you're leaning toward, then jump straight to Verification and Edge Cases.</div>
-          <div class="se-card-meta">3 stages</div>
+          <div class="se-card-desc">Confirm input type and the approach you're leaning toward, then jump straight to Verification and Edge Cases.</div>
+          <div class="se-card-meta">6 stages</div>
         </div>
       </div>
     `;

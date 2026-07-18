@@ -93,9 +93,16 @@ const FeasibilityBoundary = (() => {
     warning: 'Verify with at least 2 concrete examples — not just intuition.',
   };
 
+  // See order-sensitivity.js for the rationale behind this heuristic.
+  const SELF_CHECK_SIGNALS = {
+    yes: ['monoton', 'binary search on', 'if x works', 'clean boundary', 'feasib'],
+    no : ['not monotonic', 'no clean boundary', 'valid invalid valid', 'binary search won\'t work', 'binary search wont work'],
+  };
+
   function getProperty()     { return { ...PROPERTY }; }
   function getTestCases()    { return [...TEST_CASES]; }
   function getVerification() { return { ...VERIFICATION }; }
+  function getSelfCheckSignals() { return SELF_CHECK_SIGNALS; }
   function getAnswerById(id) { return PROPERTY.answers.find(a => a.id === id) ?? null; }
 
   function binarySearchApplicable(answerId) {
@@ -106,6 +113,7 @@ const FeasibilityBoundary = (() => {
     getProperty,
     getTestCases,
     getVerification,
+    getSelfCheckSignals,
     getAnswerById,
     binarySearchApplicable,
   };

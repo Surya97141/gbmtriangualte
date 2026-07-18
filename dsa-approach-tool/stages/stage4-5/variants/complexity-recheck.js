@@ -5,6 +5,13 @@
 const ComplexityRecheck = (() => {
 
   // Maps variant id → its complexity class string (for MathUtils)
+  //
+  // Entries marked "approximation" below have a true complexity that's
+  // multi-variable (e.g. O(V*E^2), O(2^(n/2))) and doesn't reduce cleanly
+  // to MathUtils.computeOps's single-n model. Where an exact class exists
+  // (o(nsqrtn), o(nlog2n)) it's used; otherwise the nearest class that
+  // won't UNDER-estimate cost was chosen deliberately, so a recheck warning
+  // errs toward "check this yourself" rather than a false "safe."
   const VARIANT_COMPLEXITY_MAP = {
     // Binary Search
     'bs_on_answer'         : 'o(nlogn)',
@@ -31,6 +38,69 @@ const ComplexityRecheck = (() => {
     'gv_kahn_topo'         : 'o(n)',
     'gv_kruskal'           : 'o(nlogn)',
     'gv_zero_one_bfs'      : 'o(n)',
+    'gv_dfs'               : 'o(n)',
+    'gv_network_flow'      : 'o(n^3)',  // true O(V*E^2) -- approximation, see note above
+    'gv_bipartite_matching': 'o(n^2)',  // true O(V*E) -- approximation
+
+    // Two Pointer
+    'tp_opposite_ends'     : 'o(n)',
+    'tp_fast_slow'         : 'o(n)',
+    'tp_partition'         : 'o(n)',
+
+    // Sliding Window
+    'sw_fixed_size'             : 'o(n)',
+    'sw_variable_shrink'        : 'o(n)',
+    'sw_variable_grow_to_target': 'o(n)',
+
+    // Greedy
+    'g_interval_scheduling' : 'o(nlogn)',
+    'g_exchange_argument'   : 'o(nlogn)',
+    'g_priority_queue'      : 'o(nlogn)',
+    'g_two_pointer_greedy'  : 'o(nlogn)',
+
+    // String
+    'str_kmp'          : 'o(n)',
+    'str_z_function'   : 'o(n)',
+    'str_rabin_karp'   : 'o(n)',
+    'str_aho_corasick' : 'o(n)',
+    'str_suffix_array' : 'o(nlogn)',
+    'str_manacher'     : 'o(n)',
+    'str_trie'         : 'o(n)',
+
+    // Math
+    'math_sieve'                 : 'o(nlogn)', // true O(n log log n) -- nlogn is the nearest safe upper bound
+    'math_binary_exponentiation' : 'o(logn)',
+    'math_modular_arithmetic'    : 'o(logn)',
+    'math_crt'                   : 'o(logn)',
+    'math_combinatorics'         : 'o(n)',
+    'math_matrix_expo'           : 'o(logn)',  // log of the exponent N, not the array-size n
+
+    // Data Structure
+    'ds_monotonic_stack'     : 'o(n)',
+    'ds_queue_bfs_support'   : 'o(n)',
+    'ds_monotonic_deque'     : 'o(n)',
+    'ds_heap_priority_queue' : 'o(nlogn)',
+    'ds_hashing'             : 'o(n)',
+    'ds_bit_manipulation'    : 'o(n)',
+
+    // Geometry / Sweep
+    'gs_convex_hull'            : 'o(nlogn)',
+    'gs_line_sweep'             : 'o(nlogn)',
+    'gs_meet_in_middle'         : 'o(2^n)',    // true O(2^(n/2)) -- approximation, see note above
+    'gs_mos_algorithm'          : 'o(nsqrtn)',
+    'gs_divide_conquer_general' : 'o(nlogn)',
+
+    // Game Theory
+    'gt_backtracking'   : 'o(2^n)',
+    'gt_minimax'        : 'o(2^n)',
+    'gt_sprague_grundy' : 'o(n)',
+
+    // Range Query
+    'rq_segment_tree' : 'o(nlogn)',
+    'rq_fenwick_tree' : 'o(nlogn)',
+    'rq_sparse_table' : 'o(nlogn)',
+    'rq_heavy_light'  : 'o(nlog2n)',
+    'rq_dsu'          : 'o(n)',
   };
 
   // Recheck result grades
@@ -94,9 +164,18 @@ const ComplexityRecheck = (() => {
   // Get all variant ids for a direction family
   function getVariantIdsForFamily(family) {
     const MAP = {
-      'binary_search': Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('bs_')),
-      'dp'           : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('dp_')),
-      'graph'        : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('gv_')),
+      'binary_search'  : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('bs_')),
+      'dp'             : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('dp_')),
+      'graph'          : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('gv_')),
+      'two_pointer'    : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('tp_')),
+      'sliding_window' : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('sw_')),
+      'greedy'         : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('g_')),
+      'string'         : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('str_')),
+      'math'           : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('math_')),
+      'data_structure' : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('ds_')),
+      'geometry_sweep' : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('gs_')),
+      'game_theory'    : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('gt_')),
+      'range_query'    : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('rq_')),
     };
     return MAP[family] ?? [];
   }

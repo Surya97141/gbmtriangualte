@@ -12,9 +12,21 @@ const Stage7 = (() => {
 
   // A variant's complexity class bumped one step — used when Stage 5/6
   // revealed extra work Stage 4.5's original recheck didn't know about.
+  // Maps a variant's base complexity class to what it becomes once the
+  // Fenwick/segment-tree bolt-on (needsUpdates) is added. Deliberately does
+  // NOT cover o(n^3), o(2^n), o(n!): variants at those classes (Floyd-
+  // Warshall, bitmask DP/backtracking, brute-force permutation) don't
+  // realistically pair with "add a Fenwick tree for updates" — a structure
+  // already this expensive has bigger problems than one more log factor,
+  // and MathUtils has no recognized class representing "n^3, but for
+  // updates" as a distinct thing. If a variant that expensive is ever
+  // combined with needsUpdates, the existing grade comparison still catches
+  // a real downgrade at the unchanged class — it just won't show a bumped
+  // complexity string, which is the intentional, documented gap.
   const COMPLEXITY_STEP_UP = {
-    'o(1)': 'o(logn)', 'o(logn)': 'o(sqrtn)', 'o(sqrtn)': 'o(n)',
-    'o(n)': 'o(nlogn)', 'o(nlogn)': 'o(nlog2n)', 'o(n^2)': 'o(n^2logn)',
+    'o(1)'      : 'o(logn)',   'o(logn)'   : 'o(sqrtn)',  'o(sqrtn)'  : 'o(n)',
+    'o(n)'      : 'o(nlogn)',  'o(nlogn)'  : 'o(nlog2n)', 'o(n^2)'    : 'o(n^2logn)',
+    'o(nsqrtn)' : 'o(n^2)',    'o(n^2/64)' : 'o(n^2)',    'o(nlog2n)' : 'o(n^2)',
   };
   const GRADE_ORDER = { safe: 0, warn: 1, tle: 2 };
 
@@ -913,7 +925,7 @@ const Stage7 = (() => {
     _commitRecheck     = null;
   }
 
-  return { render, onMount, cleanup };
+  return { render, onMount, cleanup, _computeCommitTimeRecheck };
 
 })();
 

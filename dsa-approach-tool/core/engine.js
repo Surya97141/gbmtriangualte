@@ -207,6 +207,16 @@ const Engine = (() => {
         break;
       }
 
+      case 'stage4': {
+        // Supplementary directions only detectable from Stage 4's hidden-
+        // structure checkboxes — see _deriveStage4Directions for why this
+        // can't happen at Stage 3 time. Adds to, never replaces, what
+        // Stage 3 already found.
+        const extra = _deriveStage4Directions(state);
+        extra.forEach(d => State.addDirection(d));
+        break;
+      }
+
       case 'stage4_5': {
         const variant = state.answers?.stage4_5?.variantComplexity;
         if (variant) {
@@ -256,6 +266,26 @@ const Engine = (() => {
   }
 
   // ─── DIRECTION DERIVATION ──────────────────────────────────────────────────
+
+  // Shared by both derivation passes below (Stage 3's initial pass and
+  // Stage 4's supplementary pass) — one canonical map of family → minimum
+  // complexity it's still worth suggesting at.
+  const DIRECTION_MIN_COMPLEXITY = {
+    greedy              : 'o(nlogn)',
+    binary_search_answer: 'o(nlogn)',
+    dp                  : 'o(n^2)',
+    backtracking        : 'o(2^n)',
+    divide_conquer      : 'o(nlogn)',
+    graph               : 'o(nlogn)',
+    two_pointer         : 'o(n)',
+    string              : 'o(n)',
+    sliding_window      : 'o(n)',
+    range_query         : 'o(nlogn)',
+    data_structure      : 'o(n)',
+    geometry_sweep      : 'o(nlogn)',
+    math                : 'o(logn)',
+    game_theory         : 'o(2^n)',
+  };
 
   function _deriveDirections(state) {
     const props  = state.answers?.stage3?.properties ?? {};
@@ -389,16 +419,203 @@ const Engine = (() => {
       });
     }
 
-    // Filter by eliminated complexity classes
-    const DIRECTION_MIN_COMPLEXITY = {
-      greedy              : 'o(nlogn)',
-      binary_search_answer: 'o(nlogn)',
-      dp                  : 'o(n^2)',
-      backtracking        : 'o(2^n)',
-      divide_conquer      : 'o(nlogn)',
-      graph               : 'o(nlogn)',
-      two_pointer         : 'o(n)',
-    };
+    // STRING — input is explicitly string-shaped, same unconditional pattern
+    // as GRAPH above (the input TYPE itself is the signal, not a derived
+    // property — Stage 1 is always answered by the time Stage 3 completes).
+    const stringInputs = ['single_string', 'two_strings', 'multiple_strings'];
+    const hasString     = (input.inputTypes ?? []).some(t => stringInputs.includes(t));
+    if (hasString) {
+      directions.push({
+        id          : 'string',
+        family      : 'string',
+        label       : 'String Algorithm',
+        why         : 'Input is explicitly string-shaped — pattern-matching/string-processing algorithms apply',
+        verifyBefore: 'Identify: single pattern or multiple? Matching, or structural (palindrome/periodicity)?',
+        wouldFailIf : 'A general string technique is picked where a simpler structural one (e.g. two pointer) already fits',
+        confidence  : 'medium',
+      });
+    }
+
+    // GEOMETRY / SWEEP — Stage 1's existing "geometry" secondary signal
+    // ('Input is 2D points / coordinates') is a strong, already-collected,
+    // 1:1 match for this family — same justification strength as GRAPH/STRING.
+    const secondary = input.secondarySignals ?? [];
+    if (secondary.includes('geometry')) {
+      directions.push({
+        id          : 'geometry_sweep',
+        family      : 'geometry_sweep',
+        label       : 'Geometry / Sweep',
+        why         : 'You flagged the input as 2D points/coordinates in Stage 1',
+        verifyBefore: 'Identify the specific goal: hull, pairwise distance, interval overlap, or offline query batching?',
+        wouldFailIf : 'The problem is actually 1D (intervals on a line) — a simpler sweep or sort+scan may already suffice',
+        confidence  : 'medium',
+      });
+    }
+
+    // MATH — Stage 1's "modulo" secondary signal ('Answer requires modulo
+    // 10^9+7') is a real, deliberate signal, but a partial proxy: it
+    // reliably implies modular-arithmetic/combinatorics-flavored math, not
+    // math-variants.js's full breadth (e.g. it says nothing about needing a
+    // sieve or CRT specifically) — same acknowledged imprecision as
+    // DATA_STRUCTURE's monotonic-stack proxy below.
+    if (secondary.includes('modulo')) {
+      directions.push({
+        id          : 'math',
+        family      : 'math',
+        label       : 'Number Theory / Combinatorics',
+        why         : 'You flagged that the answer requires modulo 10^9+7 in Stage 1',
+        verifyBefore: 'Identify what specifically needs mod: counting/combinatorics, exponentiation, or a precomputation like a sieve?',
+        wouldFailIf : 'The modulo requirement is incidental (e.g. one final division) rather than driving the core algorithm',
+        confidence  : 'low',
+      });
+    }
+
+    // DATA STRUCTURE — Stage 1's existing "binary" secondary signal already
+    // says "Bit manipulation" in its own description text; reusing it here
+    // rather than inventing a new checkbox for something already collected.
+    if (secondary.includes('binary')) {
+      directions.push({
+        id          : 'data_structure',
+        family      : 'data_structure',
+        label       : 'Specialized Data Structure',
+        why         : 'You flagged binary (0/1) values in Stage 1 — XOR/bitmask tricks and bit manipulation often apply',
+        verifyBefore: 'Confirm the operation actually needs bit-level tricks, not just a boolean array',
+        wouldFailIf : 'The 0/1 values are incidental (e.g. a visited flag) rather than something to manipulate at the bit level',
+        confidence  : 'low',
+      });
+    }
+
+    if (secondary.includes('heap_priority')) {
+      directions.push({
+        id          : 'data_structure',
+        family      : 'data_structure',
+        label       : 'Specialized Data Structure',
+        why         : 'You flagged needing the running min/max as elements change in Stage 1 — that\'s a Heap/Priority Queue',
+        verifyBefore: 'Confirm you need the min/max repeatedly, not just once — a single min/max is a plain O(n) scan',
+        wouldFailIf : 'The min/max is only needed once at the end, not repeatedly as elements are added/removed',
+        confidence  : 'medium',
+      });
+    }
+
+    if (secondary.includes('hashing')) {
+      directions.push({
+        id          : 'data_structure',
+        family      : 'data_structure',
+        label       : 'Specialized Data Structure',
+        why         : 'You flagged needing fast existence/count/grouping lookups in Stage 1 — that\'s Hashing',
+        verifyBefore: 'Confirm the lookups are the bottleneck, not incidental — if the input is small, a plain scan may already be fast enough',
+        wouldFailIf : 'Order matters for the answer — hashing loses order, an array/sorted structure may be needed instead',
+        confidence  : 'medium',
+      });
+    }
+
+    // GAME THEORY — new signal, not yet cross-checked against real usage the
+    // way geometry/modulo were, so kept at 'low' confidence deliberately.
+    if (secondary.includes('game_theory')) {
+      directions.push({
+        id          : 'game_theory',
+        family      : 'game_theory',
+        label       : 'Game Theory',
+        why         : 'You flagged alternating two-player turns under optimal play in Stage 1',
+        verifyBefore: 'Confirm both players play optimally (not randomly) and the game has no hidden information',
+        wouldFailIf : 'The "game" is actually a single-agent optimization — that\'s DP/Greedy, not game theory',
+        confidence  : 'low',
+      });
+    }
+
+    return directions.filter(d => {
+      const minC = DIRECTION_MIN_COMPLEXITY[d.family];
+      return !minC || !elim.includes(minC);
+    });
+  }
+
+  // Supplementary pass, run at Stage 4 completion — not Stage 3. These three
+  // families' only reliable signal today is Stage 4's "hidden structure"
+  // checkboxes, which don't exist yet when _deriveDirections() runs at
+  // Stage 3. Adds to the existing direction set via State.addDirection
+  // (which already dedups by id) — does not clear what Stage 3 already found.
+  //
+  // NOTE: the six real hidden-structure ids (verified directly against the
+  // live DOM, not assumed) are hs_monotonic_stack, hs_prefix_sum,
+  // hs_two_pointer, hs_union_find, hs_segment_tree, hs_trie — sourced from
+  // constraint-interactions.js. An earlier version of this function was
+  // gated on hs_sliding_window and hs_bit_seg_tree, which do NOT exist
+  // anywhere in the live app (they were misread from a separate, apparently
+  // unused literal array inside stage4.js itself) — silently making
+  // sliding_window and range_query unreachable exactly like the pre-existing
+  // gaps this whole pass exists to close. Re-gated on the closest real
+  // signals: hs_segment_tree for range_query (Segment Tree is literally one
+  // of that family's own variants) and hs_two_pointer for sliding_window
+  // (the closest explicit user-confirmed signal available today).
+  function _deriveStage4Directions(state) {
+    const hs   = state.answers?.stage4?.hiddenStructureAnswers ?? {};
+    const elim = state.answers?.stage0?.eliminated ?? [];
+    const directions = [];
+
+    if (hs.hs_two_pointer === 'yes') {
+      directions.push({
+        id          : 'sliding_window',
+        family      : 'sliding_window',
+        label       : 'Sliding Window',
+        why         : 'You confirmed a pair-sum/window-condition signal in Stage 4 — sliding window is the closest fit when the window itself (not just two positions) matters',
+        verifyBefore: 'Confirm the window condition is monotone — expanding/shrinking never needs to reverse',
+        wouldFailIf : 'The window condition is not monotone — a valid window can become invalid non-monotonically',
+        confidence  : 'low',
+      });
+    }
+
+    if (hs.hs_segment_tree === 'yes') {
+      directions.push({
+        id          : 'range_query',
+        family      : 'range_query',
+        label       : 'Range Query Structure',
+        why         : 'You confirmed point updates + range queries needed simultaneously in Stage 4',
+        verifyBefore: 'Confirm whether updates are point or range, and whether queries need range or point results',
+        wouldFailIf : 'No updates are actually needed — a simpler prefix-sum/sparse-table approach would suffice',
+        confidence  : 'medium',
+      });
+    }
+
+    // Union Find is literally one of range_query-variants.js's own entries
+    // (rq_dsu) — dynamic connectivity is a real, precise signal for it, not
+    // a stretch like the monotonic-stack proxy below.
+    if (hs.hs_union_find === 'yes') {
+      directions.push({
+        id          : 'range_query',
+        family      : 'range_query',
+        label       : 'Range Query Structure',
+        why         : 'You confirmed dynamic connectivity (groups merging over time) in Stage 4 — that\'s Union Find/DSU',
+        verifyBefore: 'Confirm you need MERGES over time, not just a one-time connectivity check (which would just be DFS/BFS)',
+        wouldFailIf : 'Connectivity is fixed upfront with no merges — a plain traversal already answers it',
+        confidence  : 'medium',
+      });
+    }
+
+    // Trie is literally one of string-variants.js's own entries (str_trie) —
+    // shared-prefix / XOR-maximization is a precise signal for it.
+    if (hs.hs_trie === 'yes') {
+      directions.push({
+        id          : 'string',
+        family      : 'string',
+        label       : 'String Algorithm',
+        why         : 'You confirmed multiple strings sharing prefixes, or XOR maximization, in Stage 4 — that\'s a Trie',
+        verifyBefore: 'Confirm the operation: prefix search/autocomplete, or binary-trie XOR maximization on numbers?',
+        wouldFailIf : 'There is only one string, or no shared-prefix structure to exploit',
+        confidence  : 'medium',
+      });
+    }
+
+    if (hs.hs_monotonic_stack === 'yes') {
+      directions.push({
+        id          : 'data_structure',
+        family      : 'data_structure',
+        label       : 'Specialized Data Structure',
+        why         : 'You confirmed a "next greater/smaller element" style signal in Stage 4',
+        verifyBefore: 'Confirm the structure needed — monotonic stack/deque, heap, or hashing depending on the exact query',
+        wouldFailIf : 'The signal was actually a red herring and a plain scan/array approach already works',
+        confidence  : 'low',
+      });
+    }
 
     return directions.filter(d => {
       const minC = DIRECTION_MIN_COMPLEXITY[d.family];

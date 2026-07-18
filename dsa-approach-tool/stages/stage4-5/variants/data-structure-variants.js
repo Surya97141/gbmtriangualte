@@ -52,6 +52,7 @@ while (!q.empty()) {
       checkQuestion: 'Must the oldest unprocessed item always be handled next?',
       watchOut    : [
         'Using a list with pop-from-front in some languages is O(n) per pop -- use a real queue/deque structure',
+        'Confusable with: if this queue is purely in service of a graph traversal, that IS the BFS direction (see Graph family), not a standalone Data Structure pick',
       ],
       examples    : [
         'Level order tree traversal',
@@ -78,6 +79,7 @@ for (int i = 0; i < n; i++) {
       watchOut    : [
         'Check and pop expired indices (out of window range) BEFORE reading the front as the answer',
         'Mixing up min-deque and max-deque comparison direction is the most common bug',
+        'Confusable with: this is specifically Sliding Window\'s own internal machinery for the min/max variant — if the window condition is about a sum or count instead, see the Sliding Window family directly',
       ],
       examples    : [
         'Sliding Window Maximum',

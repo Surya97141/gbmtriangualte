@@ -205,6 +205,80 @@ while (!dq.empty()) {
 }`,
       watchOut    : ['Only for weights 0 and 1. For general small weights use Dijkstra'],
     },
+    {
+      id          : 'gv_dfs',
+      label       : 'DFS (plain)',
+      tagline     : 'Explore as deep as possible before backtracking',
+      complexity  : 'O(V + E)',
+      when        : [
+        'Check connectivity or find connected components',
+        'Detect a cycle in a graph',
+        'Explore all reachable nodes, order does not matter',
+      ],
+      template    : `vector<bool> visited(n, false);
+void dfs(int u) {
+  visited[u] = true;
+  for (int v : adj[u]) {
+    if (!visited[v]) dfs(v);
+  }
+}`,
+      checkQuestion: 'Do you just need reachability/connectivity/cycle-detection, not shortest path?',
+      watchOut    : [
+        'Mark a node visited BEFORE recursing into it, not after -- otherwise cycles cause infinite recursion',
+        'Recursion depth can overflow on very deep graphs -- switch to an explicit stack for large n',
+        'If you actually need shortest path/steps, use BFS instead -- DFS does not guarantee minimal distance',
+      ],
+      examples    : [
+        'Number of Connected Components',
+        'Detect Cycle in an Undirected/Directed Graph',
+        'Flood Fill',
+      ],
+    },
+    {
+      id          : 'gv_network_flow',
+      label       : 'Network Flow (Max Flow)',
+      tagline     : 'Maximum throughput from a source to a sink through capacity-limited edges',
+      complexity  : 'O(V * E^2) with Edmonds-Karp',
+      when        : [
+        'Problem talks about maximum flow/throughput through a capacitated network',
+        'Source and sink are identifiable, edges have capacities',
+      ],
+      template    : `// Edmonds-Karp: repeatedly BFS for an augmenting path with
+// spare capacity, push flow equal to the bottleneck edge on
+// that path, add residual (reverse) edges, repeat until no
+// augmenting path remains.`,
+      checkQuestion: 'Is there a clear source, sink, and capacity-limited edges between them?',
+      watchOut    : [
+        'Forgetting residual (reverse) edges prevents the algorithm from undoing a suboptimal earlier choice',
+        'Bipartite Matching is a special case of this with all capacities = 1 -- if the structure is purely two-sided pairing, that direct algorithm is simpler to code',
+      ],
+      examples    : [
+        'Maximum Flow in a network',
+        'Min-Cut Max-Flow theorem applications',
+      ],
+    },
+    {
+      id          : 'gv_bipartite_matching',
+      label       : 'Bipartite Matching',
+      tagline     : 'Pair up two distinct groups 1-to-1, maximizing the number of pairs',
+      complexity  : 'O(V * E) with Kuhn algorithm',
+      when        : [
+        'Two distinct sides need to be matched (jobs<->people, students<->schools)',
+      ],
+      template    : `// Kuhn's algorithm: for each left node, try to match it via
+// DFS. If its preferred right node is taken, try to re-route
+// (augment) the node that took it to a different match, freeing
+// the spot. This augmenting-path search is the core of the algorithm.`,
+      checkQuestion: 'Is this literally "match side A to side B, one-to-one", not a more general flow structure?',
+      watchOut    : [
+        'This is a special case of Network Flow (gv_network_flow) with unit capacities -- use the direct algorithm when the structure is this simple, general flow only if capacities/structure are more complex',
+        'Not attempting to re-route an already-matched node when a new node wants its spot undercounts the matching',
+      ],
+      examples    : [
+        'Job assignment maximizing matches',
+        'Bipartite Matching (classic assignment problem)',
+      ],
+    },
   ];
 
   function getAll()    { return [...VARIANTS]; }
@@ -225,8 +299,12 @@ while (!dq.empty()) {
       if (graphProperties.negative) relevant.push(getById('gv_bellman_ford'));
       if (graphProperties.zeroOne) relevant.push(getById('gv_zero_one_bfs'));
     }
-    if (graphGoal === 'gg_topological_sort' || graphGoal === 'gg_cycle_detection') {
+    if (graphGoal === 'gg_topological_sort') {
       relevant.push(getById('gv_kahn_topo'));
+    }
+    if (graphGoal === 'gg_cycle_detection') {
+      relevant.push(getById('gv_kahn_topo'));
+      relevant.push(getById('gv_dfs'));
     }
     if (graphGoal === 'gg_scc') {
       relevant.push(getById('gv_tarjan_scc'));
@@ -236,6 +314,15 @@ while (!dq.empty()) {
     }
     if (graphGoal === 'gg_shortest_path' && graphProperties.allPairs) {
       relevant.push(getById('gv_floyd_warshall'));
+    }
+    if (graphGoal === 'gg_reachability' || graphGoal === 'gg_components') {
+      relevant.push(getById('gv_dfs'));
+    }
+    if (graphGoal === 'gg_max_flow') {
+      relevant.push(getById('gv_network_flow'));
+    }
+    if (graphGoal === 'gg_bipartite') {
+      relevant.push(getById('gv_bipartite_matching'));
     }
 
     // Deduplicate and fill with all if empty

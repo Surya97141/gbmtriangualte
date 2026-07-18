@@ -113,9 +113,17 @@ const StateSpace = (() => {
     ],
   };
 
+  // See order-sensitivity.js for the rationale behind this heuristic.
+  const SELF_CHECK_SIGNALS = {
+    small      : ['state is', 'state = ', 'dp[i]', 'dp[', 'polynomial state', 'small state'],
+    exponential: ['bitmask', 'subset of', 'exponential state', 'visited set', 'set of chosen', 'set of assigned'],
+    path_needed: ['full path', 'track every choice', 'track the path', 'remember every choice', 'backtrack'],
+  };
+
   function getProperty()     { return { ...PROPERTY }; }
   function getTestCases()    { return [...TEST_CASES]; }
   function getVerification() { return { ...VERIFICATION }; }
+  function getSelfCheckSignals() { return SELF_CHECK_SIGNALS; }
   function getAnswerById(id) { return PROPERTY.answers.find(a => a.id === id) ?? null; }
   function isDPState(id)     { return id === 'small';       }
   function isBitmask(id)     { return id === 'exponential'; }
@@ -125,6 +133,7 @@ const StateSpace = (() => {
     getProperty,
     getTestCases,
     getVerification,
+    getSelfCheckSignals,
     getAnswerById,
     isDPState,
     isBitmask,

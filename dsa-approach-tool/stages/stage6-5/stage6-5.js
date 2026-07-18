@@ -366,7 +366,7 @@ const Stage6_5 = (() => {
           const note = document.createElement('div');
           note.className = 's65-panel-stage-row s65-panel-stage-row--skipped';
           note.innerHTML = `
-            <div class="s65-panel-stage-name">Stages 0–4.5</div>
+            <div class="s65-panel-stage-name">Stages 0–4</div>
             <div class="s65-panel-stage-skipped-label">skipped via fast path</div>
           `;
           stageSec.appendChild(note);
@@ -827,7 +827,7 @@ const Stage6_5 = (() => {
     _report = null;
   }
 
-  return { render, onMount, cleanup };
+  return { render, onMount, cleanup, _computeReport };
 
 })();
 

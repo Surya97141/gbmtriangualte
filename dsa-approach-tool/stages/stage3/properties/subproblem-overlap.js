@@ -112,9 +112,17 @@ const SubproblemOverlap = (() => {
     ],
   };
 
+  // See order-sensitivity.js for the rationale behind this heuristic.
+  const SELF_CHECK_SIGNALS = {
+    yes_direct: ['overlapping subproblem', 'dp', 'dynamic programming', 'memoiz', 'depends on the smaller', 'build up from smaller', 'reuse the answer'],
+    yes_split : ['divide and conquer', 'split in half', 'independent halves', 'merge sort', 'split the problem'],
+    no        : ['greedy', 'each step is independent', 'each decision is fresh', 'doesn\'t depend on previous', 'does not depend on previous'],
+  };
+
   function getProperty()     { return { ...PROPERTY }; }
   function getTestCases()    { return [...TEST_CASES]; }
   function getVerification() { return { ...VERIFICATION }; }
+  function getSelfCheckSignals() { return SELF_CHECK_SIGNALS; }
   function getAnswerById(id) { return PROPERTY.answers.find(a => a.id === id) ?? null; }
 
   function isDPLikely(answerId)            { return answerId === 'yes_direct'; }
@@ -125,6 +133,7 @@ const SubproblemOverlap = (() => {
     getProperty,
     getTestCases,
     getVerification,
+    getSelfCheckSignals,
     getAnswerById,
     isDPLikely,
     isDivideConquerLikely,

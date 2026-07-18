@@ -101,9 +101,16 @@ const LocalOptimality = (() => {
     ],
   };
 
+  // See order-sensitivity.js for the rationale behind this heuristic.
+  const SELF_CHECK_SIGNALS = {
+    yes: ['greedy works', 'greedy is safe', 'locally best', 'local optimal', 'never need to revise', 'never need to backtrack', 'never regret'],
+    no : ['greedy fails', 'greedy doesn\'t work', 'greedy does not work', 'counter-example', 'counterexample', 'can hurt', 'need dp', 'needs dp'],
+  };
+
   function getProperty()     { return { ...PROPERTY }; }
   function getTestCases()    { return [...TEST_CASES]; }
   function getVerification() { return { ...VERIFICATION }; }
+  function getSelfCheckSignals() { return SELF_CHECK_SIGNALS; }
   function getAnswerById(id) { return PROPERTY.answers.find(a => a.id === id) ?? null; }
   function greedySafe(id)    { return id === 'yes'; }
   function needsDP(id)       { return id === 'no';  }
@@ -112,6 +119,7 @@ const LocalOptimality = (() => {
     getProperty,
     getTestCases,
     getVerification,
+    getSelfCheckSignals,
     getAnswerById,
     greedySafe,
     needsDP,
