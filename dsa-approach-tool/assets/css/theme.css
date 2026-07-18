@@ -1,70 +1,73 @@
 /*
  * assets/css/theme.css
- * Warm cream / white theme — replaces dark neural interface entirely
+ * Hyrule-at-dusk dark theme — torchlit forest greens, Triforce gold,
+ * Zora sapphire, twilight purple. Dark but not black — built to be
+ * comfortable in low light without crushing contrast.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&family=Cinzel:wght@500;600;700&display=swap');
 
 :root {
 
   /* ── Core backgrounds ──────────────────────────────────────────────── */
-  --void           : #f7f4ef;
-  --deep           : #f2ede6;
-  --surface-0      : #ffffff;
-  --surface-1      : #faf8f5;
-  --surface-2      : #f4f0ea;
-  --surface-3      : #ede8e0;
+  --void           : #111d17;
+  --deep           : #0b1512;
+  --surface-0      : #1e3229;
+  --surface-1      : #1a2b23;
+  --surface-2      : #213b2f;
+  --surface-3      : #16251e;
 
   /* ── Borders ───────────────────────────────────────────────────────── */
-  --border-subtle  : rgba(0,0,0,.05);
-  --border-dim     : rgba(0,0,0,.08);
-  --border-default : rgba(0,0,0,.13);
-  --border-strong  : rgba(0,0,0,.22);
+  --border-subtle  : rgba(232,223,200,.06);
+  --border-dim     : rgba(232,223,200,.10);
+  --border-default : rgba(232,223,200,.16);
+  --border-strong  : rgba(232,223,200,.28);
 
   /* ── Text ──────────────────────────────────────────────────────────── */
-  --text-primary   : #1a1814;
-  --text-secondary : #4a4540;
-  --text-muted     : #8a8070;
-  --text-ghost     : #c4bdb0;
+  --text-primary   : #ede4cf;
+  --text-secondary : #c4b89c;
+  --text-muted     : #7d8f80;
+  --text-ghost     : #4d5c52;
 
-  /* ── Primary accent — blue ─────────────────────────────────────────── */
-  --cyan           : #2563eb;
-  --cyan-dim       : rgba(37,99,235,.08);
-  --cyan-glow      : rgba(37,99,235,.05);
-  --cyan-border    : rgba(37,99,235,.28);
+  /* ── Primary accent — Triforce gold ────────────────────────────────── */
+  --cyan           : #e8b93f;
+  --cyan-dim       : rgba(232,185,63,.12);
+  --cyan-glow      : rgba(232,185,63,.18);
+  --cyan-border    : rgba(232,185,63,.35);
 
-  /* ── Secondary accent — indigo ─────────────────────────────────────── */
-  --blue           : #4f46e5;
-  --blue-dim       : rgba(79,70,229,.08);
-  --blue-glow      : rgba(79,70,229,.05);
-  --blue-border    : rgba(79,70,229,.28);
+  /* ── Secondary accent — Zora sapphire ───────────────────────────────── */
+  --blue           : #4fa8d8;
+  --blue-dim       : rgba(79,168,216,.12);
+  --blue-glow      : rgba(79,168,216,.18);
+  --blue-border    : rgba(79,168,216,.35);
 
-  /* ── Tertiary accent — amber ───────────────────────────────────────── */
-  --violet         : #b45309;
-  --violet-dim     : rgba(180,83,9,.08);
-  --violet-glow    : rgba(180,83,9,.05);
-  --violet-border  : rgba(180,83,9,.28);
+  /* ── Tertiary accent — twilight purple ─────────────────────────────── */
+  --violet         : #a179dc;
+  --violet-dim     : rgba(161,121,220,.12);
+  --violet-glow    : rgba(161,121,220,.18);
+  --violet-border  : rgba(161,121,220,.35);
 
   /* ── Status ────────────────────────────────────────────────────────── */
-  --pass           : #059669;
-  --pass-dim       : rgba(5,150,105,.08);
-  --pass-border    : rgba(5,150,105,.30);
+  --pass           : #5cc98a;
+  --pass-dim       : rgba(92,201,138,.12);
+  --pass-border    : rgba(92,201,138,.38);
 
-  --warn           : #d97706;
-  --warn-dim       : rgba(217,119,6,.08);
-  --warn-border    : rgba(217,119,6,.30);
+  --warn           : #e8944a;
+  --warn-dim       : rgba(232,148,74,.12);
+  --warn-border    : rgba(232,148,74,.38);
 
-  --fail           : #dc2626;
-  --fail-dim       : rgba(220,38,38,.07);
-  --fail-border    : rgba(220,38,38,.25);
+  --fail           : #e05a5a;
+  --fail-dim       : rgba(224,90,90,.10);
+  --fail-border    : rgba(224,90,90,.32);
 
-  --info           : #2563eb;
-  --info-dim       : rgba(37,99,235,.08);
-  --info-border    : rgba(37,99,235,.25);
+  --info           : #4fa8d8;
+  --info-dim       : rgba(79,168,216,.10);
+  --info-border    : rgba(79,168,216,.32);
 
   /* ── Typography ────────────────────────────────────────────────────── */
-  --font-display   : 'DM Sans', system-ui, sans-serif;
+  --font-display   : 'Cinzel', 'DM Sans', serif;
   --font-body      : 'DM Sans', system-ui, sans-serif;
+  --font-sans      : 'DM Sans', system-ui, sans-serif;
   --font-mono      : 'Space Mono', monospace;
 
   /* ── Spacing ───────────────────────────────────────────────────────── */
@@ -77,14 +80,14 @@
   --r-lg: 12px; --r-xl: 16px; --r-full: 9999px;
 
   /* ── Shadows ───────────────────────────────────────────────────────── */
-  --shadow-sm : 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --shadow-md : 0 4px 12px rgba(0,0,0,.08);
-  --shadow-lg : 0 8px 24px rgba(0,0,0,.10);
+  --shadow-sm : 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+  --shadow-md : 0 4px 14px rgba(0,0,0,.40);
+  --shadow-lg : 0 10px 28px rgba(0,0,0,.48);
 
-  --glow-cyan : 0 0 0 3px rgba(37,99,235,.12);
-  --glow-blue : 0 0 0 3px rgba(79,70,229,.12);
-  --glow-pass : 0 0 0 3px rgba(5,150,105,.12);
-  --glow-fail : 0 0 0 3px rgba(220,38,38,.12);
+  --glow-cyan : 0 0 0 3px rgba(232,185,63,.20);
+  --glow-blue : 0 0 0 3px rgba(79,168,216,.20);
+  --glow-pass : 0 0 0 3px rgba(92,201,138,.20);
+  --glow-fail : 0 0 0 3px rgba(224,90,90,.20);
 
   /* ── Transitions ───────────────────────────────────────────────────── */
   --transition-fast: 120ms cubic-bezier(.4,0,.2,1);
@@ -106,7 +109,29 @@
 @keyframes scan-sweep     { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
 @keyframes shake          { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-4px)} 40%{transform:translateX(4px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)} }
 
+/* Firefly / will-o'-the-wisp drift — ambient, self-playing, low-opacity */
+@keyframes firefly-drift {
+  0%   { transform: translate(0, 0) scale(.8);      opacity: 0; }
+  8%   { opacity: .9; }
+  25%  { transform: translate(18px, -26px) scale(1); opacity: .55; }
+  50%  { transform: translate(-12px, -48px) scale(.9); opacity: .85; }
+  75%  { transform: translate(22px, -70px) scale(1.05); opacity: .4; }
+  92%  { opacity: .15; }
+  100% { transform: translate(-6px, -96px) scale(.8); opacity: 0; }
+}
+
+@keyframes torch-flicker {
+  0%, 100% { opacity: .55; transform: scale(1); }
+  25%      { opacity: .72; transform: scale(1.03); }
+  50%      { opacity: .48; transform: scale(.98); }
+  75%      { opacity: .68; transform: scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .firefly, .ambient-glow--tl, .ambient-glow--br { animation: none !important; }
+}
+
 .grid-bg {
-  background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,.06) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, rgba(232,223,200,.05) 1px, transparent 0);
   background-size : 22px 22px;
 }

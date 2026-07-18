@@ -708,26 +708,26 @@ const Stage5 = (() => {
     style.id = 's5-styles';
     style.textContent = `
     .s5-shell {
-      --s5-bg      : #f7f4ef;
-      --s5-surface : #ffffff;
-      --s5-surface2: #faf8f5;
-      --s5-border  : rgba(0,0,0,.09);
-      --s5-border2 : rgba(0,0,0,.16);
-      --s5-ink     : #1a1814;
-      --s5-ink2    : #4a4540;
-      --s5-muted   : #8a8070;
-      --s5-blue    : #2563eb;
-      --s5-blue-bg : rgba(37,99,235,.07);
-      --s5-blue-b  : rgba(37,99,235,.24);
-      --s5-green   : #059669;
-      --s5-green-bg: rgba(5,150,105,.07);
-      --s5-green-b : rgba(5,150,105,.28);
-      --s5-warn    : #d97706;
-      --s5-warn-bg : rgba(217,119,6,.07);
-      --s5-warn-b  : rgba(217,119,6,.28);
-      --s5-red     : #dc2626;
-      --s5-red-bg  : rgba(220,38,38,.06);
-      --s5-red-b   : rgba(220,38,38,.22);
+      --s5-bg: #111d17;
+      --s5-surface: #1e3229;
+      --s5-surface2: #1a2b23;
+      --s5-border: rgba(232,223,200,.10);
+      --s5-border2: rgba(232,223,200,.16);
+      --s5-ink: #ede4cf;
+      --s5-ink2: #c4b89c;
+      --s5-muted: #7d8f80;
+      --s5-blue: #e8b93f;
+      --s5-blue-bg: rgba(232,185,63,.14);
+      --s5-blue-b: rgba(232,185,63,.35);
+      --s5-green: #5cc98a;
+      --s5-green-bg: rgba(92,201,138,.14);
+      --s5-green-b: rgba(92,201,138,.35);
+      --s5-warn: #e8944a;
+      --s5-warn-bg: rgba(232,148,74,.14);
+      --s5-warn-b: rgba(232,148,74,.35);
+      --s5-red: #e05a5a;
+      --s5-red-bg: rgba(224,90,90,.14);
+      --s5-red-b: rgba(224,90,90,.35);
       --s5-mono    : 'Space Mono', monospace;
       --s5-sans    : 'DM Sans', system-ui, sans-serif;
       display      : flex;
@@ -772,7 +772,7 @@ const Stage5 = (() => {
     .s5-field  { display: flex; flex-direction: column; gap: 5px; }
     .s5-label  { font-size: .78rem; font-weight: 500; color: var(--s5-ink2); }
     .s5-textarea { background: var(--s5-surface); border: 1.5px solid var(--s5-border); border-radius: 8px; padding: 9px 12px; font-family: var(--s5-sans); font-size: .82rem; color: var(--s5-ink); outline: none; resize: vertical; transition: border-color .12s, box-shadow .12s; width: 100%; line-height: 1.5; }
-    .s5-textarea:focus { border-color: var(--s5-blue); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+    .s5-textarea:focus { border-color: var(--s5-blue); box-shadow: 0 0 0 3px rgba(232,185,63,.08); }
     .s5-textarea::placeholder { color: var(--s5-muted); }
 
     /* Verdict section */
@@ -814,7 +814,7 @@ const Stage5 = (() => {
     .s5-dp-checklist { display: flex; flex-direction: column; gap: 8px; }
     .s5-dp-check { background: var(--s5-surface); border: 1.5px solid var(--s5-border); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; transition: border-color .12s; }
     .s5-dp-check:hover          { border-color: var(--s5-border2); }
-    .s5-dp-check--answered      { border-color: rgba(37,99,235,.2); background: rgba(37,99,235,.02); }
+    .s5-dp-check--answered      { border-color: rgba(232,185,63,.2); background: rgba(232,185,63,.02); }
     .s5-dp-check-label    { font-family: var(--s5-mono); font-size: .6rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--s5-muted); }
     .s5-dp-check-question { font-size: .84rem; font-weight: 500; color: var(--s5-ink); line-height: 1.4; }
     .s5-dp-check-example  { font-size: .72rem; color: var(--s5-ink2); padding: 6px 9px; background: var(--s5-blue-bg); border: 1px solid var(--s5-blue-b); border-radius: 6px; line-height: 1.5; }
@@ -843,7 +843,7 @@ const Stage5 = (() => {
 
     /* Side panel */
     .s5-panel { width: 268px; flex-shrink: 0; background: var(--s5-surface); border: 1.5px solid var(--s5-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s5-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s5-border); background: #f6f4f0; }
+    .s5-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s5-border); background: #16251e; }
     .s5-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s5-ink); }
     .s5-panel-sub    { font-size: .66rem; color: var(--s5-muted); margin-top: 2px; }
     .s5-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

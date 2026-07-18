@@ -103,15 +103,15 @@ const StageEntry = (() => {
     style.id = 'se-styles';
     style.textContent = `
     .se-shell {
-      --se-bg: #f7f4ef; --se-surface: #ffffff; --se-border: rgba(0,0,0,.1); --se-border2: rgba(0,0,0,.18);
-      --se-ink: #1a1a2e; --se-ink2: #4a4560; --se-muted: #8a8070; --se-accent: #2563eb;
-      --se-accent-bg: rgba(37,99,235,.06); --se-accent-b: rgba(37,99,235,.28);
+      --se-bg: #111d17; --se-surface: #1e3229; --se-border: rgba(232,223,200,.10); --se-border2: rgba(232,223,200,.16);
+      --se-ink: #ede4cf; --se-ink2: #c4b89c; --se-muted: #7d8f80; --se-accent: #e8b93f;
+      --se-accent-bg: rgba(232,185,63,.14); --se-accent-b: rgba(232,185,63,.35);
       display: flex; flex-direction: column; gap: 32px; max-width: 760px; margin: 0 auto;
       padding: 60px 28px; background: var(--se-bg); min-height: 100%;
       font-family: 'DM Sans', system-ui, sans-serif; color: var(--se-ink);
     }
     .se-eyebrow { font-family: 'Space Mono', monospace; font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--se-muted); }
-    .se-title { font-size: 1.5rem; font-weight: 700; margin-top: 6px; line-height: 1.3; }
+    .se-title { font-family: 'Cinzel', 'DM Sans', serif; font-size: 1.5rem; font-weight: 700; margin-top: 6px; line-height: 1.3; }
     .se-sub { font-size: .84rem; color: var(--se-muted); margin-top: 8px; }
     .se-options { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media (max-width: 640px) { .se-options { grid-template-columns: 1fr; } }
@@ -121,7 +121,7 @@ const StageEntry = (() => {
       transition: border-color .15s, box-shadow .15s, transform .1s;
     }
     .se-card:hover { border-color: var(--se-accent-b); transform: translateY(-1px); }
-    .se-card--on   { border-color: var(--se-accent); background: var(--se-accent-bg); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+    .se-card--on   { border-color: var(--se-accent); background: var(--se-accent-bg); box-shadow: 0 0 0 3px rgba(232,185,63,.08); }
     .se-card-label { font-size: 1.02rem; font-weight: 700; margin-bottom: 8px; }
     .se-card-desc  { font-size: .82rem; color: var(--se-ink2); line-height: 1.55; }
     .se-card-meta  { margin-top: 14px; font-family: 'Space Mono', monospace; font-size: .64rem; color: var(--se-muted); letter-spacing: .04em; }

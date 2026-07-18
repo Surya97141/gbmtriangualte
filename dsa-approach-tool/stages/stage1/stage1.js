@@ -616,22 +616,22 @@ const Stage1 = (() => {
 
     /* ── Cream/white theme tokens ────────────────────────────────────── */
     .s1-shell {
-      --s1-bg      : #faf8f4;
-      --s1-surface : #ffffff;
-      --s1-border  : #e8e2d8;
-      --s1-border2 : #d4ccb8;
-      --s1-ink     : #1a1a2e;
-      --s1-ink2    : #4a4560;
-      --s1-muted   : #8a8070;
-      --s1-accent  : #2563eb;
-      --s1-accent-bg: rgba(37,99,235,.06);
-      --s1-accent-border: rgba(37,99,235,.25);
-      --s1-green   : #059669;
-      --s1-green-bg: rgba(5,150,105,.06);
-      --s1-green-border: rgba(5,150,105,.25);
-      --s1-amber   : #d97706;
-      --s1-amber-bg: rgba(217,119,6,.06);
-      --s1-amber-border: rgba(217,119,6,.25);
+      --s1-bg      : #111d17;
+      --s1-surface: #1e3229;
+      --s1-border: rgba(232,223,200,.10);
+      --s1-border2: rgba(232,223,200,.16);
+      --s1-ink: #ede4cf;
+      --s1-ink2: #c4b89c;
+      --s1-muted: #7d8f80;
+      --s1-accent: #e8b93f;
+      --s1-accent-bg: rgba(232,185,63,.14);
+      --s1-accent-border: rgba(232,185,63,.35);
+      --s1-green: #5cc98a;
+      --s1-green-bg: rgba(92,201,138,.14);
+      --s1-green-border: rgba(92,201,138,.25);
+      --s1-amber   : #e8944a;
+      --s1-amber-bg: rgba(232,148,74,.06);
+      --s1-amber-border: rgba(232,148,74,.25);
       --s1-r       : 8px;
       --s1-r-sm    : 5px;
       --s1-r-lg    : 12px;
@@ -731,13 +731,13 @@ const Stage1 = (() => {
 
     .s1-type-card:hover {
       border-color: var(--s1-accent-border);
-      box-shadow  : 0 2px 8px rgba(37,99,235,.06);
+      box-shadow  : 0 2px 8px rgba(232,185,63,.06);
     }
 
     .s1-type-card--on {
       border-color: var(--s1-accent);
       background  : var(--s1-accent-bg);
-      box-shadow  : 0 0 0 3px rgba(37,99,235,.08);
+      box-shadow  : 0 0 0 3px rgba(232,185,63,.08);
     }
 
     .s1-type-card input[type="checkbox"] {
@@ -819,7 +819,7 @@ const Stage1 = (() => {
       user-select  : none;
     }
 
-    .s1-signal-row:hover  { border-color: var(--s1-border2); background: #fcfaf7; }
+    .s1-signal-row:hover  { border-color: var(--s1-border2); background: #1a2b23; }
     .s1-signal-row--on    { border-color: var(--s1-green); background: var(--s1-green-bg); }
 
     .s1-signal-row input[type="checkbox"] {
@@ -928,7 +928,7 @@ const Stage1 = (() => {
     .s1-panel-header {
       padding      : 14px 16px 12px;
       border-bottom: 1px solid var(--s1-border);
-      background   : #f6f4f0;
+      background   : #16251e;
     }
 
     .s1-panel-title {
@@ -969,7 +969,7 @@ const Stage1 = (() => {
     }
 
     .s1-panel-section--highlight {
-      background   : #fffbf0;
+      background   : rgba(232,185,63,.10);
       border       : 1px solid var(--s1-amber-border);
       border-radius: var(--s1-r);
       padding      : 10px 12px;
@@ -1094,7 +1094,7 @@ const Stage1 = (() => {
       border: 1.5px solid transparent; transition: border-color .15s, background .15s;
     }
     .s1-fastpath-btn--primary { background: var(--s1-accent); color: #fff; }
-    .s1-fastpath-btn--primary:hover { background: #1d4fc4; }
+    .s1-fastpath-btn--primary:hover { background: #c99a2e; }
     .s1-fastpath-btn--ghost { background: transparent; border-color: var(--s1-border2); color: var(--s1-muted); }
     .s1-fastpath-btn--ghost:hover { border-color: var(--s1-ink2); color: var(--s1-ink); }
 

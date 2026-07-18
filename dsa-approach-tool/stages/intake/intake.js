@@ -214,9 +214,9 @@ const StageIntake = (() => {
     style.id = 'sin-styles';
     style.textContent = `
     .sin-shell {
-      --sin-bg: #f7f4ef; --sin-surface: #ffffff; --sin-border: rgba(0,0,0,.1); --sin-border2: rgba(0,0,0,.18);
-      --sin-ink: #1a1a2e; --sin-ink2: #4a4560; --sin-muted: #8a8070; --sin-accent: #2563eb;
-      --sin-accent-bg: rgba(37,99,235,.07); --sin-accent-b: rgba(37,99,235,.3);
+      --sin-bg: #111d17; --sin-surface: #1e3229; --sin-border: rgba(232,223,200,.10); --sin-border2: rgba(232,223,200,.16);
+      --sin-ink: #ede4cf; --sin-ink2: #c4b89c; --sin-muted: #7d8f80; --sin-accent: #e8b93f;
+      --sin-accent-bg: rgba(232,185,63,.14); --sin-accent-b: rgba(232,185,63,.35);
       display: flex; flex-direction: column; gap: 26px; max-width: 720px; margin: 0 auto;
       padding: 32px 28px 60px; background: var(--sin-bg); min-height: 100%;
       font-family: 'DM Sans', system-ui, sans-serif; color: var(--sin-ink);
@@ -238,7 +238,7 @@ const StageIntake = (() => {
       align-self: flex-start; padding: 9px 18px; border-radius: 8px; border: none;
       background: var(--sin-accent); color: #fff; font-size: .82rem; font-weight: 600; cursor: pointer;
     }
-    .sin-scan-btn:hover { background: #1d4fc4; }
+    .sin-scan-btn:hover { background: #c99a2e; }
     .sin-empty { font-size: .82rem; color: var(--sin-muted); font-style: italic; padding: 10px 0; }
     .sin-sug-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
     .sin-sug-label { font-family: 'Space Mono', monospace; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: var(--sin-muted); }
@@ -256,7 +256,7 @@ const StageIntake = (() => {
       font-size: .82rem; font-weight: 600; cursor: pointer;
     }
     .sin-apply-btn:hover { background: var(--sin-accent-bg); }
-    .sin-applied-note { font-size: .76rem; color: #1f7a5c; margin-top: 4px; }
+    .sin-applied-note { font-size: .76rem; color: #5cc98a; margin-top: 4px; }
     .sin-hidden { display: none !important; }
     `;
     document.head.appendChild(style);

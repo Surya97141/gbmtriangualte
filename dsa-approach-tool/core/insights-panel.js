@@ -189,14 +189,14 @@ const InsightsPanel = (() => {
     style.id = 'ip-styles';
     style.textContent = `
     .ip-overlay {
-      position: fixed; inset: 0; z-index: 9500; background: rgba(20,18,14,.38);
+      position: fixed; inset: 0; z-index: 9500; background: rgba(6,10,8,.55);
       display: flex; align-items: center; justify-content: center; padding: 24px;
       opacity: 0; transition: opacity .16s ease;
     }
     .ip-overlay--in { opacity: 1; }
     .ip-panel {
-      --ip-bg: #f7f4ee; --ip-surface: #ffffff; --ip-ink: #1c1a17; --ip-ink2: #4a453d; --ip-muted: #78705f;
-      --ip-border: rgba(28,26,23,.12); --ip-green: #1f7a5c; --ip-amber: #a4650c; --ip-red: #c23b3b;
+      --ip-bg: #111d17; --ip-surface: #1e3229; --ip-ink: #ede4cf; --ip-ink2: #c4b89c; --ip-muted: #7d8f80;
+      --ip-border: rgba(232,223,200,.14); --ip-green: #5cc98a; --ip-amber: #e8944a; --ip-red: #e05a5a;
       width: 100%; max-width: 640px; max-height: 80vh; background: var(--ip-bg); color: var(--ip-ink);
       border-radius: 16px; border: 1px solid var(--ip-border); box-shadow: 0 24px 60px rgba(0,0,0,.28);
       display: flex; flex-direction: column; overflow: hidden;

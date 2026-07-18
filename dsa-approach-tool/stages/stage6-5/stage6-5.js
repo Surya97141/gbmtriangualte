@@ -636,26 +636,26 @@ const Stage6_5 = (() => {
     style.id = 's65-styles';
     style.textContent = `
     .s65-shell {
-      --s65-bg      : #f7f4ef;
-      --s65-surface : #ffffff;
-      --s65-surface2: #faf8f5;
-      --s65-border  : rgba(0,0,0,.09);
-      --s65-border2 : rgba(0,0,0,.16);
-      --s65-ink     : #1a1814;
-      --s65-ink2    : #4a4540;
-      --s65-muted   : #8a8070;
-      --s65-blue    : #2563eb;
-      --s65-blue-bg : rgba(37,99,235,.07);
-      --s65-blue-b  : rgba(37,99,235,.24);
-      --s65-green   : #059669;
-      --s65-green-bg: rgba(5,150,105,.07);
-      --s65-green-b : rgba(5,150,105,.28);
-      --s65-warn    : #d97706;
-      --s65-warn-bg : rgba(217,119,6,.07);
-      --s65-warn-b  : rgba(217,119,6,.28);
-      --s65-red     : #dc2626;
-      --s65-red-bg  : rgba(220,38,38,.06);
-      --s65-red-b   : rgba(220,38,38,.22);
+      --s65-bg: #111d17;
+      --s65-surface: #1e3229;
+      --s65-surface2: #1a2b23;
+      --s65-border: rgba(232,223,200,.10);
+      --s65-border2: rgba(232,223,200,.16);
+      --s65-ink: #ede4cf;
+      --s65-ink2: #c4b89c;
+      --s65-muted: #7d8f80;
+      --s65-blue: #e8b93f;
+      --s65-blue-bg: rgba(232,185,63,.14);
+      --s65-blue-b: rgba(232,185,63,.35);
+      --s65-green: #5cc98a;
+      --s65-green-bg: rgba(92,201,138,.14);
+      --s65-green-b: rgba(92,201,138,.35);
+      --s65-warn: #e8944a;
+      --s65-warn-bg: rgba(232,148,74,.14);
+      --s65-warn-b: rgba(232,148,74,.35);
+      --s65-red: #e05a5a;
+      --s65-red-bg: rgba(224,90,90,.14);
+      --s65-red-b: rgba(224,90,90,.35);
       --s65-mono    : 'Space Mono', monospace;
       --s65-sans    : 'DM Sans', system-ui, sans-serif;
       display       : flex;
@@ -693,9 +693,9 @@ const Stage6_5 = (() => {
       max-width    : 420px;
       margin-top   : 8px;
       padding      : 9px 12px;
-      background   : rgba(37,99,235,.06);
-      border       : 1px solid rgba(37,99,235,.22);
-      border-left  : 3px solid #2563eb;
+      background   : rgba(232,185,63,.06);
+      border       : 1px solid rgba(232,185,63,.22);
+      border-left  : 3px solid #e8b93f;
       border-radius: 0 8px 8px 0;
     }
     .s65-thresholds   { display: flex; gap: 7px; flex-wrap: wrap; justify-content: center; }
@@ -725,7 +725,7 @@ const Stage6_5 = (() => {
     .s65-row:last-of-type { border-bottom: none; }
     .s65-row--earned  { }
     .s65-row--missed  { opacity: .5; }
-    .s65-row--deducted{ background: rgba(220,38,38,.03); }
+    .s65-row--deducted{ background: rgba(224,90,90,.03); }
     .s65-row-label { color: var(--s65-ink2); flex: 1; }
     .s65-pts-pos  { font-family: var(--s65-mono); font-size: .68rem; font-weight: 700; color: var(--s65-green); }
     .s65-pts-neg  { font-family: var(--s65-mono); font-size: .68rem; font-weight: 700; color: var(--s65-red); }
@@ -753,9 +753,9 @@ const Stage6_5 = (() => {
     .s65-gate-btns    { display: flex; flex-direction: column; gap: 7px; }
     .s65-gate-btn     { padding: 11px 20px; border-radius: 9px; font-size: .86rem; font-weight: 600; cursor: pointer; transition: all .14s; border: 1.5px solid; text-align: center; }
     .s65-gate-btn--green  { background: var(--s65-green); color: #fff; border-color: var(--s65-green); }
-    .s65-gate-btn--green:hover  { background: #047857; }
+    .s65-gate-btn--green:hover  { background: #3d9c68; }
     .s65-gate-btn--yellow { background: var(--s65-warn); color: #fff; border-color: var(--s65-warn); }
-    .s65-gate-btn--yellow:hover { background: #b45309; }
+    .s65-gate-btn--yellow:hover { background: #c67735; }
     .s65-gate-btn--red    { background: transparent; color: var(--s65-red); border-color: var(--s65-red-b); }
     .s65-gate-btn--red:hover { background: var(--s65-red-bg); }
     .s65-gate-btn--ghost  { background: transparent; color: var(--s65-ink2); border-color: var(--s65-border2); }
@@ -764,7 +764,7 @@ const Stage6_5 = (() => {
 
     /* Side panel */
     .s65-panel { width: 268px; flex-shrink: 0; background: var(--s65-surface); border: 1.5px solid var(--s65-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s65-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s65-border); background: #f6f4f0; }
+    .s65-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s65-border); background: #16251e; }
     .s65-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s65-ink); }
     .s65-panel-sub    { font-size: .66rem; color: var(--s65-muted); margin-top: 2px; }
     .s65-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

@@ -288,7 +288,7 @@ const GuidePanel = (() => {
 
     .gp-overlay {
       position: fixed; inset: 0; z-index: 9500;
-      background: rgba(20,18,14,.38);
+      background: rgba(6,10,8,.55);
       display: flex; align-items: center; justify-content: center;
       padding: 24px;
       opacity: 0; transition: opacity .16s ease;
@@ -296,12 +296,12 @@ const GuidePanel = (() => {
     .gp-overlay--in { opacity: 1; }
 
     .gp-panel {
-      --gp-bg: #f7f4ee; --gp-surface: #ffffff; --gp-surface-2: #efebe1;
-      --gp-ink: #1c1a17; --gp-ink2: #4a453d; --gp-muted: #78705f;
-      --gp-border: rgba(28,26,23,.12); --gp-border2: rgba(28,26,23,.20);
-      --gp-accent: #2563eb; --gp-accent-ink: #1c3d94; --gp-accent-bg: rgba(37,99,235,.07); --gp-accent-b: rgba(37,99,235,.28);
-      --gp-green: #1f7a5c; --gp-green-bg: rgba(31,122,92,.09); --gp-green-b: rgba(31,122,92,.28);
-      --gp-amber: #a4650c; --gp-amber-bg: rgba(164,101,12,.10); --gp-amber-b: rgba(164,101,12,.30);
+      --gp-bg: #111d17; --gp-surface: #1e3229; --gp-surface-2: #213b2f;
+      --gp-ink: #ede4cf; --gp-ink2: #c4b89c; --gp-muted: #7d8f80;
+      --gp-border: rgba(232,223,200,.14); --gp-border2: rgba(232,223,200,.26);
+      --gp-accent: #e8b93f; --gp-accent-ink: #c99a2e; --gp-accent-bg: rgba(232,185,63,.14); --gp-accent-b: rgba(232,185,63,.35);
+      --gp-green: #5cc98a; --gp-green-bg: rgba(92,201,138,.14); --gp-green-b: rgba(92,201,138,.35);
+      --gp-amber: #e8944a; --gp-amber-bg: rgba(232,148,74,.14); --gp-amber-b: rgba(232,148,74,.35);
 
       width: 100%; max-width: 880px; max-height: 86vh;
       background: var(--gp-bg); color: var(--gp-ink);

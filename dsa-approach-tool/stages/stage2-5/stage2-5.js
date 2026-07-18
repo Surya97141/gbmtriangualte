@@ -509,26 +509,26 @@ const Stage2_5 = (() => {
     style.textContent = `
 
     .s25-shell {
-      --s25-bg      : #f7f4ef;
-      --s25-surface : #ffffff;
-      --s25-surface2: #faf8f5;
-      --s25-border  : rgba(0,0,0,.09);
-      --s25-border2 : rgba(0,0,0,.16);
-      --s25-ink     : #1a1814;
-      --s25-ink2    : #4a4540;
-      --s25-muted   : #8a8070;
-      --s25-accent  : #2563eb;
-      --s25-accent-bg: rgba(37,99,235,.06);
-      --s25-accent-b : rgba(37,99,235,.25);
-      --s25-green   : #059669;
-      --s25-green-bg: rgba(5,150,105,.07);
-      --s25-green-b : rgba(5,150,105,.25);
-      --s25-amber   : #d97706;
-      --s25-amber-bg: rgba(217,119,6,.09);
-      --s25-amber-b : rgba(217,119,6,.3);
-      --s25-red     : #dc2626;
-      --s25-red-bg  : rgba(220,38,38,.06);
-      --s25-red-b   : rgba(220,38,38,.22);
+      --s25-bg: #111d17;
+      --s25-surface: #1e3229;
+      --s25-surface2: #1a2b23;
+      --s25-border: rgba(232,223,200,.10);
+      --s25-border2: rgba(232,223,200,.16);
+      --s25-ink: #ede4cf;
+      --s25-ink2: #c4b89c;
+      --s25-muted: #7d8f80;
+      --s25-accent: #e8b93f;
+      --s25-accent-bg: rgba(232,185,63,.14);
+      --s25-accent-b: rgba(232,185,63,.35);
+      --s25-green: #5cc98a;
+      --s25-green-bg: rgba(92,201,138,.14);
+      --s25-green-b: rgba(92,201,138,.35);
+      --s25-amber   : #e8944a;
+      --s25-amber-bg: rgba(232,148,74,.09);
+      --s25-amber-b : rgba(232,148,74,.3);
+      --s25-red: #e05a5a;
+      --s25-red-bg: rgba(224,90,90,.14);
+      --s25-red-b: rgba(224,90,90,.35);
       --s25-r       : 8px;
       --s25-r-sm    : 5px;
       --s25-r-lg    : 12px;
@@ -685,7 +685,7 @@ const Stage2_5 = (() => {
       cursor: pointer; transition: border-color .15s, background .15s; color: var(--s25-ink);
     }
     .s25-ans-btn:hover { border-color: var(--s25-amber-b); }
-    .s25-ans-btn--on-yes { background: var(--s25-green-bg); border-color: var(--s25-green); color: #024d37; }
+    .s25-ans-btn--on-yes { background: var(--s25-green-bg); border-color: var(--s25-green); color: #5cc98a; }
     .s25-ans-btn--on-no  { background: rgba(138,128,112,.12); border-color: var(--s25-muted); color: var(--s25-muted); }
 
     .s25-reframe-example {
@@ -708,7 +708,7 @@ const Stage2_5 = (() => {
     .s25-hints-title { font-family: var(--s25-mono); font-size: .62rem; letter-spacing: 2px; text-transform: uppercase; color: var(--s25-muted); margin-bottom: 6px; }
     .s25-hint-card {
       display: flex; align-items: flex-start; gap: 8px; padding: 9px 12px;
-      background: rgba(192,84,252,.06); border: 1.5px solid rgba(192,84,252,.25); border-radius: var(--s25-r-sm);
+      background: rgba(161,121,220,.06); border: 1.5px solid rgba(161,121,220,.25); border-radius: var(--s25-r-sm);
       margin-bottom: 6px;
     }
     .s25-hint-icon { font-size: .9rem; flex-shrink: 0; }
@@ -729,7 +729,7 @@ const Stage2_5 = (() => {
     .s25-panel-empty { font-size: .74rem; color: var(--s25-muted); font-style: italic; text-align: center; padding: 24px 0; line-height: 1.6; }
 
     .s25-panel-section { display: flex; flex-direction: column; gap: 6px; }
-    .s25-panel-section--highlight { background: #fffbf0; border: 1px solid var(--s25-amber-b); border-radius: var(--s25-r); padding: 10px 12px; }
+    .s25-panel-section--highlight { background: rgba(232,185,63,.10); border: 1px solid var(--s25-amber-b); border-radius: var(--s25-r); padding: 10px 12px; }
     .s25-panel-section-title { font-family: var(--s25-mono); font-size: .58rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--s25-muted); }
     .s25-panel-pattern-value { font-size: .82rem; font-weight: 600; color: var(--s25-ink); }
     .s25-panel-sub-item {
@@ -738,9 +738,9 @@ const Stage2_5 = (() => {
     }
     .s25-panel-progress { font-size: .74rem; color: var(--s25-ink2); }
     .s25-panel-hint-tag {
-      display: inline-block; padding: 3px 9px; background: rgba(192,84,252,.08);
-      border: 1px solid rgba(192,84,252,.25); border-radius: 4px;
-      font-family: var(--s25-mono); font-size: .64rem; color: #a855f7; font-weight: 600; margin-bottom: 3px;
+      display: inline-block; padding: 3px 9px; background: rgba(161,121,220,.08);
+      border: 1px solid rgba(161,121,220,.25); border-radius: 4px;
+      font-family: var(--s25-mono); font-size: .64rem; color: #a179dc; font-weight: 600; margin-bottom: 3px;
     }
     .s25-panel-triggered-item { display: flex; align-items: flex-start; gap: 8px; font-size: .74rem; color: var(--s25-ink); line-height: 1.5; }
     .s25-panel-triggered-icon {

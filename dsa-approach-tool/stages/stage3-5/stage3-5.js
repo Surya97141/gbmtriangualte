@@ -714,29 +714,29 @@ const Stage3_5 = (() => {
     style.id = 's35-styles';
     style.textContent = `
     .s35-shell {
-      --s35-bg      : #f7f4ef;
-      --s35-surface : #ffffff;
-      --s35-surface2: #faf8f5;
-      --s35-border  : rgba(0,0,0,.09);
-      --s35-border2 : rgba(0,0,0,.16);
-      --s35-ink     : #1a1814;
-      --s35-ink2    : #4a4540;
-      --s35-muted   : #8a8070;
-      --s35-blue    : #2563eb;
-      --s35-blue-bg : rgba(37,99,235,.07);
-      --s35-blue-b  : rgba(37,99,235,.24);
-      --s35-green   : #059669;
-      --s35-green-bg: rgba(5,150,105,.07);
-      --s35-green-b : rgba(5,150,105,.28);
-      --s35-warn    : #d97706;
-      --s35-warn-bg : rgba(217,119,6,.07);
-      --s35-warn-b  : rgba(217,119,6,.28);
-      --s35-red     : #dc2626;
-      --s35-red-bg  : rgba(220,38,38,.06);
-      --s35-red-b   : rgba(220,38,38,.22);
-      --s35-violet  : #7c3aed;
-      --s35-violet-bg: rgba(124,58,237,.07);
-      --s35-violet-b : rgba(124,58,237,.24);
+      --s35-bg: #111d17;
+      --s35-surface: #1e3229;
+      --s35-surface2: #1a2b23;
+      --s35-border: rgba(232,223,200,.10);
+      --s35-border2: rgba(232,223,200,.16);
+      --s35-ink: #ede4cf;
+      --s35-ink2: #c4b89c;
+      --s35-muted: #7d8f80;
+      --s35-blue: #e8b93f;
+      --s35-blue-bg: rgba(232,185,63,.14);
+      --s35-blue-b: rgba(232,185,63,.35);
+      --s35-green: #5cc98a;
+      --s35-green-bg: rgba(92,201,138,.14);
+      --s35-green-b: rgba(92,201,138,.35);
+      --s35-warn: #e8944a;
+      --s35-warn-bg: rgba(232,148,74,.14);
+      --s35-warn-b: rgba(232,148,74,.35);
+      --s35-red: #e05a5a;
+      --s35-red-bg: rgba(224,90,90,.14);
+      --s35-red-b: rgba(224,90,90,.35);
+      --s35-violet: #a179dc;
+      --s35-violet-bg: rgba(161,121,220,.14);
+      --s35-violet-b: rgba(161,121,220,.35);
       --s35-mono    : 'Space Mono', monospace;
       --s35-sans    : 'DM Sans', system-ui, sans-serif;
       display       : flex;
@@ -772,7 +772,7 @@ const Stage3_5 = (() => {
     .s35-disguise-list { display: flex; flex-direction: column; gap: 8px; }
     .s35-disguise-row  { background: var(--s35-surface); border: 1.5px solid var(--s35-border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; transition: all .14s; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
     .s35-disguise-row:hover          { border-color: var(--s35-border2); }
-    .s35-disguise-row--answered      { border-color: rgba(37,99,235,.2); }
+    .s35-disguise-row--answered      { border-color: rgba(232,185,63,.2); }
     .s35-disguise-row--triggered     { border-color: var(--s35-warn-b); background: var(--s35-warn-bg); }
     .s35-disguise-header    { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
     .s35-disguise-labels    { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -789,7 +789,7 @@ const Stage3_5 = (() => {
     .s35-reframe-list { display: flex; flex-direction: column; gap: 6px; }
     .s35-reframe-row  { background: var(--s35-surface); border: 1.5px solid var(--s35-border); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px; transition: border-color .14s; }
     .s35-reframe-row:hover         { border-color: var(--s35-border2); }
-    .s35-reframe-row--answered     { border-color: rgba(37,99,235,.2); background: rgba(37,99,235,.02); }
+    .s35-reframe-row--answered     { border-color: rgba(232,185,63,.2); background: rgba(232,185,63,.02); }
     .s35-reframe-q       { font-size: .86rem; font-weight: 500; color: var(--s35-ink); line-height: 1.4; }
     .s35-reframe-purpose { font-size: .71rem; color: var(--s35-muted); margin-top: 2px; line-height: 1.4; }
     .s35-reframe-example { font-size: .74rem; color: var(--s35-ink2); background: var(--s35-blue-bg); border: 1px solid var(--s35-blue-b); border-radius: 7px; padding: 7px 10px; line-height: 1.5; }
@@ -812,7 +812,7 @@ const Stage3_5 = (() => {
     .s35-transform-grid--all { margin-top: 10px; }
     .s35-transform-card  { position: relative; background: var(--s35-surface); border: 1.5px solid var(--s35-border); border-radius: 10px; padding: 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: all .13s; user-select: none; }
     .s35-transform-card:hover  { border-color: var(--s35-violet-b); box-shadow: 0 2px 8px rgba(0,0,0,.06); transform: translateY(-1px); }
-    .s35-transform-card--on    { border-color: var(--s35-violet); background: var(--s35-violet-bg); box-shadow: 0 0 0 3px rgba(124,58,237,.08); }
+    .s35-transform-card--on    { border-color: var(--s35-violet); background: var(--s35-violet-bg); box-shadow: 0 0 0 3px rgba(161,121,220,.08); }
     .s35-transform-card--suggested { border-color: var(--s35-blue-b); }
     .s35-transform-check  { position: absolute; top: 8px; right: 8px; width: 16px; height: 16px; background: var(--s35-violet); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .56rem; color: #fff; font-weight: 700; opacity: 0; transform: scale(.6); transition: opacity .13s, transform .13s; }
     .s35-transform-card--on .s35-transform-check { opacity: 1; transform: scale(1); }
@@ -859,7 +859,7 @@ const Stage3_5 = (() => {
 
     /* Side panel */
     .s35-panel { width: 268px; flex-shrink: 0; background: var(--s35-surface); border: 1.5px solid var(--s35-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s35-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s35-border); background: #f6f4f0; }
+    .s35-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s35-border); background: #16251e; }
     .s35-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s35-ink); }
     .s35-panel-sub    { font-size: .66rem; color: var(--s35-muted); margin-top: 2px; }
     .s35-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

@@ -721,26 +721,26 @@ const Stage7 = (() => {
     style.id = 's7-styles';
     style.textContent = `
     .s7-shell {
-      --s7-bg      : #f7f4ef;
-      --s7-surface : #ffffff;
-      --s7-surface2: #faf8f5;
-      --s7-border  : rgba(0,0,0,.09);
-      --s7-border2 : rgba(0,0,0,.16);
-      --s7-ink     : #1a1814;
-      --s7-ink2    : #4a4540;
-      --s7-muted   : #8a8070;
-      --s7-blue    : #2563eb;
-      --s7-blue-bg : rgba(37,99,235,.07);
-      --s7-blue-b  : rgba(37,99,235,.24);
-      --s7-green   : #059669;
-      --s7-green-bg: rgba(5,150,105,.07);
-      --s7-green-b : rgba(5,150,105,.28);
-      --s7-warn    : #d97706;
-      --s7-warn-bg : rgba(217,119,6,.07);
-      --s7-warn-b  : rgba(217,119,6,.28);
-      --s7-red     : #dc2626;
-      --s7-red-bg  : rgba(220,38,38,.06);
-      --s7-red-b   : rgba(220,38,38,.22);
+      --s7-bg: #111d17;
+      --s7-surface: #1e3229;
+      --s7-surface2: #1a2b23;
+      --s7-border: rgba(232,223,200,.10);
+      --s7-border2: rgba(232,223,200,.16);
+      --s7-ink: #ede4cf;
+      --s7-ink2: #c4b89c;
+      --s7-muted: #7d8f80;
+      --s7-blue: #e8b93f;
+      --s7-blue-bg: rgba(232,185,63,.14);
+      --s7-blue-b: rgba(232,185,63,.35);
+      --s7-green: #5cc98a;
+      --s7-green-bg: rgba(92,201,138,.14);
+      --s7-green-b: rgba(92,201,138,.35);
+      --s7-warn: #e8944a;
+      --s7-warn-bg: rgba(232,148,74,.14);
+      --s7-warn-b: rgba(232,148,74,.35);
+      --s7-red: #e05a5a;
+      --s7-red-bg: rgba(224,90,90,.14);
+      --s7-red-b: rgba(224,90,90,.35);
       --s7-mono    : 'Space Mono', monospace;
       --s7-sans    : 'DM Sans', system-ui, sans-serif;
       display      : flex;
@@ -769,7 +769,7 @@ const Stage7 = (() => {
     .s7-commit-btn--proceed { border: 1.5px solid var(--s7-warn-b); background: var(--s7-surface); color: var(--s7-warn); }
     .s7-commit-btn--proceed:hover { background: var(--s7-warn-bg); }
     .s7-commit-btn--reconsider { border: 1.5px solid var(--s7-green-b); background: var(--s7-green); color: #fff; }
-    .s7-commit-btn--reconsider:hover { background: #047857; }
+    .s7-commit-btn--reconsider:hover { background: #3d9c68; }
     .s7-summary-strip { background: var(--s7-surface); border: 1.5px solid var(--s7-border); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
     .s7-summary-row   { display: flex; align-items: baseline; gap: 12px; padding: 8px 16px; border-bottom: 1px solid rgba(0,0,0,.04); }
     .s7-summary-row:last-of-type { border-bottom: none; }
@@ -790,7 +790,7 @@ const Stage7 = (() => {
     /* Direction cards */
     .s7-dir-card { background: var(--s7-surface); border: 1.5px solid var(--s7-border); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 12px; transition: all .14s; box-shadow: 0 1px 4px rgba(0,0,0,.04); }
     .s7-dir-card--primary  { border-color: var(--s7-green-b); }
-    .s7-dir-card--selected { border-color: var(--s7-green); background: var(--s7-green-bg); box-shadow: 0 0 0 3px rgba(5,150,105,.08); }
+    .s7-dir-card--selected { border-color: var(--s7-green); background: var(--s7-green-bg); box-shadow: 0 0 0 3px rgba(92,201,138,.08); }
     .s7-dir-header    { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
     .s7-dir-header-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .s7-primary-badge   { font-family: var(--s7-mono); font-size: .6rem; letter-spacing: 1.2px; text-transform: uppercase; background: var(--s7-green-bg); color: var(--s7-green); border: 1px solid var(--s7-green-b); padding: 2px 8px; border-radius: 9999px; flex-shrink: 0; }
@@ -853,7 +853,7 @@ const Stage7 = (() => {
     .s7-tradeoff-header { background: var(--s7-surface2); }
     .s7-tradeoff-header > span { font-family: var(--s7-mono); font-size: .58rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--s7-muted); padding: 8px 12px; }
     .s7-tradeoff-row > span { padding: 9px 12px; font-size: .76rem; color: var(--s7-ink2); }
-    .s7-tradeoff-row--rec { background: rgba(5,150,105,.03); }
+    .s7-tradeoff-row--rec { background: rgba(92,201,138,.03); }
     .s7-tradeoff-code { font-family: var(--s7-mono); font-size: .68rem; color: var(--s7-blue); }
     .s7-risk { font-size: .72rem; font-weight: 600; }
     .s7-risk--easy,.s7-risk--low,.s7-risk--short { color: var(--s7-green); }
@@ -862,7 +862,7 @@ const Stage7 = (() => {
 
     /* Aside panel */
     .s7-panel-aside { width: 268px; flex-shrink: 0; background: var(--s7-surface); border: 1.5px solid var(--s7-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s7-panel-aside-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s7-border); background: #f6f4f0; }
+    .s7-panel-aside-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s7-border); background: #16251e; }
     .s7-panel-aside-title  { font-size: .82rem; font-weight: 700; color: var(--s7-ink); }
     .s7-panel-aside-sub    { font-size: .66rem; color: var(--s7-muted); margin-top: 2px; }
     .s7-panel-aside-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

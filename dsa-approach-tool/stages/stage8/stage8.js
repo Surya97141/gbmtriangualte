@@ -532,20 +532,20 @@ const Stage8 = (() => {
     style.textContent = `
     /* Token inheritance — fall back to literals when global :root vars absent */
     .s8-shell {
-      --s8-ink      : var(--ink,       #1a1a2e);
-      --s8-bg       : var(--bg,        #f5f0e8);
-      --s8-surface  : var(--surface,   #fffdf7);
-      --s8-border   : var(--border,    #d4ccb8);
-      --s8-muted    : var(--muted,     #8a8070);
-      --s8-green    : var(--green,     #06d6a0);
-      --s8-green-bg : var(--green-bg,  rgba(6,214,160,.08));
+      --s8-ink      : var(--ink, #ede4cf);
+      --s8-bg       : var(--bg, #111d17);
+      --s8-surface  : var(--surface, #1e3229);
+      --s8-border   : var(--border, rgba(232,223,200,.16));
+      --s8-muted    : var(--muted, #7d8f80);
+      --s8-green    : var(--green, #5cc98a);
+      --s8-green-bg : var(--green-bg, rgba(92,201,138,.14));
       --s8-mono     : var(--font-mono, 'Space Mono', monospace);
       --s8-sans     : var(--font-sans, 'DM Sans', sans-serif);
-      --s8-accent   : #2563eb;
-      --s8-accent-bg: rgba(37,99,235,.06);
-      --s8-code-bg  : #1a1a2e;
-      --s8-code-fg  : #e2e8f0;
-      --s8-code-ln  : #4a5568;
+      --s8-accent: #e8b93f;
+      --s8-accent-bg: rgba(232,185,63,.14);
+      --s8-code-bg: #0d1613;
+      --s8-code-fg: #dce6da;
+      --s8-code-ln: #5c6e5f;
       --s8-r        : 8px;
     }
 
@@ -658,7 +658,7 @@ const Stage8 = (() => {
     }
 
     .s8-nav-item:hover          { background: var(--s8-bg); }
-    .s8-nav-item--active        { background: var(--s8-accent-bg); border-color: rgba(37,99,235,.22); }
+    .s8-nav-item--active        { background: var(--s8-accent-bg); border-color: rgba(232,185,63,.22); }
     .s8-nav-item--active .s8-nav-num { color: var(--s8-accent); }
 
     .s8-nav-num  { font-family: var(--s8-mono); font-size: .64rem; color: var(--s8-muted); flex-shrink: 0; min-width: 14px; text-align: center; }
@@ -686,7 +686,7 @@ const Stage8 = (() => {
       cursor       : pointer;
       transition   : background .13s;
     }
-    .s8-finish-btn:hover { background: rgba(37,99,235,.14); }
+    .s8-finish-btn:hover { background: rgba(232,185,63,.14); }
 
     /* ── Right panel ─────────────────────────────────────────────────────── */
     .s8-main {
@@ -709,7 +709,7 @@ const Stage8 = (() => {
       height         : 28px;
       border-radius  : 50%;
       background     : var(--s8-accent-bg);
-      border         : 1.5px solid rgba(37,99,235,.28);
+      border         : 1.5px solid rgba(232,185,63,.28);
       font-family    : var(--s8-mono);
       font-size      : .72rem;
       font-weight    : 700;
@@ -814,7 +814,7 @@ const Stage8 = (() => {
       transition   : background .14s;
     }
 
-    .s8-btn-understand:hover:not(:disabled) { background: rgba(6,214,160,.16); }
+    .s8-btn-understand:hover:not(:disabled) { background: rgba(92,201,138,.16); }
     .s8-btn-understand--done { opacity: .65; cursor: default; }
     .s8-btn-understand:disabled { cursor: default; }
 
@@ -848,7 +848,7 @@ const Stage8 = (() => {
       height         : 64px;
       border-radius  : 50%;
       background     : var(--s8-green-bg);
-      border         : 2px solid rgba(6,214,160,.4);
+      border         : 2px solid rgba(92,201,138,.5);
       display        : flex;
       align-items    : center;
       justify-content: center;
@@ -902,8 +902,8 @@ const Stage8 = (() => {
       bottom        : 24px;
       left          : 50%;
       transform     : translateX(-50%);
-      background    : #1a1a2e;
-      color         : #e2e8f0;
+      background    : #0a130f;
+      color         : #ede4cf;
       padding       : 10px 20px;
       border-radius : 8px;
       font-size     : .77rem;

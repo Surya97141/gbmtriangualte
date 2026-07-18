@@ -550,24 +550,24 @@ const Stage2 = (() => {
     style.id = 's2-styles';
     style.textContent = `
     .s2-shell {
-      --s2-bg      : #f7f4ef;
-      --s2-surface : #ffffff;
-      --s2-surface2: #faf8f5;
-      --s2-border  : rgba(0,0,0,.09);
-      --s2-border2 : rgba(0,0,0,.16);
-      --s2-ink     : #1a1814;
-      --s2-ink2    : #4a4540;
-      --s2-muted   : #8a8070;
-      --s2-blue    : #2563eb;
-      --s2-blue-bg : rgba(37,99,235,.07);
-      --s2-blue-b  : rgba(37,99,235,.25);
-      --s2-green   : #059669;
-      --s2-green-bg: rgba(5,150,105,.07);
-      --s2-green-b : rgba(5,150,105,.28);
-      --s2-warn    : #d97706;
-      --s2-warn-bg : rgba(217,119,6,.07);
-      --s2-warn-b  : rgba(217,119,6,.28);
-      --s2-red     : #dc2626;
+      --s2-bg: #111d17;
+      --s2-surface: #1e3229;
+      --s2-surface2: #1a2b23;
+      --s2-border: rgba(232,223,200,.10);
+      --s2-border2: rgba(232,223,200,.16);
+      --s2-ink: #ede4cf;
+      --s2-ink2: #c4b89c;
+      --s2-muted: #7d8f80;
+      --s2-blue: #e8b93f;
+      --s2-blue-bg: rgba(232,185,63,.14);
+      --s2-blue-b: rgba(232,185,63,.35);
+      --s2-green: #5cc98a;
+      --s2-green-bg: rgba(92,201,138,.14);
+      --s2-green-b: rgba(92,201,138,.35);
+      --s2-warn: #e8944a;
+      --s2-warn-bg: rgba(232,148,74,.14);
+      --s2-warn-b: rgba(232,148,74,.35);
+      --s2-red: #e05a5a;
       --s2-mono    : 'Space Mono', monospace;
       --s2-sans    : 'DM Sans', system-ui, sans-serif;
       display      : flex;
@@ -593,7 +593,7 @@ const Stage2 = (() => {
     .s2-form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
     .s2-card { position: relative; background: var(--s2-surface); border: 1.5px solid var(--s2-border); border-radius: 12px; padding: 14px; cursor: pointer; display: flex; flex-direction: column; gap: 5px; transition: all .14s; user-select: none; }
     .s2-card:hover   { border-color: var(--s2-blue-b); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-    .s2-card--on     { border-color: var(--s2-blue); background: var(--s2-blue-bg); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+    .s2-card--on     { border-color: var(--s2-blue); background: var(--s2-blue-bg); box-shadow: 0 0 0 3px rgba(232,185,63,.08); }
     .s2-card-icon    { font-family: var(--s2-mono); font-size: .82rem; color: var(--s2-blue); font-weight: 700; line-height: 1; margin-bottom: 4px; }
     .s2-card-label   { font-size: .82rem; font-weight: 600; color: var(--s2-ink); line-height: 1.3; }
     .s2-card-sub     { font-size: .68rem; color: var(--s2-muted); line-height: 1.4; }
@@ -626,13 +626,13 @@ const Stage2 = (() => {
 
     /* Side panel */
     .s2-panel { width: 268px; flex-shrink: 0; background: var(--s2-surface); border: 1.5px solid var(--s2-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s2-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s2-border); background: #f6f4f0; }
+    .s2-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s2-border); background: #16251e; }
     .s2-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s2-ink); }
     .s2-panel-sub    { font-size: .66rem; color: var(--s2-muted); margin-top: 2px; }
     .s2-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 18px; }
     .s2-panel-empty  { font-size: .74rem; color: var(--s2-muted); font-style: italic; text-align: center; padding: 24px 0; line-height: 1.6; }
     .s2-panel-section { display: flex; flex-direction: column; gap: 7px; }
-    .s2-panel-section--summary { background: #f0f7ff; border: 1px solid var(--s2-blue-b); border-radius: 9px; padding: 12px; }
+    .s2-panel-section--summary { background: rgba(232,185,63,.08); border: 1px solid var(--s2-blue-b); border-radius: 9px; padding: 12px; }
     .s2-panel-section-title { font-family: var(--s2-mono); font-size: .58rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--s2-muted); margin-bottom: 2px; }
     .s2-panel-algo-tag { display: inline-block; padding: 3px 9px; background: var(--s2-blue-bg); border: 1px solid var(--s2-blue-b); border-radius: 4px; font-family: var(--s2-mono); font-size: .64rem; color: var(--s2-blue); font-weight: 600; margin-bottom: 3px; }
     .s2-panel-warn  { display: flex; align-items: flex-start; gap: 5px; font-size: .7rem; color: var(--s2-warn); line-height: 1.5; padding: 6px 9px; background: var(--s2-warn-bg); border: 1px solid var(--s2-warn-b); border-radius: 6px; margin-top: 2px; }

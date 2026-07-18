@@ -816,32 +816,32 @@ const Stage3 = (() => {
     style.id = 's3-styles';
     style.textContent = `
     .s3-shell {
-      --s3-bg      : #f7f4ef;
-      --s3-surface : #ffffff;
-      --s3-surface2: #faf8f5;
-      --s3-border  : rgba(0,0,0,.09);
-      --s3-border2 : rgba(0,0,0,.16);
-      --s3-ink     : #1a1814;
-      --s3-ink2    : #4a4540;
-      --s3-muted   : #8a8070;
-      --s3-blue    : #2563eb;
-      --s3-blue-bg : rgba(37,99,235,.07);
-      --s3-blue-b  : rgba(37,99,235,.24);
-      --s3-green   : #059669;
-      --s3-green-bg: rgba(5,150,105,.07);
-      --s3-green-b : rgba(5,150,105,.28);
-      --s3-warn    : #d97706;
-      --s3-warn-bg : rgba(217,119,6,.07);
-      --s3-warn-b  : rgba(217,119,6,.28);
-      --s3-red     : #dc2626;
-      --s3-red-bg  : rgba(220,38,38,.06);
-      --s3-red-b   : rgba(220,38,38,.22);
-      --s3-violet  : #7c3aed;
-      --s3-violet-bg: rgba(124,58,237,.07);
-      --s3-violet-b : rgba(124,58,237,.24);
-      --s3-indigo  : #4f46e5;
-      --s3-indigo-bg: rgba(79,70,229,.07);
-      --s3-indigo-b : rgba(79,70,229,.24);
+      --s3-bg: #111d17;
+      --s3-surface: #1e3229;
+      --s3-surface2: #1a2b23;
+      --s3-border: rgba(232,223,200,.10);
+      --s3-border2: rgba(232,223,200,.16);
+      --s3-ink: #ede4cf;
+      --s3-ink2: #c4b89c;
+      --s3-muted: #7d8f80;
+      --s3-blue: #e8b93f;
+      --s3-blue-bg: rgba(232,185,63,.14);
+      --s3-blue-b: rgba(232,185,63,.35);
+      --s3-green: #5cc98a;
+      --s3-green-bg: rgba(92,201,138,.14);
+      --s3-green-b: rgba(92,201,138,.35);
+      --s3-warn: #e8944a;
+      --s3-warn-bg: rgba(232,148,74,.14);
+      --s3-warn-b: rgba(232,148,74,.35);
+      --s3-red: #e05a5a;
+      --s3-red-bg: rgba(224,90,90,.14);
+      --s3-red-b: rgba(224,90,90,.35);
+      --s3-violet: #a179dc;
+      --s3-violet-bg: rgba(161,121,220,.14);
+      --s3-violet-b: rgba(161,121,220,.35);
+      --s3-indigo: #4fa8d8;
+      --s3-indigo-bg: rgba(79,168,216,.14);
+      --s3-indigo-b: rgba(79,168,216,.35);
       --s3-mono    : 'Space Mono', monospace;
       --s3-sans    : 'DM Sans', system-ui, sans-serif;
       display      : flex;
@@ -1005,7 +1005,7 @@ const Stage3 = (() => {
     .s3-dp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-bottom: 14px; }
     .s3-dp-card { position: relative; background: var(--s3-surface); border: 1.5px solid var(--s3-border); border-radius: 10px; padding: 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: all .13s; user-select: none; }
     .s3-dp-card:hover  { border-color: var(--s3-indigo-b); box-shadow: 0 2px 6px rgba(0,0,0,.06); }
-    .s3-dp-card--on    { border-color: var(--s3-indigo); background: var(--s3-indigo-bg); box-shadow: 0 0 0 3px rgba(79,70,229,.08); }
+    .s3-dp-card--on    { border-color: var(--s3-indigo); background: var(--s3-indigo-bg); box-shadow: 0 0 0 3px rgba(79,168,216,.08); }
     .s3-dp-card-check  { position: absolute; top: 8px; right: 8px; width: 16px; height: 16px; background: var(--s3-indigo); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .56rem; color: #fff; font-weight: 700; opacity: 0; transform: scale(.6); transition: opacity .13s, transform .13s; }
     .s3-dp-card--on .s3-dp-card-check { opacity: 1; transform: scale(1); }
     .s3-dp-card-label { font-size: .8rem; font-weight: 600; color: var(--s3-ink); }
@@ -1034,7 +1034,7 @@ const Stage3 = (() => {
     .s3-goal-grid         { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 7px; margin-bottom: 14px; }
     .s3-goal-card         { position: relative; background: var(--s3-surface); border: 1.5px solid var(--s3-border); border-radius: 10px; padding: 11px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; transition: all .13s; user-select: none; }
     .s3-goal-card:hover   { border-color: var(--s3-violet-b); box-shadow: 0 2px 6px rgba(0,0,0,.06); }
-    .s3-goal-card--on     { border-color: var(--s3-violet); background: var(--s3-violet-bg); box-shadow: 0 0 0 3px rgba(124,58,237,.08); }
+    .s3-goal-card--on     { border-color: var(--s3-violet); background: var(--s3-violet-bg); box-shadow: 0 0 0 3px rgba(161,121,220,.08); }
     .s3-goal-check        { position: absolute; top: 7px; right: 7px; width: 16px; height: 16px; background: var(--s3-violet); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .56rem; color: #fff; font-weight: 700; opacity: 0; transform: scale(.6); transition: opacity .13s, transform .13s; }
     .s3-goal-card--on .s3-goal-check { opacity: 1; transform: scale(1); }
     .s3-goal-label  { font-size: .8rem; font-weight: 600; color: var(--s3-ink); }
@@ -1048,7 +1048,7 @@ const Stage3 = (() => {
 
     /* Side panel */
     .s3-panel { width: 268px; flex-shrink: 0; background: var(--s3-surface); border: 1.5px solid var(--s3-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s3-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s3-border); background: #f6f4f0; }
+    .s3-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s3-border); background: #16251e; }
     .s3-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s3-ink); }
     .s3-panel-sub    { font-size: .66rem; color: var(--s3-muted); margin-top: 2px; }
     .s3-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

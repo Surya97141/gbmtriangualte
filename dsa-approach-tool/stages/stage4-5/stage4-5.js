@@ -504,26 +504,26 @@ const Stage4_5 = (() => {
     style.id = 's45-styles';
     style.textContent = `
     .s45-shell {
-      --s45-bg      : #f7f4ef;
-      --s45-surface : #ffffff;
-      --s45-surface2: #faf8f5;
-      --s45-border  : rgba(0,0,0,.09);
-      --s45-border2 : rgba(0,0,0,.16);
-      --s45-ink     : #1a1814;
-      --s45-ink2    : #4a4540;
-      --s45-muted   : #8a8070;
-      --s45-blue    : #2563eb;
-      --s45-blue-bg : rgba(37,99,235,.07);
-      --s45-blue-b  : rgba(37,99,235,.24);
-      --s45-green   : #059669;
-      --s45-green-bg: rgba(5,150,105,.07);
-      --s45-green-b : rgba(5,150,105,.28);
-      --s45-warn    : #d97706;
-      --s45-warn-bg : rgba(217,119,6,.07);
-      --s45-warn-b  : rgba(217,119,6,.28);
-      --s45-red     : #dc2626;
-      --s45-red-bg  : rgba(220,38,38,.06);
-      --s45-red-b   : rgba(220,38,38,.22);
+      --s45-bg: #111d17;
+      --s45-surface: #1e3229;
+      --s45-surface2: #1a2b23;
+      --s45-border: rgba(232,223,200,.10);
+      --s45-border2: rgba(232,223,200,.16);
+      --s45-ink: #ede4cf;
+      --s45-ink2: #c4b89c;
+      --s45-muted: #7d8f80;
+      --s45-blue: #e8b93f;
+      --s45-blue-bg: rgba(232,185,63,.14);
+      --s45-blue-b: rgba(232,185,63,.35);
+      --s45-green: #5cc98a;
+      --s45-green-bg: rgba(92,201,138,.14);
+      --s45-green-b: rgba(92,201,138,.35);
+      --s45-warn: #e8944a;
+      --s45-warn-bg: rgba(232,148,74,.14);
+      --s45-warn-b: rgba(232,148,74,.35);
+      --s45-red: #e05a5a;
+      --s45-red-bg: rgba(224,90,90,.14);
+      --s45-red-b: rgba(224,90,90,.35);
       --s45-mono    : 'Space Mono', monospace;
       --s45-sans    : 'DM Sans', system-ui, sans-serif;
       display       : flex;
@@ -562,7 +562,7 @@ const Stage4_5 = (() => {
     .s45-variant-card--safe { border-left: 3px solid var(--s45-green); }
     .s45-variant-card--warn { border-left: 3px solid var(--s45-warn);  }
     .s45-variant-card--tle  { border-left: 3px solid var(--s45-red);   opacity: .7; }
-    .s45-variant-card--on   { border-color: var(--s45-blue); background: var(--s45-blue-bg); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+    .s45-variant-card--on   { border-color: var(--s45-blue); background: var(--s45-blue-bg); box-shadow: 0 0 0 3px rgba(232,185,63,.08); }
     .s45-variant-check { position: absolute; top: 9px; right: 9px; width: 17px; height: 17px; background: var(--s45-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .58rem; color: #fff; font-weight: 700; opacity: 0; transform: scale(.6); transition: opacity .14s, transform .14s; }
     .s45-variant-card--on .s45-variant-check { opacity: 1; transform: scale(1); }
     .s45-variant-name    { font-size: .84rem; font-weight: 600; color: var(--s45-ink); line-height: 1.3; }
@@ -591,7 +591,7 @@ const Stage4_5 = (() => {
     .s45-recheck-card--tle  .s45-recheck-icon { color: var(--s45-red);   }
     .s45-recheck-message     { font-size: .86rem; font-weight: 600; color: var(--s45-ink); margin-bottom: 4px; }
     .s45-recheck-detail      { font-size: .74rem; color: var(--s45-ink2); line-height: 1.5; }
-    .s45-tle-warn            { font-size: .74rem; color: var(--s45-red); margin-top: 6px; padding: 7px 10px; background: rgba(220,38,38,.05); border: 1px solid var(--s45-red-b); border-radius: 6px; }
+    .s45-tle-warn            { font-size: .74rem; color: var(--s45-red); margin-top: 6px; padding: 7px 10px; background: rgba(224,90,90,.05); border: 1px solid var(--s45-red-b); border-radius: 6px; }
 
     /* Override */
     .s45-override      { padding: 14px; background: var(--s45-surface2); border: 1.5px solid var(--s45-warn-b); border-radius: 9px; display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
@@ -603,7 +603,7 @@ const Stage4_5 = (() => {
 
     /* Side panel */
     .s45-panel { width: 268px; flex-shrink: 0; background: var(--s45-surface); border: 1.5px solid var(--s45-border); border-radius: 12px; overflow: hidden; position: sticky; top: 80px; max-height: calc(100vh - 120px); display: flex; flex-direction: column; }
-    .s45-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s45-border); background: #f6f4f0; }
+    .s45-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s45-border); background: #16251e; }
     .s45-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s45-ink); }
     .s45-panel-sub    { font-size: .66rem; color: var(--s45-muted); margin-top: 2px; }
     .s45-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }

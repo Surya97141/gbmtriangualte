@@ -672,12 +672,12 @@ const Recovery = (() => {
     .recovery-history-hint {
       display: flex; gap: 12px; align-items: flex-start;
       padding: 12px 16px; margin: 12px 0;
-      background: rgba(217,119,6,.07); border: 1.5px solid rgba(217,119,6,.28);
+      background: rgba(232,148,74,.12); border: 1.5px solid rgba(232,148,74,.35);
       border-radius: 10px; font-family: 'DM Sans', system-ui, sans-serif;
     }
-    .recovery-history-hint__icon { font-size: 1.1rem; color: #a4650c; flex-shrink: 0; margin-top: 1px; }
-    .recovery-history-hint__title { font-size: .84rem; font-weight: 700; color: #1a1a2e; margin-bottom: 3px; }
-    .recovery-history-hint__detail { font-size: .76rem; color: #4a4560; line-height: 1.5; }
+    .recovery-history-hint__icon { font-size: 1.1rem; color: #e8944a; flex-shrink: 0; margin-top: 1px; }
+    .recovery-history-hint__title { font-size: .84rem; font-weight: 700; color: #ede4cf; margin-bottom: 3px; }
+    .recovery-history-hint__detail { font-size: .76rem; color: #c4b89c; line-height: 1.5; }
     `;
     document.head.appendChild(style);
   }

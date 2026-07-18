@@ -197,13 +197,13 @@ const PatternMap = (() => {
     }
 
     .pm-card--locked {
-      background : #f5f4f2;
-      border-color: rgba(0,0,0,.09);
+      background : #16251e;
+      border-color: rgba(232,223,200,.12);
     }
     .pm-card--unlocked {
-      background  : #ffffff;
-      border-color: rgba(37,99,235,.28);
-      border-left : 3px solid #2563eb;
+      background  : #1e3229;
+      border-color: rgba(232,185,63,.28);
+      border-left : 3px solid #e8b93f;
     }
 
     .pm-card-top {
@@ -218,14 +218,14 @@ const PatternMap = (() => {
       line-height: 1;
     }
     .pm-card--locked   .pm-card-icon { opacity: .45; }
-    .pm-card--unlocked .pm-card-icon { color: #059669; font-weight: 700; }
+    .pm-card--unlocked .pm-card-icon { color: #5cc98a; font-weight: 700; }
 
     .pm-card-count {
       font-size  : .58rem;
       font-weight: 700;
-      color      : #2563eb;
-      background : rgba(37,99,235,.08);
-      border     : 1px solid rgba(37,99,235,.2);
+      color      : #e8b93f;
+      background : rgba(232,185,63,.08);
+      border     : 1px solid rgba(232,185,63,.2);
       border-radius: 9999px;
       padding    : 1px 6px;
       white-space: nowrap;
@@ -236,16 +236,16 @@ const PatternMap = (() => {
       font-weight: 500;
       line-height: 1.35;
     }
-    .pm-card--locked   .pm-card-name { color: #9a9080; }
-    .pm-card--unlocked .pm-card-name { color: #1a1814; }
+    .pm-card--locked   .pm-card-name { color: #7d8f80; }
+    .pm-card--unlocked .pm-card-name { color: #ede4cf; }
 
     .pm-tooltip {
       position  : absolute;
       bottom    : calc(100% + 7px);
       left      : 50%;
       transform : translateX(-50%) translateY(3px);
-      background: #1a1814;
-      color     : #fff;
+      background: #0a130f;
+      color     : #ede4cf;
       font-size : .66rem;
       line-height: 1.4;
       padding   : 5px 9px;
@@ -263,12 +263,12 @@ const PatternMap = (() => {
       left      : 50%;
       transform : translateX(-50%);
       border    : 4px solid transparent;
-      border-top-color: #1a1814;
+      border-top-color: #0a130f;
     }
 
     .pm-empty {
       font-size: .76rem;
-      color    : #9a9080;
+      color    : #7d8f80;
       padding  : 16px;
       grid-column: 1 / -1;
     }
