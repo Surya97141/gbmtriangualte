@@ -237,17 +237,39 @@ const Router = (() => {
   // Resume entry — given saved state, return stage to resume from
   function resumeEntry(state) {
     const current = state.currentStage;
-    if (!current) return 'entry';
+    if (!current) return normalEntry();
 
     const stage = _getStage(current);
-    if (!stage) return 'entry';
+    if (!stage) return normalEntry();
 
     // If current stage should now be skipped — find next valid
     if (_shouldSkip(stage, state)) {
-      return next(current, state) ?? 'entry';
+      return next(current, state) ?? normalEntry();
+    }
+
+    // Defensive: don't blindly trust the saved pointer. A session's
+    // currentStage/stagesCompleted pair can go stale relative to today's
+    // required-stage gating — e.g. a session saved before a new required
+    // stage was inserted earlier in the sequence (as happened when 'intake'
+    // and 'entry' were reordered) — leaving isAccessible(current) false even
+    // though resumeEntry would otherwise happily point back at it. That
+    // produces a real stuck load: Engine._navigateTo refuses to render, and
+    // nothing else recovers. Fall back to the actual first gap in progress.
+    if (!isAccessible(current, state)) {
+      return _firstIncompleteStage(state) ?? normalEntry();
     }
 
     return current;
+  }
+
+  // First stage (in canonical order) that isn't skipped and isn't yet
+  // marked complete — i.e. where a from-scratch traversal would actually
+  // be at right now. Used to self-heal a resume pointer that isAccessible
+  // no longer agrees with.
+  function _firstIncompleteStage(state) {
+    const completed = state.stagesCompleted ?? [];
+    const stage = STAGES.find(s => !_shouldSkip(s, state) && !completed.includes(s.id));
+    return stage ? stage.id : null;
   }
 
   // ─── STAGE SEQUENCE FOR PROGRESS BAR ───────────────────────────────────────

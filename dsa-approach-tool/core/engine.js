@@ -43,26 +43,33 @@ const Engine = (() => {
       ? Router.resumeEntry(State.get())
       : Router.normalEntry();
 
-    _navigateTo(entryStage, 'forward');
+    const navigated = _navigateTo(entryStage, 'forward');
 
-    console.info(`[Engine] Initialized. Entry: ${entryStage}`);
+    // Log what actually happened, not just what was attempted — _navigateTo
+    // can refuse to render (see below) and silently claiming success here
+    // would contradict its own warning on the very next line of the console.
+    console.info(`[Engine] Initialized. Entry: ${navigated ? entryStage : State.getCurrentStage()}`);
   }
 
   // ─── NAVIGATION ────────────────────────────────────────────────────────────
 
+  // Returns true if navigation actually happened, false if it was refused
+  // (target not yet accessible) — callers that need to know the outcome
+  // (e.g. init()'s own log line) should check this rather than assume.
   function _navigateTo(stageId, direction = 'forward') {
-    if (!stageId) return;
+    if (!stageId) return false;
 
     const state = State.get();
 
     if (!Router.isAccessible(stageId, state) && direction === 'forward') {
       console.warn(`[Engine] Stage "${stageId}" not accessible yet`);
       Renderer.showToast('Complete current stage first', 'warning');
-      return;
+      return false;
     }
 
     State.setCurrentStage(stageId);
     Renderer.renderStage(stageId, State.get(), direction);
+    return true;
   }
 
   function _navigateNext() {
