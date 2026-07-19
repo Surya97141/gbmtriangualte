@@ -114,6 +114,7 @@ const Stage3 = (() => {
         <div class="s3-panel-header">
           <div class="s3-panel-title">Structural findings</div>
           <div class="s3-panel-sub">Updates as you answer</div>
+          <button class="s3-chat-btn" id="s3-chat-btn">💬 Ask about this stage</button>
         </div>
         <div class="s3-panel-body" id="s3-panel-body">
           <div class="s3-panel-empty">← Answer property questions to see findings</div>
@@ -127,6 +128,18 @@ const Stage3 = (() => {
     _buildDPContent(wrapper, saved);
     _buildGraphContent(wrapper, saved, hasGraph);
     _refreshGuidedLock(wrapper);
+
+    // Phase 4.8 — scoped chat, one of three invocation points proving the
+    // component is genuinely general, not tied to a single stage.
+    wrapper.querySelector('#s3-chat-btn')?.addEventListener('click', () => {
+      if (typeof ScopedChat === 'undefined') return;
+      const answeredCount = Object.values(_answers).filter(v => v && v !== 'unanswered').length;
+      ScopedChat.open(
+        'stage3',
+        'Stage 3 — Structural Properties',
+        `User is on the 7 structural-property questions (${answeredCount}/7 answered so far). Truths First box: "${_truthsText || '(not written yet)'}"`
+      );
+    });
 
     setTimeout(() => _updatePanel(wrapper), 0);
 
@@ -1127,6 +1140,11 @@ const Stage3 = (() => {
     .s3-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s3-border); background: var(--surface-3); }
     .s3-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s3-ink); }
     .s3-panel-sub    { font-size: .66rem; color: var(--s3-muted); margin-top: 2px; }
+    .s3-chat-btn {
+      margin-top: 9px; padding: 6px 11px; border-radius: 7px; border: 1.5px solid var(--s3-blue-b, rgba(79,168,216,.35));
+      background: rgba(79,168,216,.1); color: var(--s3-blue, #4fa8d8); font-size: .68rem; font-weight: 600; cursor: pointer;
+    }
+    .s3-chat-btn:hover { background: rgba(79,168,216,.2); }
     .s3-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
     .s3-panel-empty  { font-size: .74rem; color: var(--s3-muted); font-style: italic; text-align: center; padding: 24px 0; line-height: 1.6; }
     .s3-panel-section { display: flex; flex-direction: column; gap: 7px; }

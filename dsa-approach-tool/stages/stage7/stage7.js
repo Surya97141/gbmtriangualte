@@ -146,6 +146,7 @@ const Stage7 = (() => {
         <div class="s7-panel-aside-header">
           <div class="s7-panel-aside-title">Your direction</div>
           <div class="s7-panel-aside-sub">Selected approach summary</div>
+          <button class="s7-chat-btn" id="s7-chat-btn">💬 Ask about this stage</button>
         </div>
         <div class="s7-panel-aside-body" id="s7-panel-aside-body">
           <div class="s7-panel-empty">← Select a direction to see summary</div>
@@ -158,6 +159,17 @@ const Stage7 = (() => {
     _buildTabs(wrapper);
     _buildPanels(wrapper, saved);
     _renderCommitWarning(wrapper, saved);
+
+    // Phase 4.8 — scoped chat, third of three invocation points.
+    wrapper.querySelector('#s7-chat-btn')?.addEventListener('click', () => {
+      if (typeof ScopedChat === 'undefined') return;
+      const dir = _directions.find(d => d.id === _selectedDirection);
+      ScopedChat.open(
+        'stage7',
+        'Stage 7 — Output',
+        `User is reviewing the final output for direction: ${dir?.label ?? '(none selected)'}. Confidence: ${band ?? 'not computed'} (${score ?? '—'}/100).`
+      );
+    });
 
     if (_directions.length > 0 && _selectedDirection) {
       setTimeout(() => _updatePanel(wrapper), 0);
@@ -1034,6 +1046,11 @@ const Stage7 = (() => {
     .s7-panel-aside-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s7-border); background: var(--surface-3); }
     .s7-panel-aside-title  { font-size: .82rem; font-weight: 700; color: var(--s7-ink); }
     .s7-panel-aside-sub    { font-size: .66rem; color: var(--s7-muted); margin-top: 2px; }
+    .s7-chat-btn {
+      margin-top: 9px; padding: 6px 11px; border-radius: 7px; border: 1.5px solid var(--s7-green-b);
+      background: var(--s7-green-bg); color: var(--s7-green); font-size: .68rem; font-weight: 600; cursor: pointer;
+    }
+    .s7-chat-btn:hover { filter: brightness(1.1); }
     .s7-panel-aside-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
     .s7-panel-empty { font-size: .74rem; color: var(--s7-muted); font-style: italic; text-align: center; padding: 24px 0; line-height: 1.6; }
     .s7-aside-section { display: flex; flex-direction: column; gap: 6px; }

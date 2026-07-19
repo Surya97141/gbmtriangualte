@@ -95,8 +95,13 @@ const Engine = (() => {
     _navigateTo(result.targetStage, 'back');
   }
 
-  function _jumpTo(stageId) {
-    const target = Router.jumpTo(stageId, State.get());
+  // force=true bypasses Router.jumpTo's skip-forward redirect and renders
+  // stageId directly — needed for hard-stop recovery routes (e.g. Stage 5's
+  // premise-contradiction banner) that must land on a specific stage even
+  // when that stage's normal skipIf would otherwise bounce navigation past
+  // it (e.g. Stage 3 on the Fast Path, whose skipIf is simply "fast path").
+  function _jumpTo(stageId, force = false) {
+    const target = force ? stageId : Router.jumpTo(stageId, State.get());
     if (!target) return;
     _navigateTo(target, 'back');
   }
@@ -267,31 +272,43 @@ const Engine = (() => {
 
   // ─── DIRECTION DERIVATION ──────────────────────────────────────────────────
 
-  // Shared by both derivation passes below (Stage 3's initial pass and
-  // Stage 4's supplementary pass) — one canonical map of family → minimum
-  // complexity it's still worth suggesting at.
-  const DIRECTION_MIN_COMPLEXITY = {
-    greedy              : 'o(nlogn)',
-    binary_search_answer: 'o(nlogn)',
-    dp                  : 'o(n^2)',
-    backtracking        : 'o(2^n)',
-    divide_conquer      : 'o(nlogn)',
-    graph               : 'o(nlogn)',
-    two_pointer         : 'o(n)',
-    string              : 'o(n)',
-    sliding_window      : 'o(n)',
-    range_query         : 'o(nlogn)',
-    data_structure      : 'o(n)',
-    geometry_sweep      : 'o(nlogn)',
-    math                : 'o(logn)',
-    game_theory         : 'o(2^n)',
-  };
+  // Shared by both derivation passes below (Stage 3's initial pass and Stage
+  // 4's supplementary pass) — is a family still worth suggesting at this n?
+  //
+  // Previously this was a single per-family "minimum complexity" string
+  // (DIRECTION_MIN_COMPLEXITY), checked against Stage 0's coarse eliminated-
+  // classes list. That gates the whole family behind its SINGLE WORST member
+  // — confirmed as a real bug for game_theory (gt_sprague_grundy is o(n),
+  // but the family was gated at o(2^n), gt_backtracking/gt_minimax's cost —
+  // eliminating o(2^n) silently hid Sprague-Grundy too, even though it's
+  // polynomial and would have been perfectly fine). The same shape of bug
+  // exists in dp (dp_cht/dp_divide_conquer are o(nlogn) but the family was
+  // gated at dp_standard's o(n^2)), graph (BFS/DFS/Tarjan/Kahn are o(n) but
+  // the family was gated at Dijkstra/Kruskal's o(nlogn)), and range_query
+  // (rq_dsu is o(n) but the family was gated at o(nlogn)) — none of those
+  // are hypothetical, they're all real spreads in ComplexityRecheck's own
+  // VARIANT_COMPLEXITY_MAP, the same source of truth Stage 4.5's per-card
+  // feasibility badges already use.
+  //
+  // Fix: gate on whether AT LEAST ONE real variant in the family is still
+  // feasible at this n, using that same per-variant map — not a single
+  // family-level string. Fails open (doesn't gate) if Stage 0 hasn't been
+  // answered yet, or if ComplexityRecheck has no variant list for a family
+  // (nothing to check against, so nothing to hide).
+  function _familyHasFeasibleVariant(family, state) {
+    if (typeof ComplexityRecheck === 'undefined') return true;
+    const n = state.answers?.stage0?.n;
+    if (!n) return true;
+    const timeLimit = state.answers?.stage0?.timeLimit ?? 1;
+    const variantIds = ComplexityRecheck.getVariantIdsForFamily(family);
+    if (!variantIds.length) return true;
+    return variantIds.some(id => ComplexityRecheck.isFeasible(id, n, timeLimit));
+  }
 
   function _deriveDirections(state) {
     const props  = state.answers?.stage3?.properties ?? {};
     const output = state.answers?.stage2             ?? {};
     const input  = state.answers?.stage1             ?? {};
-    const elim   = state.answers?.stage0?.eliminated ?? [];
     const directions = [];
 
     const p = props;
@@ -523,10 +540,7 @@ const Engine = (() => {
       });
     }
 
-    return directions.filter(d => {
-      const minC = DIRECTION_MIN_COMPLEXITY[d.family];
-      return !minC || !elim.includes(minC);
-    });
+    return directions.filter(d => _familyHasFeasibleVariant(d.family, state));
   }
 
   // Supplementary pass, run at Stage 4 completion — not Stage 3. These three
@@ -535,32 +549,28 @@ const Engine = (() => {
   // Stage 3. Adds to the existing direction set via State.addDirection
   // (which already dedups by id) — does not clear what Stage 3 already found.
   //
-  // NOTE: the six real hidden-structure ids (verified directly against the
+  // NOTE: the seven real hidden-structure ids (verified directly against the
   // live DOM, not assumed) are hs_monotonic_stack, hs_prefix_sum,
-  // hs_two_pointer, hs_union_find, hs_segment_tree, hs_trie — sourced from
-  // constraint-interactions.js. An earlier version of this function was
-  // gated on hs_sliding_window and hs_bit_seg_tree, which do NOT exist
-  // anywhere in the live app (they were misread from a separate, apparently
-  // unused literal array inside stage4.js itself) — silently making
-  // sliding_window and range_query unreachable exactly like the pre-existing
-  // gaps this whole pass exists to close. Re-gated on the closest real
-  // signals: hs_segment_tree for range_query (Segment Tree is literally one
-  // of that family's own variants) and hs_two_pointer for sliding_window
-  // (the closest explicit user-confirmed signal available today).
+  // hs_two_pointer, hs_sliding_window, hs_union_find, hs_segment_tree,
+  // hs_trie — sourced from constraint-interactions.js. hs_segment_tree
+  // covers range_query (Segment Tree is literally one of that family's own
+  // variants). hs_sliding_window is its own distinctly-labeled checkbox
+  // (Phase 3 fix — it used to piggyback on hs_two_pointer, whose label and
+  // signal are genuinely about two-pointer, not windows; a live Playwright
+  // reachability audit caught the mismatch).
   function _deriveStage4Directions(state) {
     const hs   = state.answers?.stage4?.hiddenStructureAnswers ?? {};
-    const elim = state.answers?.stage0?.eliminated ?? [];
     const directions = [];
 
-    if (hs.hs_two_pointer === 'yes') {
+    if (hs.hs_sliding_window === 'yes') {
       directions.push({
         id          : 'sliding_window',
         family      : 'sliding_window',
         label       : 'Sliding Window',
-        why         : 'You confirmed a pair-sum/window-condition signal in Stage 4 — sliding window is the closest fit when the window itself (not just two positions) matters',
+        why         : 'You confirmed a contiguous window whose left edge never needs to shrink back once advanced, in Stage 4',
         verifyBefore: 'Confirm the window condition is monotone — expanding/shrinking never needs to reverse',
         wouldFailIf : 'The window condition is not monotone — a valid window can become invalid non-monotonically',
-        confidence  : 'low',
+        confidence  : 'medium',
       });
     }
 
@@ -617,10 +627,7 @@ const Engine = (() => {
       });
     }
 
-    return directions.filter(d => {
-      const minC = DIRECTION_MIN_COMPLEXITY[d.family];
-      return !minC || !elim.includes(minC);
-    });
+    return directions.filter(d => _familyHasFeasibleVariant(d.family, state));
   }
 
   function _refineDirection(state, family, detail) {
@@ -685,7 +692,7 @@ const Engine = (() => {
 
     document.addEventListener('dsa:jump-to', (e) => {
       const stageId = e.detail?.stageId;
-      if (stageId) _jumpTo(stageId);
+      if (stageId) _jumpTo(stageId, !!e.detail?.force);
     });
 
     document.addEventListener('dsa:enter-recovery', () => _showRecoveryModal());

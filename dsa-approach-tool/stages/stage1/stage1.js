@@ -185,6 +185,13 @@ const Stage1 = (() => {
   let _state           = null;
   let _bannerDismissed = false;
 
+  // Phase 4.7 — tailored, plain-English "what this opens" explanation.
+  // { text, fellBack } | null. Keyed per-selection so switching checkboxes
+  // without regenerating doesn't show a stale explanation for a different
+  // combination.
+  let _tailored        = null;
+  let _tailoredLoading = false;
+
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
   function render(state) {
@@ -562,6 +569,146 @@ const Stage1 = (() => {
       note.innerHTML = '🔍 Undirected graph — check if 2-colorable (bipartite). May open matching.';
       body.appendChild(note);
     }
+
+    // ── Tailored explanation (Phase 4.7) ───────────────────────────────────
+    _renderTailoredSection(body, wrapper);
+  }
+
+  // ─── TAILORED EXPLANATION (Phase 4.7) ───────────────────────────────────────
+  // The sections above are static, generic text — same wording for every
+  // user who checks the same box, regardless of their actual problem. This
+  // section is the live, per-problem, per-selection alternative: plain
+  // English, explaining what the SAME selections mean for the specific
+  // problem this user typed into Intake — not a general definition of the
+  // technique, and never a suggestion to pick something different. It
+  // confirms/explains a choice already made; it never leads or corrects.
+
+  function _tailoredCacheKey() {
+    // Cache by (problem interpretation, checkbox combination) — the same
+    // problem with the same selections should never pay for a second call.
+    const interpretation = (_state?.answers?.intake?.interpretation ?? '').trim();
+    const key = {
+      interpretation,
+      inputTypes      : [..._selectedTypes].sort(),
+      secondarySignals: [..._selectedSignals].sort(),
+      queryType       : _queryType,
+    };
+    return JSON.stringify(key);
+  }
+
+  function _loadTailoredCache() {
+    try {
+      const raw = localStorage.getItem('dsa_s1_tailored_cache_v1');
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  }
+
+  function _saveTailoredCache(cacheKey, text) {
+    try {
+      const all = _loadTailoredCache();
+      all[cacheKey] = text;
+      localStorage.setItem('dsa_s1_tailored_cache_v1', JSON.stringify(all));
+    } catch { /* localStorage full or unavailable — cache is a nice-to-have, not required */ }
+  }
+
+  function _renderTailoredSection(body, wrapper) {
+    const llmReady = typeof LLMClient !== 'undefined' && LLMClient.isConfigured('cheap');
+    const cacheKey = _tailoredCacheKey();
+
+    // A previous selection's result doesn't belong under a new combination.
+    if (_tailored && _tailored.cacheKey !== cacheKey) _tailored = null;
+
+    if (!_tailored && !_tailoredLoading) {
+      const cached = _loadTailoredCache()[cacheKey];
+      if (cached) _tailored = { text: cached, cacheKey, fellBack: false };
+    }
+
+    const section = document.createElement('div');
+    section.className = 's1-panel-section s1-panel-section--tailored';
+    section.innerHTML = '<div class="s1-panel-section-title">For your problem, specifically</div>';
+
+    if (!llmReady) {
+      section.innerHTML += '<div class="s1-tailored-off-note">Available once an AI backend is set up in ⚙ Settings — the sections above still apply either way.</div>';
+      body.appendChild(section);
+      return;
+    }
+
+    if (_tailoredLoading) {
+      section.innerHTML += '<div class="s1-tailored-pending">Reading your selections…</div>';
+      body.appendChild(section);
+      return;
+    }
+
+    if (_tailored) {
+      section.innerHTML += `
+        <div class="s1-tailored-text${_tailored.fellBack ? ' s1-tailored-text--fallback' : ''}">${_escapeS1(_tailored.text)}</div>
+        ${_tailored.fellBack ? '<div class="s1-tailored-fallback-note">(live explanation unavailable — showing the sections above instead)</div>' : ''}
+        <button class="s1-tailored-btn s1-tailored-btn--regen" id="s1-tailored-regen-btn">↻ Regenerate</button>
+      `;
+    } else {
+      section.innerHTML += '<button class="s1-tailored-btn" id="s1-tailored-gen-btn">✨ Explain this for my problem</button>';
+    }
+
+    body.appendChild(section);
+
+    section.querySelector('#s1-tailored-gen-btn')?.addEventListener('click', () => _onGenerateTailored(wrapper, cacheKey));
+    section.querySelector('#s1-tailored-regen-btn')?.addEventListener('click', () => _onGenerateTailored(wrapper, cacheKey));
+  }
+
+  async function _onGenerateTailored(wrapper, cacheKey) {
+    if (_tailoredLoading) return;
+    _tailoredLoading = true;
+    _updatePanel(wrapper);
+
+    const interpretation = (_state?.answers?.intake?.interpretation ?? '').trim();
+    const selectionSummary = [
+      _selectedTypes.size ? `Input shape: ${[..._selectedTypes].join(', ')}` : null,
+      _selectedSignals.size ? `Secondary signals: ${[..._selectedSignals].join(', ')}` : null,
+      _queryType ? `Query pattern: ${_queryType}` : null,
+    ].filter(Boolean).join('\n');
+
+    const result = await LLMClient.complete({
+      system: [
+        'You are explaining, in plain English, what a specific set of input-shape checkboxes implies for a DSA problem — for someone who just checked those boxes.',
+        '',
+        'HARD RULE: never state, name, or hint at a specific algorithm, data structure, or technique by name',
+        '(e.g. never say "binary search", "DP", "dynamic programming", "graph", "greedy", "BFS", "DFS",',
+        '"two pointer", "sliding window", "trie", "segment tree", etc.) — not even to confirm or suggest one.',
+        'Describe the SHAPE of the consequence instead (e.g. "you\'ll likely need a way to look at pairs of',
+        'elements together" rather than naming the technique that does that).',
+        '',
+        'Only explain the implications of the selections already made — never suggest a different selection',
+        'would have been better, and never correct or second-guess their choice.',
+        '',
+        'Keep it to 2-3 short sentences, plain language, no jargon left unexplained.',
+      ].join('\n'),
+      prompt: [
+        interpretation ? `The user's own description of their problem:\n"${interpretation}"` : 'The user did not describe their problem in their own words.',
+        '',
+        'What they just selected on this screen:',
+        selectionSummary || '(nothing selected yet)',
+      ].join('\n'),
+      tier: 'cheap',
+      maxTokens: 200,
+    });
+
+    _tailoredLoading = false;
+
+    if (!result.ok) {
+      _tailored = { text: 'The sections above still cover the general implications — a live, per-problem explanation just isn\'t available right now.', cacheKey, fellBack: true };
+    } else if (LLMClient.containsPatternNameLeak(result.text)) {
+      _tailored = { text: 'The sections above still cover the general implications — a live, per-problem explanation just isn\'t available right now.', cacheKey, fellBack: true };
+    } else {
+      _tailored = { text: result.text.trim(), cacheKey, fellBack: false };
+      _saveTailoredCache(cacheKey, _tailored.text);
+    }
+
+    _updatePanel(wrapper);
+  }
+
+  function _escapeS1(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   // ─── CHANGE HANDLER ────────────────────────────────────────────────────────
@@ -1088,6 +1235,61 @@ const Stage1 = (() => {
       line-height  : 1.5;
     }
 
+    /* Tailored explanation (Phase 4.7) */
+    .s1-panel-section--tailored {
+      border-top: 1px dashed var(--s1-border2);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+    .s1-tailored-off-note {
+      font-size : .7rem;
+      color      : var(--s1-muted);
+      font-style : italic;
+      line-height: 1.5;
+    }
+    .s1-tailored-pending {
+      font-size : .7rem;
+      color      : var(--s1-muted);
+      font-style : italic;
+    }
+    .s1-tailored-btn {
+      padding      : 7px 14px;
+      border-radius: var(--s1-r-sm);
+      border       : 1.5px solid var(--s1-accent-border);
+      background   : var(--s1-surface);
+      color        : var(--s1-accent);
+      font-size    : .74rem;
+      font-weight  : 600;
+      cursor       : pointer;
+    }
+    .s1-tailored-btn:hover { background: var(--s1-accent-bg); }
+    .s1-tailored-btn--regen {
+      border-color: var(--s1-border2);
+      color       : var(--s1-muted);
+      font-weight : 500;
+    }
+    .s1-tailored-text {
+      font-size  : .76rem;
+      color      : var(--s1-ink);
+      line-height: 1.6;
+      padding    : 9px 11px;
+      background : var(--s1-accent-bg);
+      border     : 1px solid var(--s1-accent-border);
+      border-radius: var(--s1-r-sm);
+      margin-bottom: 8px;
+    }
+    .s1-tailored-text--fallback {
+      background: var(--s1-bg);
+      border-color: var(--s1-border2);
+      color: var(--s1-muted);
+      font-style: italic;
+    }
+    .s1-tailored-fallback-note {
+      font-size : .66rem;
+      color      : var(--s1-muted);
+      margin-bottom: 8px;
+    }
+
     /* Panel scrollbar */
     .s1-panel-body::-webkit-scrollbar       { width: 3px; }
     .s1-panel-body::-webkit-scrollbar-track { background: transparent; }
@@ -1156,6 +1358,8 @@ const Stage1 = (() => {
     _queryType       = null;
     _state           = null;
     _bannerDismissed = false;
+    _tailored        = null;
+    _tailoredLoading = false;
   }
 
   return { render, onMount, cleanup };

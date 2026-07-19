@@ -128,7 +128,11 @@ const Stage5 = (() => {
       </div>
     `;
     el.querySelector('#s5-contradiction-back-btn')?.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage3' } }));
+      // force:true — on the Fast Path, stage3's skipIf (_isFastPath) would
+      // otherwise make Router.jumpTo silently redirect this straight back to
+      // stage5 itself (the stage we're trying to leave), defeating the hard
+      // stop this button exists to provide. See core/engine.js's _jumpTo.
+      document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage3', force: true } }));
     });
   }
 

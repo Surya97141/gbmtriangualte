@@ -176,6 +176,12 @@ const ComplexityRecheck = (() => {
       'geometry_sweep' : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('gs_')),
       'game_theory'    : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('gt_')),
       'range_query'    : Object.keys(VARIANT_COMPLEXITY_MAP).filter(k => k.startsWith('rq_')),
+      // These two families don't have their own dedicated variant file —
+      // they route to an existing one (game-theory-variants.js /
+      // geometry-sweep-variants.js, see stage4-5.js's dispatch) and share
+      // its complexity data for the one card each actually surfaces.
+      'backtracking'   : ['gt_backtracking'],
+      'divide_conquer' : ['gs_divide_conquer_general'],
     };
     return MAP[family] ?? [];
   }

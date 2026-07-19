@@ -46,7 +46,13 @@ const LLMClient = (() => {
   // throws — every failure path (not configured, timeout, network, bad
   // response, malformed local output) is a normal returned value so callers
   // can fall back without a try/catch.
-  async function complete({ system, prompt, tier = 'cheap', maxTokens = 300 }) {
+  //
+  // `history` (Phase 4.8) — optional prior turns as [{role:'user'|
+  // 'assistant', content}], oldest first, NOT including the current
+  // `prompt` (that's appended as the final user turn). Defaults to [], so
+  // every existing single-shot call site (4.2/4.3/4.6/4.7/4.9) is
+  // unaffected — this is a pure addition, not a behavior change for them.
+  async function complete({ system, prompt, tier = 'cheap', maxTokens = 300, history = [] }) {
     if (!isConfigured(tier)) {
       return { ok: false, reason: 'not_configured', message: 'No LLM backend configured in Settings.' };
     }
@@ -55,8 +61,8 @@ const LLMClient = (() => {
 
     try {
       return useHosted
-        ? await _completeHosted({ system, prompt, tier, maxTokens })
-        : await _completeLocal({ system, prompt, maxTokens });
+        ? await _completeHosted({ system, prompt, tier, maxTokens, history })
+        : await _completeLocal({ system, prompt, maxTokens, history });
     } catch (e) {
       if (e?.name === 'AbortError') {
         return { ok: false, reason: 'timeout', message: 'Request timed out.' };
@@ -65,7 +71,7 @@ const LLMClient = (() => {
     }
   }
 
-  async function _completeHosted({ system, prompt, tier, maxTokens }) {
+  async function _completeHosted({ system, prompt, tier, maxTokens, history = [] }) {
     const apiKey = Preferences.getLLMApiKey();
     const model  = tier === 'synthesis' ? MODEL_SYNTHESIS : MODEL_CHEAP;
 
@@ -87,7 +93,7 @@ const LLMClient = (() => {
           model,
           max_tokens: maxTokens,
           system,
-          messages: [{ role: 'user', content: prompt }],
+          messages: [...history, { role: 'user', content: prompt }],
         }),
         signal: controller.signal,
       });
@@ -108,7 +114,7 @@ const LLMClient = (() => {
     return { ok: true, text: text.trim() };
   }
 
-  async function _completeLocal({ system, prompt, maxTokens }) {
+  async function _completeLocal({ system, prompt, maxTokens, history = [] }) {
     const endpoint = Preferences.getLLMLocalEndpoint().replace(/\/+$/, '');
 
     const controller = new AbortController();
@@ -124,6 +130,7 @@ const LLMClient = (() => {
           max_tokens: maxTokens,
           messages: [
             { role: 'system', content: system },
+            ...history,
             { role: 'user', content: prompt },
           ],
         }),

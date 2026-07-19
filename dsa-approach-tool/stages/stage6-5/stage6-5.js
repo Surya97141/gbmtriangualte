@@ -71,6 +71,22 @@ const Stage6_5 = (() => {
     { label: 'Penalties',               keys: ['property_answered_unsure','verification_skipped','no_counterexample_for_greedy','state_not_verified_for_dp','transformation_skipped','edge_cases_skipped','fallback_path_used'] },
   ];
 
+  // Maps a STAGE_GROUPS label to the actual router stage id — used by the
+  // low-band "← Return and improve analysis" button to jump straight to the
+  // weakest-scoring stage instead of a generic one-step-back.
+  const STAGE_LABEL_TO_ID = {
+    'Stage 0 — Complexity'    : 'stage0',
+    'Stage 1 — Input Anatomy' : 'stage1',
+    'Stage 2 — Output Anatomy': 'stage2',
+    'Stage 2.5 — Decomposition': 'stage2_5',
+    'Stage 3 — Structure'     : 'stage3',
+    'Stage 3.5 — Reframing'   : 'stage3_5',
+    'Stage 4 — Constraints'   : 'stage4',
+    'Fast Path — Direction'   : 'fastpath',
+    'Stage 5 — Verification'  : 'stage5',
+    'Stage 6 — Edge Cases'    : 'stage6',
+  };
+
   // Groups that correspond to stages the fast path deliberately skips —
   // shown as one collapsed "skipped" line instead of individual empty/red bars.
   const FAST_PATH_SKIPPED_GROUPS = new Set([
@@ -293,6 +309,20 @@ const Stage6_5 = (() => {
       btn.addEventListener('click', () => _onProceed());
       btnsBox.appendChild(btn);
     } else if (band.level === 'medium') {
+      // Phase 1.0c — Medium confidence previously only offered a binary
+      // proceed/proceed-anyway choice, with no way to act on "one or more
+      // properties need verification before coding" (band.message, above)
+      // without leaving the gate entirely and losing this screen. Route
+      // straight back into Stage 5 — it's always reachable (skipIf: null),
+      // so a plain jump-to is enough, no force needed.
+      const verifyBtn = document.createElement('button');
+      verifyBtn.className = 's65-gate-btn s65-gate-btn--blue';
+      verifyBtn.textContent = '↻ Verify one more thing';
+      verifyBtn.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage5' } }));
+      });
+      btnsBox.appendChild(verifyBtn);
+
       const proceedBtn = document.createElement('button');
       proceedBtn.className = 's65-gate-btn s65-gate-btn--yellow';
       proceedBtn.textContent = '→ Proceed to Stage 7';
@@ -310,7 +340,21 @@ const Stage6_5 = (() => {
       backBtn.className = 's65-gate-btn s65-gate-btn--red';
       backBtn.textContent = '← Return and improve analysis';
       backBtn.addEventListener('click', () => {
-        if (typeof Router !== 'undefined') Router.goBack?.();
+        // Route straight to the weakest-scoring stage (the one this same
+        // gate is telling the user to go fix, right below) rather than a
+        // generic one-step-back — a low-confidence session is usually many
+        // stages past the actual gap. Falls back to a plain step back if the
+        // weakest stage can't be mapped to a real stage id.
+        // NOTE: this was previously `Router.goBack?.()` called with no
+        // arguments — Router.goBack(state) reads state.stageStack, so that
+        // threw a TypeError on every click and did nothing.
+        const targetStageId = STAGE_LABEL_TO_ID[_report.weakestStage];
+        if (targetStageId) {
+          document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: targetStageId } }));
+        } else if (typeof Router !== 'undefined') {
+          const result = Router.goBack(State.get());
+          if (result) document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: result.targetStage, force: true } }));
+        }
       });
       btnsBox.appendChild(backBtn);
 
@@ -581,7 +625,19 @@ const Stage6_5 = (() => {
     // that took that path must never register as High Confidence, no
     // matter how thoroughly the rest of the checklist was completed —
     // an opinion formed on an unverified classification isn't proof.
-    const usedFallback = !!answers.stage4_5?.usedFallback;
+    //
+    // Phase 4.2's live AI classification (stage4-5.js's _applyClassification)
+    // gets the same treatment, not a lighter one — it only ever fires from
+    // this same honest-fallback state, and an AI's classification is still
+    // an opinion, not a structural derivation the user actually did. Kept
+    // as a separate flag from usedFallback (not folded into it) because
+    // stage4-5.js's own render path resets usedFallback to false the moment
+    // ANY family match exists, including one this call injected — that
+    // reset is correct for usedFallback's original meaning ("no match was
+    // found") but wrong for this ("a match was found, just not by the
+    // user") — hence a second, parallel flag that doesn't get cleared by
+    // the same logic.
+    const usedFallback = !!answers.stage4_5?.usedFallback || !!answers.stage4_5?.usedAIClassification;
     if (usedFallback) {
       deduct('fallback_path_used', PENALTY_MAP.fallback_path_used);
     }
@@ -776,6 +832,8 @@ const Stage6_5 = (() => {
     .s65-gate-btn--yellow:hover { background: #c67735; }
     .s65-gate-btn--red    { background: transparent; color: var(--s65-red); border-color: var(--s65-red-b); }
     .s65-gate-btn--red:hover { background: var(--s65-red-bg); }
+    .s65-gate-btn--blue   { background: transparent; color: var(--s65-blue); border-color: var(--s65-blue-b); }
+    .s65-gate-btn--blue:hover { background: var(--s65-blue-bg); }
     .s65-gate-btn--ghost  { background: transparent; color: var(--s65-ink2); border-color: var(--s65-border2); }
     .s65-gate-btn--ghost:hover { background: var(--s65-surface2); }
     .s65-gate-backtrack { font-size: .76rem; color: var(--s65-red); padding: 8px 12px; background: var(--s65-red-bg); border: 1px solid var(--s65-red-b); border-radius: 7px; }

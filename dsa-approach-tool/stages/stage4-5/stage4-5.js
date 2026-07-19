@@ -7,6 +7,15 @@ const Stage4_5 = (() => {
   let _state           = null;
   let _selectedVariant = null;
   let _recheckResult   = null;
+  let _aiClassifyLoading = false; // Phase 4.2
+
+  // The 12 families with real dedicated variant coverage (Phase 3) — the
+  // only values the live classifier below is allowed to return, so a
+  // successful classification always routes to content that actually exists.
+  const KNOWN_FAMILIES = [
+    'binary_search', 'dp', 'graph', 'two_pointer', 'sliding_window', 'greedy',
+    'string', 'math', 'data_structure', 'geometry_sweep', 'game_theory', 'range_query',
+  ];
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
 
@@ -97,6 +106,7 @@ const Stage4_5 = (() => {
         <div class="s45-panel-header">
           <div class="s45-panel-title">Variant analysis</div>
           <div class="s45-panel-sub">Updates as you select</div>
+          <button class="s45-chat-btn" id="s45-chat-btn">💬 Ask about this stage</button>
         </div>
         <div class="s45-panel-body" id="s45-panel-body">
           <div class="s45-panel-empty">← Select a variant to see analysis</div>
@@ -111,6 +121,17 @@ const Stage4_5 = (() => {
 
     // Build variant area
     _buildVariantArea(wrapper, directions, dpSubtype, graphGoal, graphProps, saved, n, BSV, DPV, GV, CR, TPV, SWV, GRV, STRV, MATHV, DSV, GSV, GTV, RQV);
+
+    // Phase 4.8 — scoped chat, second of three invocation points.
+    wrapper.querySelector('#s45-chat-btn')?.addEventListener('click', () => {
+      if (typeof ScopedChat === 'undefined') return;
+      const context = saved.variantSelected
+        ? `User has selected variant "${saved.variantSelected}" and is reviewing the complexity re-check.`
+        : directions.length
+          ? `User is choosing among variant cards for: ${directions.map(d => d.label).join(', ')}. No variant selected yet.`
+          : 'The static classifier found no confident family match — user is seeing the honest-fallback screen. No variant selected yet.';
+      ScopedChat.open('stage4_5', 'Stage 4.5 — Approach Variant', context);
+    });
 
     // Restore recheck if variant was saved
     if (saved.variantSelected && saved.recheckResult) {
@@ -217,6 +238,7 @@ const Stage4_5 = (() => {
           </div>
           <button class="s45-fallback-honest__btn" id="s45-fallback-back-btn">← Back to Truths First (Stage 3)</button>
         </div>
+        <div id="s45-ai-classify-region"></div>
       `;
       const backBtn = area.querySelector('#s45-fallback-back-btn');
       if (backBtn) {
@@ -224,6 +246,7 @@ const Stage4_5 = (() => {
           document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage3' } }));
         });
       }
+      _renderAIClassifySection(wrapper);
       return;
     }
 
@@ -571,6 +594,210 @@ const Stage4_5 = (() => {
     }
   }
 
+  // ─── AI CLASSIFICATION (Phase 4.2) ──────────────────────────────────────────
+  // Fires only from the honest-fallback state above — i.e. only once the
+  // static 12-family classifier has already genuinely failed to place this
+  // problem. Offered as an explicit, opt-in alternative alongside (not
+  // instead of) "back to Truths First" — the user chooses whether to keep
+  // reasoning it out themselves or ask for a live classification, same
+  // consent shape as everywhere else optional-LLM in this app.
+  //
+  // Cache key design (deliberately NOT the raw Intake text): two users
+  // describing the identical underlying problem in their own words will
+  // almost never produce matching free text, so hashing that would make
+  // "cache forever" degrade into "cache almost never." What two sessions
+  // hitting the same real problem WILL reliably share is the STRUCTURAL
+  // answer set — the same input shape, secondary signals, query type, and
+  // Stage 3 property answers — because that's a fact about the problem
+  // itself, not about how someone phrased it. It's also exactly the input
+  // the static classifier already failed on, so an identical fingerprint
+  // means the static classifier would fail identically too, which is the
+  // real trigger condition this cache needs to key off. Complexity (n) is
+  // deliberately excluded — it affects which VARIANT is feasible, not which
+  // FAMILY the problem belongs to.
+
+  function _novelCacheKey(state) {
+    const s1 = state.answers?.stage1 ?? {};
+    const s3 = state.answers?.stage3 ?? {};
+    const props = s3.properties ?? {};
+    const key = {
+      inputTypes      : [...(s1.inputTypes ?? [])].sort(),
+      secondarySignals: [...(s1.secondarySignals ?? [])].sort(),
+      queryType       : s1.queryType ?? null,
+      properties      : Object.keys(props).sort().reduce((o, k) => { o[k] = props[k]; return o; }, {}),
+    };
+    return JSON.stringify(key);
+  }
+
+  function _loadNovelCache() {
+    try {
+      const raw = localStorage.getItem('dsa_novel_classification_cache_v1');
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  }
+
+  function _saveNovelCache(cacheKey, result) {
+    try {
+      const all = _loadNovelCache();
+      all[cacheKey] = result;
+      localStorage.setItem('dsa_novel_classification_cache_v1', JSON.stringify(all));
+    } catch { /* cache is a nice-to-have, not required for correctness */ }
+  }
+
+  function _renderAIClassifySection(wrapper) {
+    const region = wrapper.querySelector('#s45-ai-classify-region');
+    if (!region || !_state) return;
+
+    const llmReady = typeof LLMClient !== 'undefined' && LLMClient.isConfigured('cheap');
+    const cacheKey = _novelCacheKey(_state);
+    const cached   = _loadNovelCache()[cacheKey];
+
+    if (!llmReady) {
+      region.innerHTML = '<div class="s45-ai-off-note">A live classification is available once an AI backend is set up in ⚙ Settings — going back to Truths First above works either way.</div>';
+      return;
+    }
+
+    if (_aiClassifyLoading) {
+      region.innerHTML = '<div class="s45-ai-pending">Reading your structural answers…</div>';
+      return;
+    }
+
+    if (cached) {
+      if (cached.family === 'none') {
+        region.innerHTML = `
+          <div class="s45-ai-result s45-ai-result--none">A live classification was already tried for this exact problem shape — it didn't confidently match any of the 12 covered families either. (Cached — no new call made.)</div>
+        `;
+      } else {
+        region.innerHTML = `
+          <div class="s45-ai-result">✨ Classified as <strong>${_escape45(_familyLabel(cached.family))}</strong> — ${_escape45(cached.why)}</div>
+          <div class="s45-ai-cached-note">(Cached from an earlier identical problem shape — no new call made.) This still counts as AI-assisted, not self-derived — it's capped the same way the honest-fallback path is.</div>
+          <button class="s45-ai-btn s45-ai-btn--use" id="s45-ai-use-btn">Use this — show ${_escape45(_familyLabel(cached.family))} variants →</button>
+        `;
+        region.querySelector('#s45-ai-use-btn')?.addEventListener('click', () => _applyClassification(cached));
+      }
+      return;
+    }
+
+    region.innerHTML = '<button class="s45-ai-btn" id="s45-ai-classify-btn">✨ Try a live classification</button>';
+    region.querySelector('#s45-ai-classify-btn')?.addEventListener('click', () => _onClassify(wrapper, cacheKey));
+  }
+
+  function _familyLabel(family) {
+    const LABELS = {
+      binary_search: 'Binary Search', dp: 'Dynamic Programming', graph: 'Graph',
+      two_pointer: 'Two Pointer', sliding_window: 'Sliding Window', greedy: 'Greedy',
+      string: 'String', math: 'Math / Number Theory', data_structure: 'Specialized Data Structure',
+      geometry_sweep: 'Geometry / Sweep', game_theory: 'Game Theory', range_query: 'Range Query',
+    };
+    return LABELS[family] ?? family;
+  }
+
+  async function _onClassify(wrapper, cacheKey) {
+    if (_aiClassifyLoading || typeof State === 'undefined' || typeof LLMClient === 'undefined') return;
+    _aiClassifyLoading = true;
+    _renderAIClassifySection(wrapper);
+
+    const s1 = _state.answers?.stage1 ?? {};
+    const s3 = _state.answers?.stage3 ?? {};
+    const interpretation = (_state.answers?.intake?.interpretation ?? '').trim();
+
+    const result = await LLMClient.complete({
+      system: [
+        'You are classifying a DSA problem into one of a fixed list of families, because a static',
+        'rule-based classifier already tried and failed to confidently place it. This is a genuine',
+        'exception to the usual rule of not naming a pattern — the user has explicitly opted into a',
+        'live classification after their own structural analysis came up empty.',
+        '',
+        `Respond with EXACTLY one of these family ids, nothing else on that line: ${KNOWN_FAMILIES.join(', ')}, none`,
+        '"none" is a correct, honest answer if nothing confidently fits — never force a match.',
+        '',
+        'Respond in EXACTLY this format:',
+        'FAMILY: <one id from the list above>',
+        'WHY: <one plain-language sentence — what in their structural answers points to this family,',
+        'not a general definition of the technique, and don\'t name any OTHER technique in this sentence>',
+      ].join('\n'),
+      prompt: [
+        interpretation ? `The user's own description of the problem:\n"${interpretation}"` : '',
+        `Input shape: ${(s1.inputTypes ?? []).join(', ') || '(none selected)'}`,
+        `Secondary signals: ${(s1.secondarySignals ?? []).join(', ') || '(none)'}`,
+        `Query pattern: ${s1.queryType ?? '(none)'}`,
+        `Structural properties: ${JSON.stringify(s3.properties ?? {})}`,
+      ].filter(Boolean).join('\n'),
+      tier: 'cheap',
+      maxTokens: 150,
+    });
+
+    _aiClassifyLoading = false;
+
+    if (!result.ok) {
+      // Transient failure — NOT cached, so the button reappears for a real retry.
+      const region = wrapper.querySelector('#s45-ai-classify-region');
+      if (region) region.innerHTML = '<div class="s45-ai-off-note">The live classification call failed — try again, or head back to Truths First above.</div><button class="s45-ai-btn" id="s45-ai-classify-btn">✨ Try again</button>';
+      wrapper.querySelector('#s45-ai-classify-btn')?.addEventListener('click', () => _onClassify(wrapper, cacheKey));
+      return;
+    }
+
+    const parsed = _parseClassification(result.text);
+    const isValidFamily = parsed && (parsed.family === 'none' || KNOWN_FAMILIES.includes(parsed.family));
+    const whyLeaked = parsed && typeof LLMClient.containsPatternNameLeak === 'function' && LLMClient.containsPatternNameLeak(parsed.why ?? '');
+
+    if (!isValidFamily || whyLeaked) {
+      // Malformed or leaked — also not cached, same reasoning as a network failure.
+      const region = wrapper.querySelector('#s45-ai-classify-region');
+      if (region) region.innerHTML = '<div class="s45-ai-off-note">That response didn\'t come back in a usable shape — try again, or head back to Truths First above.</div><button class="s45-ai-btn" id="s45-ai-classify-btn">✨ Try again</button>';
+      wrapper.querySelector('#s45-ai-classify-btn')?.addEventListener('click', () => _onClassify(wrapper, cacheKey));
+      return;
+    }
+
+    // A real, parseable, non-leaking verdict — cache it permanently, success
+    // OR honest "none" alike, so every future session with this exact
+    // structural fingerprint gets it for free. Show the result and let the
+    // user explicitly confirm before it's applied — same as the cached-
+    // result path below, and consistent with the rest of this app never
+    // swapping the screen out from under the user without a deliberate
+    // click (Stage 3.5's _applyTransformation, Intake's "Apply to Stage 1 &
+    // 2" button). An opinion is not proof — it doesn't get to act on its
+    // own say-so, even a freshly-generated one.
+    _saveNovelCache(cacheKey, parsed);
+    _renderAIClassifySection(wrapper);
+  }
+
+  function _parseClassification(text) {
+    const famMatch = /FAMILY:\s*([a-z_]+)/i.exec(text ?? '');
+    const whyMatch = /WHY:\s*(.+)/i.exec(text ?? '');
+    if (!famMatch) return null;
+    return { family: famMatch[1].toLowerCase().trim(), why: (whyMatch?.[1] ?? '').trim() };
+  }
+
+  // Adds a real direction for the classified family and re-renders — reuses
+  // the exact same per-family variant dispatch every organically-derived
+  // direction already goes through, so the resulting cards are the real
+  // thing, not a special-cased AI-only view.
+  function _applyClassification(classification) {
+    State.addDirection({
+      id          : `ai_classified_${classification.family}`,
+      family      : classification.family,
+      label       : _familyLabel(classification.family),
+      why         : classification.why || 'Classified by a live AI call after the static classifier found no confident match.',
+      verifyBefore: 'This came from an AI classification, not your own structural derivation — verify it carefully in Stage 5 before trusting it.',
+      wouldFailIf : 'The classification is wrong — an opinion is not proof; Stage 5\'s verification is what actually confirms or denies this.',
+      confidence  : 'low',
+    });
+    // Distinct from usedFallback (which the normal render path resets to
+    // false the moment ANY family match exists) — this needs to survive
+    // that reset, since an AI classification is still not a self-derived
+    // structural match. Phase 2.2/4.4: an opinion must never inflate the
+    // confidence score past what real verification earned; stage6-5.js's
+    // scoring treats this the same as the honest-fallback path.
+    State.setAnswer('stage4_5', { usedAIClassification: true });
+    document.dispatchEvent(new CustomEvent('dsa:jump-to', { detail: { stageId: 'stage4_5' } }));
+  }
+
+  function _escape45(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
   // ─── STYLES ────────────────────────────────────────────────────────────────
 
   function _injectStyles() {
@@ -661,6 +888,25 @@ const Stage4_5 = (() => {
     .s45-fallback-honest__btn   { align-self: flex-start; padding: 9px 16px; font-size: .8rem; font-weight: 600; color: var(--s45-ink); background: var(--s45-surface); border: 1.5px solid var(--s45-border2); border-radius: 8px; cursor: pointer; }
     .s45-fallback-honest__btn:hover { border-color: var(--s45-gold, #e8b93f); }
 
+    /* AI classification (Phase 4.2) */
+    #s45-ai-classify-region { margin-top: 4px; display: flex; flex-direction: column; gap: 8px; }
+    .s45-ai-off-note  { font-size: .74rem; color: var(--s45-muted); font-style: italic; line-height: 1.5; }
+    .s45-ai-pending    { font-size: .74rem; color: var(--s45-muted); font-style: italic; }
+    .s45-ai-btn {
+      align-self: flex-start; padding: 9px 16px; font-size: .8rem; font-weight: 600;
+      color: var(--s45-blue); background: var(--s45-surface); border: 1.5px solid var(--s45-blue-b);
+      border-radius: 8px; cursor: pointer;
+    }
+    .s45-ai-btn:hover { background: var(--s45-blue-bg); }
+    .s45-ai-btn--use { color: var(--s45-green); border-color: var(--s45-green-b); }
+    .s45-ai-btn--use:hover { background: var(--s45-green-bg); }
+    .s45-ai-result {
+      font-size: .82rem; color: var(--s45-ink); line-height: 1.6; padding: 12px 14px;
+      background: var(--s45-blue-bg); border: 1px solid var(--s45-blue-b); border-radius: 9px;
+    }
+    .s45-ai-result--none { color: var(--s45-muted); font-style: italic; background: var(--s45-surface2); border-color: var(--s45-border2); }
+    .s45-ai-cached-note { font-size: .68rem; color: var(--s45-muted); line-height: 1.5; }
+
     /* Recheck */
     .s45-recheck-placeholder { font-family: var(--s45-mono); font-size: .72rem; color: var(--s45-muted); text-align: center; padding: 20px; background: var(--s45-surface2); border: 1.5px dashed var(--s45-border); border-radius: 9px; }
     .s45-recheck-card        { display: flex; align-items: flex-start; gap: 14px; padding: 16px; border-radius: 12px; border: 1.5px solid; }
@@ -688,6 +934,11 @@ const Stage4_5 = (() => {
     .s45-panel-header { padding: 13px 16px 11px; border-bottom: 1px solid var(--s45-border); background: var(--surface-3); }
     .s45-panel-title  { font-size: .82rem; font-weight: 700; color: var(--s45-ink); }
     .s45-panel-sub    { font-size: .66rem; color: var(--s45-muted); margin-top: 2px; }
+    .s45-chat-btn {
+      margin-top: 9px; padding: 6px 11px; border-radius: 7px; border: 1.5px solid var(--s45-green-b);
+      background: var(--s45-green-bg); color: var(--s45-green); font-size: .68rem; font-weight: 600; cursor: pointer;
+    }
+    .s45-chat-btn:hover { filter: brightness(1.1); }
     .s45-panel-body   { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 16px; }
     .s45-panel-empty  { font-size: .74rem; color: var(--s45-muted); font-style: italic; text-align: center; padding: 24px 0; line-height: 1.6; }
     .s45-panel-section { display: flex; flex-direction: column; gap: 7px; }

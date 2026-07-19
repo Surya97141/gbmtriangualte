@@ -12,6 +12,12 @@ const TruthsFirst = (() => {
   const MIN_CHARS = 15;
   const MIN_WORDS = 4;
 
+  // Phase 4.3 — second-opinion check. Rate-limited per problem (resets with
+  // a new session, same as everything else stored on state.answers.stage3) —
+  // a "handful of checks," not unlimited, per the original cost-control design.
+  const MAX_SECOND_OPINIONS = 3;
+  let _secondOpinionLoading = false;
+
   // ─── SUBSTANTIVE CHECK ─────────────────────────────────────────────────────
   // "Mandatory" is enforced by gating the guided checklist's visibility on
   // this, not by a submit button — there is nothing to click past.
@@ -73,6 +79,7 @@ const TruthsFirst = (() => {
         rows="4"
       >${_escape(savedText ?? '')}</textarea>
       <div class="s3tf-hint" id="s3tf-hint">${_hintText(savedText ?? '')}</div>
+      <div id="s3tf-second-opinion-region"></div>
     `;
 
     const box  = section.querySelector('#s3tf-box');
@@ -83,11 +90,117 @@ const TruthsFirst = (() => {
       hint.textContent = _hintText(text);
       hint.classList.toggle('s3tf-hint--ready', isSubstantive(text));
       onChange(text);
+      _renderSecondOpinion(section, text);
     });
 
     if (isSubstantive(savedText)) hint.classList.add('s3tf-hint--ready');
+    _renderSecondOpinion(section, savedText ?? '');
 
     return section;
+  }
+
+  // ─── SECOND OPINION (Phase 4.3) ─────────────────────────────────────────────
+  // Reads the user's own Truths First facts and gives a short verdict —
+  // confirms what's solid, or gently flags something that seems off. Never
+  // states a pattern/algorithm name, never answers the 7 guided questions
+  // for them — this responds to what they wrote, it doesn't hand them the
+  // analysis. Same hard-rule guard and no-key-fallback standard as every
+  // other live call in this app (Phase 4.6/4.7).
+
+  function _secondOpinionState() {
+    return (typeof State !== 'undefined' ? State.getAnswer('stage3')?.secondOpinion : null) ?? null;
+  }
+
+  function _secondOpinionUses() {
+    return (typeof State !== 'undefined' ? State.getAnswer('stage3')?.secondOpinionUses : 0) ?? 0;
+  }
+
+  function _renderSecondOpinion(section, text) {
+    const region = section.querySelector('#s3tf-second-opinion-region');
+    if (!region) return;
+
+    if (!isSubstantive(text)) { region.innerHTML = ''; return; }
+
+    const llmReady = typeof LLMClient !== 'undefined' && LLMClient.isConfigured('cheap');
+    const usesLeft = MAX_SECOND_OPINIONS - _secondOpinionUses();
+    const saved    = _secondOpinionState();
+
+    if (!llmReady) {
+      region.innerHTML = '<div class="s3tf-so-off-note">A second opinion on these facts is available once an AI backend is set up in ⚙ Settings.</div>';
+      return;
+    }
+
+    if (_secondOpinionLoading) {
+      region.innerHTML = '<div class="s3tf-so-pending">Reading what you wrote…</div>';
+      return;
+    }
+
+    let html = '';
+
+    if (saved) {
+      html += `
+        <div class="s3tf-so-result${saved.fellBack ? ' s3tf-so-result--fallback' : ''}">${_escape(saved.text)}</div>
+        ${saved.fellBack ? '<div class="s3tf-so-fallback-note">(live check unavailable — this doesn\'t affect your score)</div>' : ''}
+      `;
+    }
+
+    if (usesLeft > 0) {
+      html += `<button class="s3tf-so-btn" id="s3tf-so-btn">🔍 Get a second opinion${saved ? ' (recheck)' : ''} — ${usesLeft} left</button>`;
+    } else {
+      html += '<div class="s3tf-so-off-note">You\'ve used your second opinions for this problem — trust your own analysis from here.</div>';
+    }
+
+    region.innerHTML = html;
+    region.querySelector('#s3tf-so-btn')?.addEventListener('click', () => _onGetSecondOpinion(section, text));
+  }
+
+  async function _onGetSecondOpinion(section, text) {
+    if (_secondOpinionLoading || typeof State === 'undefined' || typeof LLMClient === 'undefined') return;
+    if (_secondOpinionUses() >= MAX_SECOND_OPINIONS) return;
+
+    _secondOpinionLoading = true;
+    _renderSecondOpinion(section, text);
+
+    // Count the attempt now, not on success — this is a cost control on
+    // real API calls made, not on how many came back parseable.
+    State.setAnswer('stage3', { secondOpinionUses: _secondOpinionUses() + 1 });
+
+    const result = await LLMClient.complete({
+      system: [
+        'You are giving a second opinion on facts a user wrote about a DSA problem, BEFORE they answer 7 structural analysis questions themselves.',
+        '',
+        'HARD RULE: never state, name, or hint at any specific algorithm, data structure, or technique',
+        '(e.g. never say "binary search", "DP", "dynamic programming", "graph", "greedy", "BFS", "DFS",',
+        '"two pointer", "sliding window", "trie", "segment tree", etc.) — not even to confirm or deny one.',
+        '',
+        'Do not answer these 7 questions for them — that is their own analysis to complete, not something',
+        'to hand them: order sensitivity, subproblem overlap, feasibility boundary, local optimality,',
+        'state space, dependency structure, search space.',
+        '',
+        'Read what they wrote. Respond with EITHER a short, warm confirmation of what seems solid and',
+        'well-observed, OR a gentle flag — phrased as a question or observation, never a correction telling',
+        'them the right answer — if something seems inconsistent, incomplete, or worth double-checking.',
+        '',
+        '2-3 short sentences. Plain language.',
+      ].join('\n'),
+      prompt: `Here is what the user wrote:\n\n${text}`,
+      tier: 'cheap',
+      maxTokens: 150,
+    });
+
+    _secondOpinionLoading = false;
+
+    let opinion;
+    if (!result.ok) {
+      opinion = { text: 'A live second opinion isn\'t available right now — the sections below still work the same either way.', fellBack: true };
+    } else if (LLMClient.containsPatternNameLeak(result.text)) {
+      opinion = { text: 'A live second opinion isn\'t available right now — the sections below still work the same either way.', fellBack: true };
+    } else {
+      opinion = { text: result.text.trim(), fellBack: false };
+    }
+
+    State.setAnswer('stage3', { secondOpinion: opinion });
+    _renderSecondOpinion(section, text);
   }
 
   function _hintText(text) {
@@ -124,6 +237,24 @@ const TruthsFirst = (() => {
     .s3tf-box::placeholder { color: var(--s3-muted); }
     .s3tf-hint { font-size: .72rem; color: var(--s3-muted); font-style: italic; }
     .s3tf-hint--ready { color: var(--s3-green); font-style: normal; font-weight: 600; }
+
+    /* Second opinion (Phase 4.3) */
+    .s3tf-so-off-note { font-size: .72rem; color: var(--s3-muted); font-style: italic; line-height: 1.5; }
+    .s3tf-so-pending   { font-size: .72rem; color: var(--s3-muted); font-style: italic; }
+    .s3tf-so-btn {
+      padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--s3-green-b);
+      background: var(--s3-surface2); color: var(--s3-green); font-size: .74rem; font-weight: 600; cursor: pointer;
+    }
+    .s3tf-so-btn:hover { background: var(--s3-green-bg); }
+    .s3tf-so-result {
+      font-size: .78rem; color: var(--s3-ink); line-height: 1.6; padding: 9px 12px;
+      background: var(--s3-green-bg); border: 1px solid var(--s3-green-b); border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .s3tf-so-result--fallback {
+      background: var(--s3-surface2); border-color: var(--s3-border2); color: var(--s3-muted); font-style: italic;
+    }
+    .s3tf-so-fallback-note { font-size: .66rem; color: var(--s3-muted); margin-bottom: 8px; }
 
     /* Guided checklist lock, toggled by stage3.js while Truths First is incomplete */
     .s3-guided-locked { position: relative; opacity: .35; pointer-events: none; user-select: none; filter: blur(1.5px); transition: opacity .2s, filter .2s; }

@@ -72,7 +72,7 @@ const StageIntake = (() => {
     wrapper.innerHTML = `
       <div class="sin-rule">
         Before anything else — what do you actually think, before any stage tells you?
-        Nothing here is required or graded; skip straight to Stage 1 if you'd rather answer directly.
+        Nothing here is required or graded; skip straight ahead if you'd rather answer directly.
       </div>
 
       <section class="sin-section">

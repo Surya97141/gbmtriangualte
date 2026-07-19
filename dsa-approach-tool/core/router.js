@@ -18,6 +18,19 @@ const Router = (() => {
 
   const STAGES = [
     {
+      id      : 'intake',
+      label   : 'Problem Statement',
+      required: false,
+      // Phase 1.0 — this is now the FIRST Truths First moment, deliberately
+      // ahead of the Fast/Full choice at 'entry': the user types what they
+      // think the problem is about before anything else, and (Phase 4.6)
+      // an optional live calibration of that answer feeds a recommendation
+      // on the entry screen right after. Never gates, never skipped — it
+      // has to run for both paths, since it's what informs the choice
+      // between them, not something derived from it.
+      skipIf  : null,
+    },
+    {
       id      : 'entry',
       label   : 'Get Started',
       required: true,
@@ -27,14 +40,6 @@ const Router = (() => {
       id      : 'stage0',
       label   : 'Complexity Budget',
       required: true,
-      skipIf  : _isFastPath,
-    },
-    {
-      id      : 'intake',
-      label   : 'Problem Statement',
-      required: false,
-      // Optional on the full walkthrough too — never gates, just skipped
-      // entirely on the fast path (which has its own condensed intake).
       skipIf  : _isFastPath,
     },
     {
@@ -105,11 +110,21 @@ const Router = (() => {
       id      : 'stage4_5',
       label   : 'Approach Variant',
       required: false,
-      // Skip on the fast path, or if no direction has been identified yet
-      skipIf  : (state) => {
-        if (_isFastPath(state)) return true;
-        return (state.output?.directions ?? []).length === 0;
-      },
+      // Skip on the fast path ONLY. Used to also skip whenever zero
+      // directions were derived — that silently routed straight to Stage 5,
+      // bypassing this stage's honest-fallback screen ("no confident match"
+      // + "back to Truths First" + Phase 4.2's live classification) for
+      // every real user who genuinely stumps the static classifier, not
+      // just a contrived edge case (confirmed live: a plain tree-shaped
+      // input with a few honestly-"unsure" Stage 3 answers reaches zero
+      // directions and clicking the real Next button skipped straight past
+      // all three). stage4-5.js's own render logic already branches
+      // correctly on directions.length === 0 (that's what the fallback
+      // screen IS) — the router was the only thing preventing it from ever
+      // running. The fallback state itself still blocks forward progress
+      // (Next stays disabled) until the user goes back or gets an AI
+      // classification, so this doesn't create a new dead end.
+      skipIf: _isFastPath,
     },
     {
       id      : 'stage5',
@@ -208,9 +223,10 @@ const Router = (() => {
 
   // ─── ENTRY POINT ───────────────────────────────────────────────────────────
 
-  // Normal entry — start from Stage 0
+  // Normal entry — start from Intake (Phase 1.0 — the first Truths First
+  // moment, ahead of the Fast/Full choice at 'entry').
   function normalEntry() {
-    return 'entry';
+    return 'intake';
   }
 
   // Recovery entry — given failure type, return recovery path stage id
@@ -305,7 +321,6 @@ const Router = (() => {
 
     const SKIP_REASONS = {
       stage0    : isFast ? 'Fast path — complexity budget skipped' : undefined,
-      intake    : isFast ? 'Fast path — problem-statement intake skipped' : undefined,
       stage1    : isFast ? 'Fast path — input anatomy collected on the Fast Path stage instead' : undefined,
       stage2    : isFast ? 'Fast path — output anatomy collected on the Fast Path stage instead' : undefined,
       fastpath  : 'Full walkthrough chosen — fast path not used',
@@ -313,7 +328,7 @@ const Router = (() => {
       stage3    : isFast ? 'Fast path — structural properties skipped' : undefined,
       stage3_5  : isFast ? 'Fast path — reframing skipped' : 'All Stage 3 properties answered with certainty',
       stage4    : isFast ? 'Fast path — constraint interaction skipped' : undefined,
-      stage4_5  : isFast ? 'Fast path — approach variant skipped' : 'No candidate directions identified yet',
+      stage4_5  : isFast ? 'Fast path — approach variant skipped' : undefined,
     };
 
     return _shouldSkip(stage, state)

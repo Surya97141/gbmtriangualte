@@ -37,6 +37,19 @@ const StageEntry = (() => {
     const contestDefault = !_selected &&
       typeof Preferences !== 'undefined' && Preferences.getMode() === 'contest';
 
+    // Phase 1.0 — Intake now runs immediately before this screen (see
+    // core/router.js's STAGES order) and its optional live calibration
+    // (Phase 4.6) of the user's own typed interpretation feeds a
+    // recommendation here — a badge only, never an auto-pick. A "fellBack"
+    // calibration is a silent default (LLM unavailable/failed/leaked), not
+    // a real signal about this problem, so it must never drive a
+    // recommendation — that would be exactly the "an opinion is not proof"
+    // rule (Phase 4.4) failing quietly.
+    const calibration = state.answers?.intake?.calibration;
+    const recommendedPath = (calibration && !calibration.fellBack)
+      ? (calibration.level === 'high' ? 'fast' : 'full')
+      : null;
+
     _injectStyles();
 
     const wrapper = document.createElement('div');
@@ -51,6 +64,7 @@ const StageEntry = (() => {
       <div class="se-options">
         <div class="se-card" data-path="full" id="se-card-full">
           <div class="se-card-check">✓</div>
+          ${recommendedPath === 'full' ? '<div class="se-card-recommend">Recommended, based on what you described</div>' : ''}
           <div class="se-card-label">Full walkthrough</div>
           <div class="se-card-desc">All 13 stages — complexity budget through structural properties, verification, and edge cases. Use this when the problem doesn't obviously fit a pattern yet.</div>
           <div class="se-card-meta">~13 stages</div>
@@ -58,6 +72,7 @@ const StageEntry = (() => {
 
         <div class="se-card" data-path="fast" id="se-card-fast">
           <div class="se-card-check">✓</div>
+          ${recommendedPath === 'fast' ? '<div class="se-card-recommend">Recommended, based on what you described</div>' : ''}
           <div class="se-card-label">I already know the direction</div>
           <div class="se-card-desc">Confirm input type and the approach you're leaning toward, then jump straight to Verification and Edge Cases.</div>
           <div class="se-card-meta">6 stages</div>
@@ -222,6 +237,11 @@ const StageEntry = (() => {
     .se-card-label { font-size: 1.02rem; font-weight: 700; margin-bottom: 8px; }
     .se-card-desc  { font-size: .82rem; color: var(--se-ink2); line-height: 1.55; }
     .se-card-meta  { margin-top: 14px; font-family: 'Space Mono', monospace; font-size: .64rem; color: var(--se-muted); letter-spacing: .04em; }
+    .se-card-recommend {
+      display: inline-block; margin-bottom: 8px; padding: 3px 9px; border-radius: 9999px;
+      font-family: 'Space Mono', monospace; font-size: .62rem; letter-spacing: .02em;
+      color: var(--se-accent); background: var(--se-accent-bg); border: 1px solid var(--se-accent-b);
+    }
     .se-card-check {
       position: absolute; top: 14px; right: 14px; width: 20px; height: 20px; border-radius: 50%;
       background: var(--se-accent); color: #fff; display: flex; align-items: center; justify-content: center;

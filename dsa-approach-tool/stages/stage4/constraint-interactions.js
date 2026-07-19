@@ -270,8 +270,27 @@ const ConstraintInteractions = (() => {
       signal   : 'Looking for pairs satisfying a monotone condition on sorted array',
       examples : [
         'Two sum on sorted array — O(n) not O(n²)',
-        'Minimum window satisfying condition — sliding window',
+        'Container with most water — pointers converge inward',
         'Count pairs with sum in range',
+      ],
+      complexity: 'O(n) instead of O(n²)',
+    },
+    {
+      // Phase 3 fix — this used to be missing entirely, and Sliding Window
+      // was reached (as a workaround) by piggybacking on hs_two_pointer
+      // above, whose label and signal are genuinely about two-pointer, not
+      // windows — a user checking "Two Pointer" got Sliding Window cards, a
+      // mismatch a Playwright reachability audit surfaced directly. This is
+      // the real, distinctly-labeled trigger; hs_two_pointer no longer
+      // produces a sliding_window direction (see engine.js's
+      // _deriveStage4Directions).
+      id       : 'hs_sliding_window',
+      label    : 'Sliding Window',
+      signal   : 'Contiguous subarray/substring, and shrinking the window from the left never needs to be undone',
+      examples : [
+        'Longest substring without repeating characters — expand right, shrink left',
+        'Minimum window substring containing all target characters',
+        'Max sum subarray of fixed size k',
       ],
       complexity: 'O(n) instead of O(n²)',
     },

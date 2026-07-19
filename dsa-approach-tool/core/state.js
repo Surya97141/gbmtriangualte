@@ -290,7 +290,7 @@ const State = (() => {
   // Clear all answers from a stage onward — used when backtracking
   function clearAnswersFrom(stageId) {
     const ORDER = [
-      'entry','stage0','intake','stage1','stage2','fastpath','stage2_5',
+      'intake','entry','stage0','stage1','stage2','fastpath','stage2_5',
       'stage3','stage3_5','stage4','stage4_5',
       'stage5','stage6','stage6_5','stage7','stage8',
     ];
