@@ -231,36 +231,37 @@ const TruthsFirst = (() => {
       width: 100%; min-height: 96px; resize: vertical; box-sizing: border-box;
       background: var(--s3-surface2); border: 1.5px solid var(--s3-border2);
       border-radius: 10px; padding: 12px 14px; font-family: var(--s3-sans);
-      font-size: .85rem; color: var(--s3-ink); line-height: 1.55;
+      font-size: 1rem; color: var(--s3-ink); line-height: 1.55;
     }
     .s3tf-box:focus { outline: none; border-color: var(--s3-green-b); box-shadow: 0 0 0 3px rgba(92,201,138,.08); }
     .s3tf-box::placeholder { color: var(--s3-muted); }
-    .s3tf-hint { font-size: .72rem; color: var(--s3-muted); font-style: italic; }
+    .s3tf-hint { font-size: .92rem; color: var(--s3-muted); font-style: italic; line-height: 1.5; }
     .s3tf-hint--ready { color: var(--s3-green); font-style: normal; font-weight: 600; }
 
     /* Second opinion (Phase 4.3) */
-    .s3tf-so-off-note { font-size: .72rem; color: var(--s3-muted); font-style: italic; line-height: 1.5; }
-    .s3tf-so-pending   { font-size: .72rem; color: var(--s3-muted); font-style: italic; }
+    .s3tf-so-off-note { font-size: .92rem; color: var(--s3-muted); font-style: italic; line-height: 1.5; }
+    .s3tf-so-pending   { font-size: .92rem; color: var(--s3-muted); font-style: italic; }
     .s3tf-so-btn {
       padding: 7px 14px; border-radius: 8px; border: 1.5px solid var(--s3-green-b);
       background: var(--s3-surface2); color: var(--s3-green); font-size: .74rem; font-weight: 600; cursor: pointer;
     }
     .s3tf-so-btn:hover { background: var(--s3-green-bg); }
     .s3tf-so-result {
-      font-size: .78rem; color: var(--s3-ink); line-height: 1.6; padding: 9px 12px;
+      font-size: .9rem; color: var(--s3-ink); line-height: 1.6; padding: 9px 12px;
       background: var(--s3-green-bg); border: 1px solid var(--s3-green-b); border-radius: 8px;
       margin-bottom: 8px;
     }
     .s3tf-so-result--fallback {
       background: var(--s3-surface2); border-color: var(--s3-border2); color: var(--s3-muted); font-style: italic;
     }
-    .s3tf-so-fallback-note { font-size: .66rem; color: var(--s3-muted); margin-bottom: 8px; }
+    .s3tf-so-fallback-note { font-size: .82rem; color: var(--s3-muted); margin-bottom: 8px; line-height: 1.4; }
 
     /* Guided checklist lock, toggled by stage3.js while Truths First is incomplete */
     .s3-guided-locked { position: relative; opacity: .35; pointer-events: none; user-select: none; filter: blur(1.5px); transition: opacity .2s, filter .2s; }
     .s3-guided-lock-banner {
-      display: none; align-items: center; gap: 8px; font-size: .78rem; color: var(--s3-muted);
+      display: none; align-items: center; gap: 8px; font-size: .9rem; color: var(--s3-muted);
       padding: 10px 14px; background: var(--s3-surface2); border: 1px dashed var(--s3-border2); border-radius: 9px;
+      line-height: 1.5;
     }
     .s3-guided-locked ~ .s3-guided-lock-banner,
     .s3-prop-list-wrap.s3-guided-locked + .s3-guided-lock-banner { display: none; }
@@ -280,7 +281,7 @@ const TruthsFirst = (() => {
       display: flex; align-items: center; gap: 8px; padding: 8px 12px; margin-top: 2px;
       background: linear-gradient(90deg, rgba(92,201,138,.18), rgba(92,201,138,.06));
       border: 1px solid var(--s3-green-b); border-radius: 8px;
-      font-size: .76rem; color: var(--s3-green); font-weight: 600;
+      font-size: .9rem; color: var(--s3-green); font-weight: 600;
       animation: s3-insight-pop .5s ease-out;
     }
     .s3-insight-flare-icon { font-size: .95rem; }

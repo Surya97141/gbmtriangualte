@@ -332,16 +332,16 @@ const StageIntake = (() => {
       font-family: 'DM Sans', system-ui, sans-serif; color: var(--sin-ink);
     }
     .sin-rule {
-      font-family: 'Space Mono', monospace; font-size: .72rem; color: var(--sin-muted); line-height: 1.6;
+      font-family: 'Space Mono', monospace; font-size: .95rem; color: var(--sin-muted); line-height: 1.6;
       padding: 10px 16px; background: var(--sin-surface); border: 1px solid var(--sin-border);
       border-left: 3px solid var(--sin-accent); border-radius: 0 8px 8px 0;
     }
     .sin-section { display: flex; flex-direction: column; gap: 10px; }
-    .sin-section-title { font-size: .82rem; font-weight: 700; color: var(--sin-ink); }
-    .sin-section-hint  { font-size: .74rem; color: var(--sin-muted); margin-top: -6px; }
+    .sin-section-title { font-size: .98rem; font-weight: 700; color: var(--sin-ink); line-height: 1.5; }
+    .sin-section-hint  { font-size: .9rem; color: var(--sin-muted); margin-top: -6px; line-height: 1.5; }
     .sin-textarea {
       width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--sin-border2);
-      background: var(--sin-surface); font-family: 'DM Sans', sans-serif; font-size: .84rem; color: var(--sin-ink);
+      background: var(--sin-surface); font-family: 'DM Sans', sans-serif; font-size: 1rem; color: var(--sin-ink);
       resize: vertical; line-height: 1.5;
     }
     .sin-textarea:focus { outline: none; border-color: var(--sin-accent-b); }
@@ -351,10 +351,10 @@ const StageIntake = (() => {
     }
     .sin-scan-btn:hover { background: #c99a2e; }
     .sin-btn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-    .sin-llm-off-note { font-size: .72rem; color: var(--sin-muted); font-style: italic; }
+    .sin-llm-off-note { font-size: .9rem; color: var(--sin-muted); font-style: italic; line-height: 1.5; }
     .sin-calibration {
       display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-      padding: 9px 12px; border-radius: 8px; font-size: .78rem; border: 1px solid var(--sin-border2);
+      padding: 9px 12px; border-radius: 8px; font-size: .9rem; border: 1px solid var(--sin-border2);
     }
     .sin-calibration--pending { color: var(--sin-muted); font-style: italic; background: var(--sin-surface); }
     .sin-calibration--low    { background: rgba(224,100,90,.10);  border-color: rgba(224,100,90,.3); }
@@ -362,8 +362,8 @@ const StageIntake = (() => {
     .sin-calibration--high   { background: rgba(92,201,138,.10); border-color: rgba(92,201,138,.3); }
     .sin-calibration-badge   { font-weight: 700; }
     .sin-calibration-note    { color: var(--sin-ink2); }
-    .sin-calibration-fallback{ color: var(--sin-muted); font-size: .7rem; }
-    .sin-empty { font-size: .82rem; color: var(--sin-muted); font-style: italic; padding: 10px 0; }
+    .sin-calibration-fallback{ color: var(--sin-muted); font-size: .88rem; }
+    .sin-empty { font-size: .9rem; color: var(--sin-muted); font-style: italic; padding: 10px 0; }
     .sin-sug-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
     .sin-sug-label { font-family: 'Space Mono', monospace; font-size: .62rem; letter-spacing: .08em; text-transform: uppercase; color: var(--sin-muted); }
     .sin-sug-chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -380,7 +380,7 @@ const StageIntake = (() => {
       font-size: .82rem; font-weight: 600; cursor: pointer;
     }
     .sin-apply-btn:hover { background: var(--sin-accent-bg); }
-    .sin-applied-note { font-size: .76rem; color: #5cc98a; margin-top: 4px; }
+    .sin-applied-note { font-size: .9rem; color: #5cc98a; margin-top: 4px; }
     .sin-hidden { display: none !important; }
     `;
     document.head.appendChild(style);
