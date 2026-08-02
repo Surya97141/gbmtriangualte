@@ -13,7 +13,6 @@
 
 <h3>DSA Problem-Solving Scaffold</h3>
 <p><em>Not a pattern matcher. A thinking tool. It asks the questions you forgot to ask.</em></p>
-
 <br>
 
 [![Live](https://img.shields.io/badge/LIVE%20NOW-gbmtriangulate.vercel.app-2563eb?style=for-the-badge&labelColor=0d0d18)](https://gbmtriangulate.vercel.app)
